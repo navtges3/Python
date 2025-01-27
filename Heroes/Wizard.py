@@ -12,3 +12,5 @@ class wizard(heroBase):
         super().__init__("Wizard", health, damage)
         self.mana = 10
         self.maxMana = 10
+
+        #Change class into list of skills/abilities?

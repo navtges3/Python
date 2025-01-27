@@ -5,7 +5,9 @@ class monsterBase:
         self.name = name
         self.health = health
         self.damage = damage
-
+        print("A new monster appears!")
+        self.printStats()
+        
     def __str__(self):
         return self.name
     
@@ -28,3 +30,7 @@ class monsterBase:
         if self.health < 0:
             self.health = 0
         print(self.name + " has " + str(self.health) + " health remaining.")
+
+    #Print the monster's stats
+    def printStats(self):
+        print(self.name + " has " + str(self.health) + " health and " + str(self.damage) + " damage.")

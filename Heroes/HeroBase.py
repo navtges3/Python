@@ -6,10 +6,13 @@ class heroBase:
         self.health = health
         self.damage = damage
         self.monstersSlain = 0
+        self.level = 1
 
+    #Print the hero's name
     def __str__(self):
         return self.name
     
+    #Check if the hero is alive
     def isAlive(self):
         if self.health > 0:
             return True
@@ -27,4 +30,19 @@ class heroBase:
     #Take damage from an attacker
     def takeDamage(self, damage):
         self.health = self.health - damage
-        print(self.name + " has " + str(self.health) + " health remaining.")  
+        print(self.name + " has " + str(self.health) + " health remaining.")
+
+    #Level up the hero
+    #Increase health and damage
+    def levelUp(self):
+        self.health += 5
+        self.damage += 2
+        self.level += 1
+        print(self.name + " has leveled up!")
+        self.printStats()
+    
+    #Print the hero's stats
+    def printStats(self):
+        print(self.name + " has " + str(self.health) + " health and " + str(self.damage) + " damage.")
+        print(self.name + " is level " + str(self.level) + ".")
+        print(self.name + " has slain " + str(self.monstersSlain) + " monsters.")

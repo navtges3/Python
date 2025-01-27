@@ -10,3 +10,6 @@ class fighter(heroBase):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
         super().__init__("Fighter", health, damage)
+
+
+        #Change class into list of skills/abilities?
