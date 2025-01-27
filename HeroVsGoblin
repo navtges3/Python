@@ -2,7 +2,7 @@ import Hero
 import Monsters.Goblin as Goblin
 
 h1 = Hero.hero("Ragnar", 20, 5)
-g1 = Goblin.goblin("Goblin 1", 22, 2)
+g1 = Goblin.goblin(22, 2)
 
 while h1.isAlive() and g1.isAlive():
     h1.attack(g1)

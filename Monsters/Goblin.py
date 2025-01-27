@@ -1,21 +1,16 @@
-class goblin:
-    def __init__(self, name, health, damage):
-        self.name = name
+import Monster
+
+class goblin(Monster.monster):
+    def __init__(self, health, damage):
+        self.name = "Goblin"
         self.health = health
         self.damage = damage
 
     def isAlive(self):
-        if self.health > 0:
-            return True
-        else:
-            return False 
-    
+        return super().isAlive()
+        
     def attack(self, target):
-        print(self.name + " Attacks " + target.name + " dealing " + str(self.damage) + " damage.")
-        target.takeDamage(self.damage)
-        if target.isAlive() != True:
-            print(self.name + " has slain " + target.name)
-
+        super().attack(target)
+    
     def takeDamage(self, damage):
-        self.health = self.health - damage
-        print(self.name + " has " + str(self.health) + " remaining.")
+        super().takeDamage(damage)
