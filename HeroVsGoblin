@@ -1,13 +1,5 @@
-class Hero:
-    def __init__(self, name, health, attack):
-        self.name = name
-        self.health = health
-        self.attack = attack
-
-class Goblin:
-    def __init__(self, health, attack):
-        self.health = health
-        self.attack = attack
+import Hero
+import Monsters.Goblin as Goblin
 
 def fight(h, g):
     while h.health > 0 and g.health > 0:
@@ -22,7 +14,7 @@ def fight(h, g):
             print(h.name + " has slain the goblin!")
 
 
-h1 = Hero("Ragnar", 20, 5)
-g1 = Goblin(10, 2)
+h1 = Hero.hero("Ragnar", 20, 5)
+g1 = Goblin.goblin(10, 2)
 
 fight(h1, g1)
