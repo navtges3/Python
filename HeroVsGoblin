@@ -1,0 +1,28 @@
+class Hero:
+    def __init__(self, name, health, attack):
+        self.name = name
+        self.health = health
+        self.attack = attack
+
+class Goblin:
+    def __init__(self, health, attack):
+        self.health = health
+        self.attack = attack
+
+def fight(h, g):
+    while h.health > 0 and g.health > 0:
+        print(h.name + " attacks the goblin!")
+        g.health-=h.attack
+        if g.health > 0:
+            print("The goblin only has " + str(g.health) + " health left.")
+            print("The goblin strikes back at " + h.name)
+            h.health-=g.attack
+            print("The goblin hits leaving " + h.name + " with " + str(h.health) + " remaining.")
+        else:
+            print(h.name + " has slain the goblin!")
+
+
+h1 = Hero("Ragnar", 20, 5)
+g1 = Goblin(10, 2)
+
+fight(h1, g1)
