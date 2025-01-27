@@ -1,4 +1,4 @@
-class hero:
+class heroBase:
     
     #Base class for all heroes
     def __init__(self, name, health, damage):

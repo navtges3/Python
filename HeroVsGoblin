@@ -1,5 +1,7 @@
-from Heroes.Hero import hero
+from Heroes.HeroBase import heroBase as hero
 from Monsters.Goblin import goblin
+from Monsters.Orc import orc
+from Monsters.Ogre import ogre
 
 print("Welcome to Hero vs Goblin!")
 print("You are a hero, and you have to fight a goblin!")
@@ -17,13 +19,21 @@ while myHero.isAlive() and myMonster.isAlive():
         myMonster.attack(myHero)
         print("Do you wish to continue the battle? (y/n)")
         stay = input()
+        if stay[0] == "n":
+            break
     else:
         print("Do you wish to stay and fight another goblin? (y/n)")
         stay = input()
-        if stay[0] == "y":
-            myMonster = goblin()
-    if stay[0] == "n":
-        break
+        if stay[0] == "n":
+            break
+        else:
+            if myHero.monstersSlain > 10:
+                myMonster = orc()
+            elif myHero.monstersSlain > 20:
+                myMonster = ogre()
+            else:
+                myMonster = goblin()
+        
     
 if myHero.isAlive():
     if myHero.monstersSlain == 1:
