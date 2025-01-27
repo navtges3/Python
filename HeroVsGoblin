@@ -1,8 +1,8 @@
-import Hero
-import Monsters.Goblin as Goblin
+from Hero import hero
+from Monsters.Goblin import goblin
 
-h1 = Hero.hero("Ragnar", 20, 5)
-g1 = Goblin.goblin(22, 2)
+h1 = hero("Ragnar", 20, 5)
+g1 = goblin(22, 2)
 
 while h1.isAlive() and g1.isAlive():
     h1.attack(g1)

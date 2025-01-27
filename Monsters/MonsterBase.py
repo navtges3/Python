@@ -1,5 +1,10 @@
-class monster:
-    
+class monsterBase:
+
+    def __init__(self, name, health, damage):
+        self.name = name
+        self.health = health
+        self.damage = damage
+
     def isAlive(self):
         if self.health > 0:
             return True
