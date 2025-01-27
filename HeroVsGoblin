@@ -1,10 +1,34 @@
-from Hero import hero
+from Heroes.Hero import hero
 from Monsters.Goblin import goblin
 
-h1 = hero("Ragnar", 20, 5)
-g1 = goblin(22, 2)
+print("Welcome to Hero vs Goblin!")
+print("You are a hero, and you have to fight a goblin!")
+print("The battle is on!")
+print("What is your hero's name?")
+name = input()
 
-while h1.isAlive() and g1.isAlive():
-    h1.attack(g1)
-    if g1.isAlive():
-        g1.attack(h1)
+myHero = hero(name, 20, 5)
+myMonster = goblin()
+
+while myHero.isAlive() and myMonster.isAlive():
+    print("|=====================================|")
+    myHero.attack(myMonster)
+    if myMonster.isAlive():
+        myMonster.attack(myHero)
+        print("Do you wish to continue the battle? (y/n)")
+        stay = input()
+    else:
+        print("Do you wish to stay and fight another goblin? (y/n)")
+        stay = input()
+        if stay[0] == "y":
+            myMonster = goblin()
+    if stay[0] == "n":
+        break
+    
+if myHero.isAlive():
+    if myHero.monstersSlain == 1:
+        print(str(myHero) + "retired victorious from the battle after slaying " + str(myHero.monstersSlain) + " monster!")
+    else:
+        print(str(myHero) + " escaped before being defeated by " + str(myMonster) + "!")
+else:
+    print(str(myHero) + " was defeated in battle by " + str(myMonster) + " after slaying " + str(myHero.monstersSlain) + " monsters!")
