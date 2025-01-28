@@ -37,9 +37,12 @@ while myHero.isAlive():
                 myMonster = goblin()
     
 if myHero.isAlive():
-    if myHero.monstersSlain == 1:
+    if myHero.monstersSlain > 0:
         print(str(myHero) + "retired victorious from the battle after slaying " + str(myHero.monstersSlain) + " monster!")
     else:
         print(str(myHero) + " escaped before being defeated by " + str(myMonster) + "!")
 else:
     print(str(myHero) + " was defeated in battle by " + str(myMonster) + " after slaying " + str(myHero.monstersSlain) + " monsters!")
+
+print("The battle is over!")
+myHero.printStats()
