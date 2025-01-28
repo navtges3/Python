@@ -13,7 +13,6 @@ myHero = hero(name, 20, 5)
 myMonster = goblin()
 
 while myHero.isAlive():
-    print("|=====================================|")
     myHero.attack(myMonster)
     if myMonster.isAlive():
         myMonster.attack(myHero)
@@ -46,3 +45,5 @@ else:
 
 print("The battle is over!")
 myHero.printStats()
+print("Press Enter to exit.")
+input()
