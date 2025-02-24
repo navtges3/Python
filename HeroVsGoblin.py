@@ -16,19 +16,26 @@ while myHero.isAlive():
     myHero.attack(myMonster)
     if myMonster.isAlive():
         myMonster.attack(myHero)
-        print("Do you wish to continue the battle? (y/n)")
-        stay = input()
-        if stay[0] == "n":
+        if myHero.isAlive() == True:
+            print("Do you wish to continue the battle? (y/n)")
+            stay = input()
+            if len(stay) == 0:
+                stay = "y"
+            if stay[0] == "n":
+                break
+        else:
             break
     else:
         print("Do you wish to stay and fight another goblin? (y/n)")
         stay = input()
+        if len(stay) == 0:
+            stay = "y"
         if stay[0] == "n":
             break
         else:
             if myHero.monstersSlain % 5 == 0:
                 myHero.levelUp()
-            if myHero.monstersSlain > 10:
+            if myHero.monstersSlain > 10 and myHero.monstersSlain < 20:
                 myMonster = orc()
             elif myHero.monstersSlain > 20:
                 myMonster = ogre()
