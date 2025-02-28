@@ -1,12 +1,13 @@
-class heroBase:
+class hero:
     
     #Base class for all heroes
-    def __init__(self, name, health, damage):
+    def __init__(self, name, health, strength, weapon):
         self.name = name
         self.health = health
-        self.damage = damage
+        self.strength = strength
         self.monstersSlain = 0
         self.level = 1
+        self.weapon = weapon
 
     #Print the hero's name
     def __str__(self):
@@ -21,8 +22,9 @@ class heroBase:
     
     #Attack the target
     def attack(self, target):
-        print(self.name + " Attacks " + target.name + " dealing " + str(self.damage) + " damage.")
-        target.takeDamage(self.damage)
+        damage = self.strength + self.weapon.damage
+        print(self.name + " Attacks " + target.name + " dealing " + str(damage) + " damage.")
+        target.takeDamage(damage)
         if not target.isAlive():
             self.monstersSlain += 1
             print(self.name + " has slain " + str(target) + "!")
@@ -36,13 +38,14 @@ class heroBase:
     #Increase health and damage
     def levelUp(self):
         self.health += 5
-        self.damage += 2
+        self.strength += 2
         self.level += 1
         print(self.name + " has leveled up!")
         self.printStats()
     
     #Print the hero's stats
     def printStats(self):
-        print(self.name + " has " + str(self.health) + " health and " + str(self.damage) + " damage.")
+        print(self.name + " has " + str(self.health) + " health.")
         print(self.name + " is level " + str(self.level) + ".")
+        print(self.name + " is wielding a " + str(self.weapon) + ".")
         print(self.name + " has slain " + str(self.monstersSlain) + " monsters.")

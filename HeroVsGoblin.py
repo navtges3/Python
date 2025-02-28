@@ -1,8 +1,9 @@
-from Heroes.HeroBase import heroBase as hero
-from Monsters.Goblin import goblin
-from Monsters.Orc import orc
-from Monsters.Ogre import ogre
 from Util.IOHelper import getInput
+from Hero import hero
+from Items import items
+from Monster import goblin
+from Monster import orc
+from Monster import ogre
 
 #Welcome the user to the game and get the hero's name
 print("Welcome to Hero vs Goblin!")
@@ -12,7 +13,7 @@ print("What is your hero's name?")
 name = input()
 
 #Create the hero and monster
-myHero = hero(name, 20, 5)
+myHero = hero(name, 20, 2, items[0])
 myMonster = goblin()
 
 #Set up the promt for the first action
