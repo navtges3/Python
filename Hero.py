@@ -1,13 +1,15 @@
+from random import randint
+
 class hero:
     
     #Base class for all heroes
-    def __init__(self, name, health, strength, weapon):
+    def __init__(self, name, health, weapon, armor):
         self.name = name
         self.health = health
-        self.strength = strength
         self.monstersSlain = 0
         self.level = 1
         self.weapon = weapon
+        self.armor = armor
 
     #Print the hero's name
     def __str__(self):
@@ -20,17 +22,24 @@ class hero:
         else:
             return False
     
-    #Attack the target
-    def attack(self, target):
-        damage = self.strength + self.weapon.damage
-        print(self.name + " Attacks " + target.name + " dealing " + str(damage) + " damage.")
-        target.takeDamage(damage)
-        if not target.isAlive():
-            self.monstersSlain += 1
-            print(self.name + " has slain " + str(target) + "!")
-            
+    #Get the hero's damage        
+    def getDamage(self):
+        if self.weapon is None:
+            damage = self.level
+        elif self.level > randint(1, 10):
+            print("Critical Hit!")
+            damage = self.weapon.damage * 2
+        else:
+            damage = self.weapon.damage
+        return damage
+    
     #Take damage from an attacker
     def takeDamage(self, damage):
+        if self.armor is not None and self.armor.block > randint(1, 10):
+            print("Block!")
+            damage = damage / 2
+        else:
+            damage = damage
         self.health = self.health - damage
         print(self.name + " has " + str(self.health) + " health remaining.")
 
@@ -38,7 +47,6 @@ class hero:
     #Increase health and damage
     def levelUp(self):
         self.health += 5
-        self.strength += 2
         self.level += 1
         print(self.name + " has leveled up!")
         self.printStats()
@@ -47,5 +55,12 @@ class hero:
     def printStats(self):
         print(self.name + " has " + str(self.health) + " health.")
         print(self.name + " is level " + str(self.level) + ".")
-        print(self.name + " is wielding a " + str(self.weapon) + ".")
         print(self.name + " has slain " + str(self.monstersSlain) + " monsters.")
+        if self.weapon is not None:
+            print(self.name + " is wielding a " + str(self.weapon) + ".")
+        else:
+            print(self.name + " is not wielding any weapon.")
+        if self.armor is not None:
+            print(self.name + " is wearing " + str(self.armor) + ".")
+        else:
+            print(self.name + " is not wearing any armor.")

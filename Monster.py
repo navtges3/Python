@@ -19,13 +19,10 @@ class monster:
         else:
             return False
 
-    #Attack the target
-    def attack(self, target):
-        print(self.name + " Attacks " + target.name + " dealing " + str(self.damage) + " damage.")
-        target.takeDamage(self.damage)
-        if target.isAlive() != True:
-            print(self.name + " has slain " + str(target) + "!")
-
+    #Get the monster's damage
+    def getDamage(self):
+        return self.damage
+    
     #Take damage from an attacker
     def takeDamage(self, damage):
         self.health = self.health - damage
