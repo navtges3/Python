@@ -1,4 +1,5 @@
 from random import randint
+from items import weapon, armor
 
 class hero:
     
@@ -6,10 +7,10 @@ class hero:
     def __init__(self, name, health, weapon, armor):
         self.name = name
         self.health = health
-        self.monstersSlain = 0
         self.level = 1
         self.weapon = weapon
         self.armor = armor
+        self.experience = 0
 
     #Print the hero's name
     def __str__(self):
@@ -26,22 +27,27 @@ class hero:
     def getDamage(self):
         if self.weapon is None:
             damage = self.level
-        elif self.level > randint(1, 10):
-            print("Critical Hit!")
-            damage = self.weapon.damage * 2
         else:
-            damage = self.weapon.damage
+            damage = self.level + self.weapon.damage
         return damage
     
     #Take damage from an attacker
     def takeDamage(self, damage):
-        if self.armor is not None and self.armor.block > randint(1, 10):
-            print("Block!")
-            damage = damage / 2
-        else:
-            damage = damage
         self.health = self.health - damage
         print(self.name + " has " + str(self.health) + " health remaining.")
+
+    #Get the hero's block
+    def getBlock(self):
+        if self.armor is None:
+            return 0
+        else:
+            return self.armor.block
+
+    def gainExperience(self, experience):
+        self.experience += experience
+        if self.experience >= (10 * self.level):
+            self.experience = 0
+            self.levelUp()
 
     #Level up the hero
     #Increase health and damage
@@ -53,14 +59,51 @@ class hero:
     
     #Print the hero's stats
     def printStats(self):
+        print()
         print(self.name + " has " + str(self.health) + " health.")
-        print(self.name + " is level " + str(self.level) + ".")
-        print(self.name + " has slain " + str(self.monstersSlain) + " monsters.")
+        print(self.name + " is level " + str(self.level) + " with " + str(self.experience) + " experience.")
+
         if self.weapon is not None:
             print(self.name + " is wielding a " + str(self.weapon) + ".")
         else:
             print(self.name + " is not wielding any weapon.")
+
         if self.armor is not None:
             print(self.name + " is wearing " + str(self.armor) + ".")
         else:
             print(self.name + " is not wearing any armor.")
+        print()
+
+class rogue(hero):
+    def __init__(self, name):
+        health = randint(5, 10)
+        dagger = weapon("Dagger", "A sharp dagger", 2)
+        leather = armor("Leather", "A suit of leather armor", 1)
+        super().__init__(name, health, dagger, leather)
+
+class fighter(hero):
+    def __init__(self, name):
+        health = randint(10, 15)
+        sword = weapon("Sword", "A sharp sword", 5)
+        chainmail = armor("Chainmail", "A suit of chainmail armor", 3)
+        super().__init__(name, health, sword, chainmail)
+
+def makeHero() -> hero:
+    theHero = None
+    while theHero is None:
+        print()
+        print("1. Rogue")
+        print("2. Fighter")
+        print()
+        choice = input("What type of hero would you like to be? ")
+        if choice == "1":
+            name = input("What is your name? ")
+            theHero = rogue(name)
+        elif choice == "2":
+            name = input("What is your name? ")
+            theHero = fighter(name)
+        else:
+            print("Invalid choice!")
+            theHero = makeHero()
+    theHero.printStats()
+    return theHero 

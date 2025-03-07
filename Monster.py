@@ -7,6 +7,7 @@ class monster:
         self.name = name
         self.health = health
         self.damage = damage
+        self.experience = (health + damage) // 2
         print("A new monster appears!")
         self.printStats()
         
@@ -32,7 +33,7 @@ class monster:
 
     #Print the monster's stats
     def printStats(self):
-        print(self.name + " has " + str(self.health) + " health and " + str(self.damage) + " damage.")
+        print(self.name + " has " + str(self.health) + " health and " + str(self.damage) + " damage and " + str(self.experience) + " experience.")
 
 class goblin(monster):
     healthLow = 5
@@ -49,6 +50,7 @@ class orc(monster):
     healthHigh = 17
     damageLow = 2
     damageHigh = 5
+    experience = 2
     def __init__(self):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
@@ -59,7 +61,16 @@ class ogre(monster):
     healthHigh = 25
     damageLow = 4
     damageHigh = 8
+    experience = 3
     def __init__(self):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
         super().__init__("Ogre", health, damage)
+
+def getMonster(level:int) -> monster:
+    if level < 3:
+        return goblin()
+    elif level < 6:
+        return orc()
+    else:
+        return ogre()

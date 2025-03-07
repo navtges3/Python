@@ -26,4 +26,5 @@ class armor(item):
         print(self.name + ": " + self.description + " Block: " + str(self.block))
 
 weapons = [weapon("Sword", "A sharp sword", 5), weapon("Axe", "A sharp axe", 7), weapon("Broadsword", "A sharp broadsword", 9)]
+
 armors = [armor("Shield", "A sturdy shield", 2), armor("Chainmail", "A suit of chainmail", 4), armor("Plate", "A suit of plate armor", 6)]
