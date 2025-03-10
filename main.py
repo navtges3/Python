@@ -8,14 +8,15 @@ def welcome() -> None:
 def battle(myHero, myMonster) -> None:
     while myMonster.isAlive() and myHero.isAlive():
         print()
-        print("1. Fight")
-        print("2. Defend")
-        print("3. Run")
+        print("1. Use your " + str(myHero.weapon))
+        print("2. Defend with your " + str(myHero.armor))
+        print("3. Use your " + str(myHero.special))
+        print("4. Run away")
         print()
         choice = input("What would you like to do? ")
         if choice == "1":
             #Hero attacks first
-            myMonster.takeDamage(myHero.getDamage())
+            myMonster.takeDamage(myHero.weapon.damage)
             #If the monster is still alive, it attacks back
             if myMonster.isAlive():
                 myHero.takeDamage(myMonster.getDamage())
@@ -26,6 +27,11 @@ def battle(myHero, myMonster) -> None:
                 damage = 0
             myHero.takeDamage(damage)
         elif choice == "3":
+            print("You use your special ability!")
+            myMonster.takeDamage(myHero.getSpecial())
+            if myMonster.isAlive():
+                myHero.takeDamage(myMonster.getDamage())
+        elif choice == "4":
             print("You run away!")
             break
         else:

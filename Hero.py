@@ -4,12 +4,13 @@ from items import weapon, armor
 class hero:
     
     #Base class for all heroes
-    def __init__(self, name, health, weapon, armor):
+    def __init__(self, name, health, weapon, armor, special="Special Attack"):
         self.name = name
         self.health = health
         self.level = 1
         self.weapon = weapon
         self.armor = armor
+        self.special = special
         self.experience = 0
 
     #Print the hero's name
@@ -24,11 +25,10 @@ class hero:
             return False
     
     #Get the hero's damage        
-    def getDamage(self):
-        if self.weapon is None:
-            damage = self.level
-        else:
-            damage = self.level + self.weapon.damage
+    def getSpecial(self):
+        print(self.name + " makes a mighty swing!")
+        damage = self.level + self.weapon.damage
+        print(self.name + " does " + str(damage) + " damage!")
         return damage
     
     #Take damage from an attacker
@@ -79,14 +79,34 @@ class rogue(hero):
         health = randint(5, 10)
         dagger = weapon("Dagger", "A sharp dagger", 2)
         leather = armor("Leather", "A suit of leather armor", 1)
-        super().__init__(name, health, dagger, leather)
+        special = "Backstab"
+        super().__init__(name, health, dagger, leather, special)
+
+    def getSpecial(self):
+        print(self.name + " strikes from the shadows!")
+        if self.level == 1:
+            damage = randint(self.level, (self.level + 1))
+        else:
+            damage = randint(self.level, (self.level * 2))
+        print(self.name + " does " + str(damage) + " damage!")
+        return damage
 
 class fighter(hero):
     def __init__(self, name):
         health = randint(10, 15)
         sword = weapon("Sword", "A sharp sword", 5)
         chainmail = armor("Chainmail", "A suit of chainmail armor", 3)
-        super().__init__(name, health, sword, chainmail)
+        special = "Power Attack"
+        super().__init__(name, health, sword, chainmail, special)
+    
+    def getSpecial(self):
+        print(self.name + " uses all of his strength!")
+        if self.level == 1:
+            damage =  randint(self.level, (self.level + 1))
+        else:
+            damage = randint(self.level, (self.level * 2))
+        print(self.name + " does " + str(damage) + " damage!")
+        return damage
 
 def makeHero() -> hero:
     theHero = None
