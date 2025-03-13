@@ -17,6 +17,28 @@ class classAction:
         print(myHero.name + " does " + str(damage) + " damage!")
         return damage
 
+class inventory:
+    def __init__(self):
+        self.items = []
+    
+    def addItem(self, item):
+        self.items.append(item)
+    
+    def removeItem(self, item):
+        if item in self.items:
+            self.items.remove(item)
+            print(f"{item} removed from inventory.")
+        else:
+            print(f"{item} not found in inventory.")
+
+    def printInventory(self):
+        if self.items:
+            print("Inventory:")
+            for item in self.items:
+                print(item)
+        else:
+            print("Inventory is empty.")
+
 class hero:
     #Mighty Swing
     #Default attack when the hero has no class
