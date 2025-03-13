@@ -65,11 +65,11 @@ def main() -> None:
                 print("You defeated the " + str(myMonster) + "!")
                 myHero.gainExperience(myMonster.experience)
         else:
-            print("You were defeated by the " + str(myMonster) + "!")
+            print(str(myHero) + " was defeated by the " + str(myMonster) + "!")
         
         #Ask if the hero wants to continue
-        if retire():
-            continueFight = False
+        if myHero.isAlive():
+            continueFight = not retire()
     
     print("Game Over!")
     myHero.printStats()
