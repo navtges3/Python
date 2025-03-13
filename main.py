@@ -1,5 +1,5 @@
 from hero import hero, makeHero
-from monster import monster, goblin, orc, ogre, getMonster
+from monster import Monster, Goblin, Orc, Ogre, getMonster
 import items
 
 def welcome() -> None:

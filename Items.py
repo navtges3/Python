@@ -1,4 +1,4 @@
-class item:
+class Item:
     def __init__(self, name, description):
         self.name = name
         self.description = description
@@ -9,7 +9,7 @@ class item:
     def printStats(self):
         print(self.name + ": " + self.description)
 
-class weapon(item):
+class Weapon(Item):
     def __init__(self, name, description, damage):
         self.damage = damage
         super().__init__(name, description)
@@ -17,7 +17,7 @@ class weapon(item):
     def printStats(self):
         print(self.name + ": " + self.description + " Damage: " + str(self.damage))
     
-class armor(item):
+class Armor(Item):
     def __init__(self, name, description, block):
         self.block = block
         super().__init__(name, description)
@@ -25,6 +25,6 @@ class armor(item):
     def printStats(self):
         print(self.name + ": " + self.description + " Block: " + str(self.block))
 
-weapons = [weapon("Sword", "A sharp sword", 5), weapon("Axe", "A sharp axe", 7), weapon("Broadsword", "A sharp broadsword", 9)]
+weapons = [Weapon("Sword", "A sharp sword", 5), Weapon("Axe", "A sharp axe", 7), Weapon("Broadsword", "A sharp broadsword", 9)]
 
-armors = [armor("Shield", "A sturdy shield", 2), armor("Chainmail", "A suit of chainmail", 4), armor("Plate", "A suit of plate armor", 6)]
+armors = [Armor("Shield", "A sturdy shield", 2), Armor("Chainmail", "A suit of chainmail", 4), Armor("Plate", "A suit of plate armor", 6)]

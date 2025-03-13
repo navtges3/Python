@@ -1,7 +1,7 @@
 from random import randint
-from items import item, weapon, armor
+from items import Item, Weapon, Armor
 
-class classAction:
+class ClassAction:
     def __init__(self, name:str, description:str, damage_func):
         self.name = name
         self.description = description
@@ -17,7 +17,7 @@ class classAction:
         print(myHero.name + " does " + str(damage) + " damage!")
         return damage
 
-class inventory:
+class Inventory:
     def __init__(self):
         self.items = []
     
@@ -39,14 +39,14 @@ class inventory:
         else:
             print("Inventory is empty.")
 
-class hero:
+class Hero:
     #Mighty Swing
     #Default attack when the hero has no class
     def mightySwing(myHero):
         return myHero.level + myHero.equipment.damage
     
     #Base class for all heroes
-    def __init__(self, name:str="Hero", health:int=10, equipment:item=None, protection:item=None, special:classAction=classAction("Mighty Swing", "The hero a powerful swing!", mightySwing)):
+    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=ClassAction("Mighty Swing", "The hero a powerful swing!", mightySwing)):
         self.name = name
         self.health = health
         self.level = 1
@@ -113,7 +113,7 @@ class hero:
             print(self.name + " is not wearing any protection.")
         print()
 
-class rogue(hero):
+class Rogue(Hero):
     #Rouge special ability
     #Backstab
     def backstab(myHero):
@@ -125,12 +125,12 @@ class rogue(hero):
     
     def __init__(self, name):
         health = randint(5, 10)
-        dagger = weapon("Dagger", "A sharp dagger", 2)
-        leather = armor("Leather", "A suit of leather armor", 1)
-        special = classAction("Backstab", name + " strike from the shadows", rogue.backstab)
+        dagger = Weapon("Dagger", "A sharp dagger", 2)
+        leather = Armor("Leather", "A suit of leather armor", 1)
+        special = ClassAction("Backstab", name + " strike from the shadows", Rogue.backstab)
         super().__init__(name, health, dagger, leather, special)
 
-class fighter(hero):
+class Fighter(Hero):
     #Fighter special abilility
     #Power Attack
     def powerAttack(myHero):
@@ -139,12 +139,12 @@ class fighter(hero):
 
     def __init__(self, name):
         health = randint(10, 15)
-        sword = weapon("Sword", "A sharp sword", 5)
-        chainmail = armor("Chainmail", "A suit of chainmail armor", 3)
-        special = classAction("Power Attack", name + " uses all of his strength!", fighter.powerAttack)
+        sword = Weapon("Sword", "A sharp sword", 5)
+        chainmail = Armor("Chainmail", "A suit of chainmail armor", 3)
+        special = ClassAction("Power Attack", name + " uses all of his strength!", Fighter.powerAttack)
         super().__init__(name, health, sword, chainmail, special)
 
-def makeHero() -> hero:
+def makeHero() -> Hero:
     theHero = None
     while theHero is None:
         print()
@@ -154,10 +154,10 @@ def makeHero() -> hero:
         choice = input("What type of hero would you like to be? ")
         if choice == "1":
             name = input("What is your name? ")
-            theHero = rogue(name)
+            theHero = Rogue(name)
         elif choice == "2":
             name = input("What is your name? ")
-            theHero = fighter(name)
+            theHero = Fighter(name)
         else:
             print("Invalid choice!")
             theHero = makeHero()
