@@ -1,4 +1,4 @@
-from hero import hero, makeHero
+from hero import Hero, makeHero
 from monster import Monster, Goblin, Orc, Ogre, getMonster
 import items
 

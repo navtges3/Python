@@ -1,31 +1,33 @@
+from items import Item
 import random
 
 class Monster:
 
     #Base class for all monsters
-    def __init__(self, name, health, damage):
+    def __init__(self, name:str, health:int, damage:int, loot:Item=None):
         self.name = name
         self.health = health
         self.damage = damage
         self.experience = (health + damage) // 2
+        self.loot = loot
         print("A new monster appears!")
         self.printStats()
         
     def __str__(self):
         return self.name
     
-    def isAlive(self):
+    def isAlive(self) -> bool:
         if self.health > 0:
             return True
         else:
             return False
 
     #Get the monster's damage
-    def getDamage(self):
+    def getDamage(self) -> int:
         return self.damage
     
     #Take damage from an attacker
-    def takeDamage(self, damage):
+    def takeDamage(self, damage:int):
         self.health = self.health - damage
         if self.health < 0:
             self.health = 0

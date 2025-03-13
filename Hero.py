@@ -19,22 +19,22 @@ class ClassAction:
 
 class Inventory:
     def __init__(self):
-        self.items = []
+        self.stuff = []
     
-    def addItem(self, item):
-        self.items.append(item)
+    def addItem(self, item:Item):
+        self.stuff.append(item)
     
-    def removeItem(self, item):
-        if item in self.items:
-            self.items.remove(item)
+    def removeItem(self, item:Item):
+        if item in self.stuff:
+            self.stuff.remove(item)
             print(f"{item} removed from inventory.")
         else:
             print(f"{item} not found in inventory.")
 
     def printInventory(self):
-        if self.items:
+        if self.stuff:
             print("Inventory:")
-            for item in self.items:
+            for item in self.stuff:
                 print(item)
         else:
             print("Inventory is empty.")
@@ -54,24 +54,22 @@ class Hero:
         self.protection = protection
         self.special = special
         self.experience = 0
+        self.inventory = Inventory()
 
     #Print the hero's name
     def __str__(self):
         return self.name
     
     #Check if the hero is alive
-    def isAlive(self):
-        if self.health > 0:
-            return True
-        else:
-            return False
+    def isAlive(self) -> bool:
+        return self.health > 0
     
     #Get the damage of the hero's special ability
     def useSpecial(self):
         return self.special.useAction(self)
     
     #Take damage from an attacker
-    def takeDamage(self, damage):
+    def takeDamage(self, damage:int):
         self.health = self.health - damage
         print(self.name + " has " + str(self.health) + " health remaining.")
 
@@ -82,7 +80,7 @@ class Hero:
         else:
             return self.protection.block
 
-    def gainExperience(self, experience):
+    def gainExperience(self, experience:int):
         self.experience += experience
         if self.experience >= (10 * self.level):
             self.experience = 0
@@ -116,14 +114,14 @@ class Hero:
 class Rogue(Hero):
     #Rouge special ability
     #Backstab
-    def backstab(myHero):
+    def backstab(myHero:Hero):
         if myHero.level == 1:
             damage = randint(myHero.level, (myHero.level + 1))
         else:
             damage = randint(myHero.level, (myHero.level * myHero.level))
         return damage
     
-    def __init__(self, name):
+    def __init__(self, name:str):
         health = randint(5, 10)
         dagger = Weapon("Dagger", "A sharp dagger", 2)
         leather = Armor("Leather", "A suit of leather armor", 1)
@@ -133,11 +131,11 @@ class Rogue(Hero):
 class Fighter(Hero):
     #Fighter special abilility
     #Power Attack
-    def powerAttack(myHero):
+    def powerAttack(myHero:Hero):
         damage = myHero.equipment.damage + randint(myHero.level, (myHero.level * 2))
         return damage
 
-    def __init__(self, name):
+    def __init__(self, name:str):
         health = randint(10, 15)
         sword = Weapon("Sword", "A sharp sword", 5)
         chainmail = Armor("Chainmail", "A suit of chainmail armor", 3)
