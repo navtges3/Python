@@ -1,7 +1,7 @@
 from hero import Hero, makeHero
 from monster import Monster, Goblin, Orc, Ogre, getMonster
 from items import equipment, protection
-from actions import ClassAction
+from actions import classActionDictionary
 import json
 
 def save_game(hero):
@@ -26,7 +26,7 @@ def load_game():
                 health=data["health"],
                 equipment=equipment[data["equipment"]],
                 protection=protection[data["protection"]],
-                special=ClassAction(data["special"])
+                special=classActionDictionary[data["special"]]
             )
             hero.level = data["level"]
             hero.experience = data["experience"]

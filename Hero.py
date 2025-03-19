@@ -1,10 +1,10 @@
 from random import randint
-from items import Item, Weapon, Armor
-from actions import ClassAction
+from items import Item, equipmentDictionary, protectionDictionary
+from actions import ClassAction, classActionDictionary
 
 class Hero:
     #Base class for all heroes
-    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=ClassAction("Mighty Swing")):
+    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=classActionDictionary["Mighty Swing"]):
         self.name = name
         self.health = health
         self.equipment = equipment
@@ -84,17 +84,17 @@ class Hero:
 class Rogue(Hero):
     def __init__(self, name:str):
         health = randint(5, 10)
-        dagger = Weapon("Dagger", "A sharp dagger", 2)
-        leather = Armor("Leather", "A suit of leather armor", 1)
-        special = ClassAction("Backstab")
+        dagger = equipmentDictionary["Dagger"]
+        leather = protectionDictionary["Leather"]
+        special = classActionDictionary["Backstab"]
         super().__init__(name, health, dagger, leather, special)
 
 class Fighter(Hero):
     def __init__(self, name:str):
         health = randint(10, 15)
-        sword = Weapon("Sword", "A sharp sword", 5)
-        chainmail = Armor("Chainmail", "A suit of chainmail armor", 3)
-        special = ClassAction("Power Attack")
+        sword = equipmentDictionary["Sword"]
+        chainmail = protectionDictionary["Chainmail"]
+        special = classActionDictionary["Power Attack"]
         super().__init__(name, health, sword, chainmail, special)
 
 def makeHero() -> Hero:

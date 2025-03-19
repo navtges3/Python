@@ -14,24 +14,12 @@ def backstab(myHero) -> int:
         damage = randint(myHero.level, (myHero.level * myHero.level))
     return damage
 
-damage_functions = {
-    "Mighty Swing": mightySwing,
-    "Power Attack": powerAttack,
-    "Backstab": backstab
-}
-
-descriptions = {
-    "Mighty Swing": "A powerful swing!",
-    "Power Attack": "A strong attack!",
-    "Backstab": "A sneaky attack!"
-}
-
 class ClassAction:
     
-    def __init__(self, name:str):
+    def __init__(self, name:str, description:str, damage_func):
         self.name = name
-        self.description = descriptions[name]
-        self.damage_func = damage_functions[name]
+        self.description = description
+        self.damage_func = damage_func
     
     def __str__(self):
         return self.name
@@ -42,3 +30,7 @@ class ClassAction:
         damage = self.damage_func(myHero)
         print(myHero.name + " does " + str(damage) + " damage!")
         return damage
+    
+classActionDictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerful swing!", mightySwing),
+                        "Power Attack": ClassAction("Power Attack", "A strong attack!", powerAttack),
+                        "Backstab": ClassAction("Backstab", "A sneaky attack!", backstab)}
