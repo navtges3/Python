@@ -25,6 +25,10 @@ class Armor(Item):
     def printStats(self):
         print(self.name + ": " + self.description + " Block: " + str(self.block))
 
-weapons = [Weapon("Sword", "A sharp sword", 5), Weapon("Axe", "A sharp axe", 7), Weapon("Broadsword", "A sharp broadsword", 9)]
+equipment = {"Sword": Weapon("Sword", "A sharp sword", 5), 
+           "Axe": Weapon("Axe", "A sharp axe", 7), 
+           "Broadsword": Weapon("Broadsword", "A sharp broadsword", 9)}
 
-armors = [Armor("Shield", "A sturdy shield", 2), Armor("Chainmail", "A suit of chainmail", 4), Armor("Plate", "A suit of plate armor", 6)]
+protection = {"Sheild": Armor("Shield", "A sturdy shield", 2),
+          "Chainmail": Armor("Chainmail", "A suit of chainmail", 4),
+           "Plate": Armor("Plate", "A suit of plate armor", 6)}

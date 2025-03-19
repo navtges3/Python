@@ -2,28 +2,6 @@ from random import randint
 from items import Item, Weapon, Armor
 from actions import ClassAction
 
-class Inventory:
-    def __init__(self):
-        self.stuff = []
-    
-    def addItem(self, item:Item):
-        self.stuff.append(item)
-    
-    def removeItem(self, item:Item):
-        if item in self.stuff:
-            self.stuff.remove(item)
-            print(f"{item} removed from inventory.")
-        else:
-            print(f"{item} not found in inventory.")
-
-    def printInventory(self):
-        if self.stuff:
-            print("Inventory:")
-            for item in self.stuff:
-                print(item)
-        else:
-            print("Inventory is empty.")
-
 class Hero:
     #Base class for all heroes
     def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=ClassAction("Mighty Swing")):
@@ -34,11 +12,22 @@ class Hero:
         self.special = special
         self.level = 1
         self.experience = 0
-        self.inventory = Inventory()
 
     #Print the hero's name
     def __str__(self):
         return self.name
+    
+    def to_dict(self):
+        """Convert the hero object to a dictionary for saving."""
+        return {
+            "name": self.name,
+            "health": self.health,
+            "level": self.level,
+            "experience": self.experience,
+            "special": str(self.special),  # Convert special to a string
+            "equipment": str(self.equipment),  # Convert equipment to a string
+            "protection": str(self.protection),  # Convert protection to a string
+        }
     
     #Check if the hero is alive
     def isAlive(self) -> bool:
@@ -73,6 +62,7 @@ class Hero:
         self.level += 1
         print(self.name + " has leveled up!")
         self.printStats()
+        print()
     
     #Print the hero's stats
     def printStats(self):

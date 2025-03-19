@@ -1,6 +1,44 @@
 from hero import Hero, makeHero
 from monster import Monster, Goblin, Orc, Ogre, getMonster
+from items import equipment, protection
+from actions import ClassAction
+import json
 
+def save_game(hero):
+    """Save the hero's progress to a file."""
+    try:
+        with open("savefile.json", "w") as savefile:
+            # Convert hero object to a dictionary and save it as JSON
+            json.dump(hero.to_dict(), savefile, indent=4)
+        print("Game saved successfully!")
+    except Exception as e:
+        print(f"Error saving game: {e}")
+
+def load_game():
+    """Load the hero's progress from a file."""
+    try:
+        with open("savefile.json", "r") as savefile:
+            # Load the hero data from the JSON file
+            data = json.load(savefile)
+            # Recreate the hero object from the saved data
+            hero = Hero(
+                name=data["name"],
+                health=data["health"],
+                equipment=equipment[data["equipment"]],
+                protection=protection[data["protection"]],
+                special=ClassAction(data["special"])
+            )
+            hero.level = data["level"]
+            hero.experience = data["experience"]
+            print("Game loaded successfully!")
+            return hero
+    except FileNotFoundError:
+        print("No save file found. Starting a new game.")
+        return None
+    except Exception as e:
+        print(f"Error loading game: {e}")
+        return None
+    
 def welcome() -> None:
     print("Welcome to Hero vs Goblin!")
 
@@ -49,7 +87,14 @@ def retire() -> bool:
 
 def main() -> None:
     welcome()
-    myHero = makeHero()
+    print("1. Start a new game")
+    print("2. Load a saved game")
+    choice = input("What would you like to do? ")
+    if choice == "2":
+        myHero = load_game()
+    else:
+        myHero = makeHero()
+
     continueFight = True
     while myHero.isAlive() and continueFight:
         #Create a random monster
@@ -70,9 +115,12 @@ def main() -> None:
         if myHero.isAlive():
             continueFight = not retire()
     
-    print("Game Over!")
     myHero.printStats()
-    input("Press enter to exit")
+    print("1. Save and exit")
+    print("2. Exit without saving")
+    choice = input("What would you like to do? ")
+    if choice == "1":
+        save_game(myHero)
 
 if __name__ == "__main__":
     main()
