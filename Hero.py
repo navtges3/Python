@@ -1,21 +1,6 @@
 from random import randint
 from items import Item, Weapon, Armor
-
-class ClassAction:
-    def __init__(self, name:str, description:str, damage_func):
-        self.name = name
-        self.description = description
-        self.damage_func = damage_func
-    
-    def __str__(self):
-        return self.name
-            
-    def useAction(self, myHero):
-        print(myHero.name + " uses " + self.name + "!")
-        print(self.description)
-        damage = self.damage_func(myHero)
-        print(myHero.name + " does " + str(damage) + " damage!")
-        return damage
+from actions import ClassAction
 
 class Inventory:
     def __init__(self):
@@ -40,19 +25,14 @@ class Inventory:
             print("Inventory is empty.")
 
 class Hero:
-    #Mighty Swing
-    #Default attack when the hero has no class
-    def mightySwing(myHero):
-        return myHero.level + myHero.equipment.damage
-    
     #Base class for all heroes
-    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=ClassAction("Mighty Swing", "The hero a powerful swing!", mightySwing)):
+    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=ClassAction("Mighty Swing")):
         self.name = name
         self.health = health
-        self.level = 1
         self.equipment = equipment
         self.protection = protection
         self.special = special
+        self.level = 1
         self.experience = 0
         self.inventory = Inventory()
 
@@ -112,34 +92,19 @@ class Hero:
         print()
 
 class Rogue(Hero):
-    #Rouge special ability
-    #Backstab
-    def backstab(myHero:Hero):
-        if myHero.level == 1:
-            damage = randint(myHero.level, (myHero.level + 1))
-        else:
-            damage = randint(myHero.level, (myHero.level * myHero.level))
-        return damage
-    
     def __init__(self, name:str):
         health = randint(5, 10)
         dagger = Weapon("Dagger", "A sharp dagger", 2)
         leather = Armor("Leather", "A suit of leather armor", 1)
-        special = ClassAction("Backstab", name + " strike from the shadows", Rogue.backstab)
+        special = ClassAction("Backstab")
         super().__init__(name, health, dagger, leather, special)
 
 class Fighter(Hero):
-    #Fighter special abilility
-    #Power Attack
-    def powerAttack(myHero:Hero):
-        damage = myHero.equipment.damage + randint(myHero.level, (myHero.level * 2))
-        return damage
-
     def __init__(self, name:str):
         health = randint(10, 15)
         sword = Weapon("Sword", "A sharp sword", 5)
         chainmail = Armor("Chainmail", "A suit of chainmail armor", 3)
-        special = ClassAction("Power Attack", name + " uses all of his strength!", Fighter.powerAttack)
+        special = ClassAction("Power Attack")
         super().__init__(name, health, sword, chainmail, special)
 
 def makeHero() -> Hero:
@@ -158,6 +123,6 @@ def makeHero() -> Hero:
             theHero = Fighter(name)
         else:
             print("Invalid choice!")
-            theHero = makeHero()
+            theHero = None
     theHero.printStats()
     return theHero 

@@ -1,6 +1,5 @@
 from hero import Hero, makeHero
 from monster import Monster, Goblin, Orc, Ogre, getMonster
-import items
 
 def welcome() -> None:
     print("Welcome to Hero vs Goblin!")
@@ -73,7 +72,7 @@ def main() -> None:
     
     print("Game Over!")
     myHero.printStats()
-    input("Press Enter to close the program.")
+    input("Press enter to exit")
 
 if __name__ == "__main__":
     main()
