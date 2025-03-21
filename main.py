@@ -1,6 +1,6 @@
 from hero import Hero, makeHero
 from monster import Monster, Goblin, Orc, Ogre, getMonster
-from items import equipment, protection
+from items import equipmentDictionary, protectionDictionary
 from actions import classActionDictionary
 import json
 
@@ -24,8 +24,8 @@ def load_game():
             hero = Hero(
                 name=data["name"],
                 health=data["health"],
-                equipment=equipment[data["equipment"]],
-                protection=protection[data["protection"]],
+                equipment=equipmentDictionary[data["equipment"]],
+                protection=protectionDictionary[data["protection"]],
                 special=classActionDictionary[data["special"]]
             )
             hero.level = data["level"]
