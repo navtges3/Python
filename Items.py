@@ -25,15 +25,15 @@ class Armor(Item):
     def printStats(self):
         print(self.name + ": " + self.description + " Block: " + str(self.block))
 
-equipmentDictionary = {"Dagger": Weapon("Dagger", "A sharp dagger", 3),
-            "Sword": Weapon("Sword", "A sharp sword", 5), 
-           "Axe": Weapon("Axe", "A sharp axe", 7), 
-           "Longsword": Weapon("Longsword", "A sharp Longsword", 9)}
+equipmentDictionary = { "Dagger": Weapon("Dagger", "A sharp dagger", 3),
+                        "Sword": Weapon("Sword", "A sharp sword", 5), 
+                        "Axe": Weapon("Axe", "A sharp axe", 7), 
+                        "Longsword": Weapon("Longsword", "A sharp Longsword", 9)}
 
-protectionDictionary = {"Leather": Armor("Leather", "A sturdy leather suit", 2),
-          "Chainmail": Armor("Chainmail", "A suit of chainmail", 4),
-           "Plate": Armor("Plate", "A suit of plate armor", 6)}
+protectionDictionary = {    "Leather": Armor("Leather", "A sturdy leather suit", 2),
+                            "Chainmail": Armor("Chainmail", "A suit of chainmail", 4),
+                            "Plate": Armor("Plate", "A suit of plate armor", 6)}
 
-lootDictionary = {"Gold": Item("Gold", "A small pile of gold"),
-         "Gem": Item("Gem", "A shiny gemstone"),
-          "Potion": Item("Potion", "A healing potion")}
+lootDictionary = {  "Gold": Item("Gold", "A small pile of gold"),
+                    "Gem": Item("Gem", "A shiny gemstone"),
+                    "Potion": Item("Potion", "A healing potion")}
