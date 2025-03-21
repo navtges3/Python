@@ -33,3 +33,7 @@ equipmentDictionary = {"Dagger": Weapon("Dagger", "A sharp dagger", 3),
 protectionDictionary = {"Leather": Armor("Leather", "A sturdy leather suit", 2),
           "Chainmail": Armor("Chainmail", "A suit of chainmail", 4),
            "Plate": Armor("Plate", "A suit of plate armor", 6)}
+
+lootDictionary = {"Gold": Item("Gold", "A small pile of gold"),
+         "Gem": Item("Gem", "A shiny gemstone"),
+          "Potion": Item("Potion", "A healing potion")}

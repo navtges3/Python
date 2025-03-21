@@ -1,6 +1,6 @@
 from hero import Hero, makeHero
 from monster import Monster, Goblin, Orc, Ogre, getMonster
-from items import equipmentDictionary, protectionDictionary
+from items import equipmentDictionary, protectionDictionary, lootDictionary
 from actions import classActionDictionary
 import json
 
@@ -30,6 +30,9 @@ def load_game():
             )
             hero.level = data["level"]
             hero.experience = data["experience"]
+            # Load inventory items
+            for item_name in data["inventory"]:
+                hero.inventory.add_item(lootDictionary[item_name])
             print("Game loaded successfully!")
             return hero
     except FileNotFoundError:
@@ -45,24 +48,25 @@ def welcome() -> None:
 def battle(myHero, myMonster) -> None:
     while myMonster.isAlive() and myHero.isAlive():
         print()
-        print("1. Use your " + str(myHero.equipment))
-        print("2. Defend with your " + str(myHero.protection))
+        print("1. Defend with your " + str(myHero.protection))
+        print("2. Use your " + str(myHero.equipment))
         print("3. Use your " + str(myHero.special))
         print("4. Run away")
+        print("5. View Inventory")
         print()
         choice = input("What would you like to do? ")
         if choice == "1":
-            #Hero attacks first
-            myMonster.takeDamage(myHero.equipment.damage)
-            #If the monster is still alive, it attacks back
-            if myMonster.isAlive():
-                myHero.takeDamage(myMonster.getDamage())
-        elif choice == "2":
             print("You defend!")
             damage = myMonster.getDamage() - myHero.getBlock()
             if damage < 0:
                 damage = 0
             myHero.takeDamage(damage)
+        elif choice == "2":
+            #Hero attacks first
+            myMonster.takeDamage(myHero.equipment.damage)
+            #If the monster is still alive, it attacks back
+            if myMonster.isAlive():
+                myHero.takeDamage(myMonster.getDamage())
         elif choice == "3":
             print("You use your special ability!")
             myMonster.takeDamage(myHero.useSpecial())
@@ -71,6 +75,8 @@ def battle(myHero, myMonster) -> None:
         elif choice == "4":
             print("You run away!")
             break
+        elif choice == "5":
+            myHero.inventory.show_inventory()
         else:
             print("Invalid choice!")
 
@@ -108,6 +114,11 @@ def main() -> None:
             else:
                 print("You defeated the " + str(myMonster) + "!")
                 myHero.gainExperience(myMonster.experience)
+                print(f"You defeated the {myMonster.name}!")
+                loot = myMonster.drop_loot()  # Assume monsters have a drop_loot method
+                if loot:
+                    print(f"You found {loot}!")
+                    myHero.inventory.add_item(loot)
         else:
             print(str(myHero) + " was defeated by the " + str(myMonster) + "!")
         

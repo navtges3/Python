@@ -1,6 +1,7 @@
 from random import randint
 from items import Item, equipmentDictionary, protectionDictionary
 from actions import ClassAction, classActionDictionary
+from inventory import Inventory
 
 class Hero:
     #Base class for all heroes
@@ -12,6 +13,7 @@ class Hero:
         self.special = special
         self.level = 1
         self.experience = 0
+        self.inventory = Inventory()
 
     #Print the hero's name
     def __str__(self):
@@ -27,6 +29,7 @@ class Hero:
             "special": str(self.special),  # Convert special to a string
             "equipment": str(self.equipment),  # Convert equipment to a string
             "protection": str(self.protection),  # Convert protection to a string
+            "inventory": [str(item) for item in self.inventory.items],  # Save inventory items as strings
         }
     
     #Check if the hero is alive

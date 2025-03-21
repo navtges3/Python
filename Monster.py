@@ -1,4 +1,4 @@
-from items import Item
+from items import Item, lootDictionary
 import random
 
 class Monster:
@@ -33,6 +33,9 @@ class Monster:
             self.health = 0
         print(self.name + " has " + str(self.health) + " health remaining.")
 
+    def drop_loot(self) -> Item:
+        return self.loot
+
     #Print the monster's stats
     def printStats(self):
         print(self.name + " has " + str(self.health) + " health and " + str(self.damage) + " damage and " + str(self.experience) + " experience.")
@@ -45,7 +48,8 @@ class Goblin(Monster):
     def __init__(self):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
-        super().__init__("Goblin", health, damage)
+        loot = lootDictionary["Gold"]
+        super().__init__("Goblin", health, damage, loot)
 
 class Orc(Monster):
     healthLow = 10
@@ -56,7 +60,8 @@ class Orc(Monster):
     def __init__(self):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
-        super().__init__("Orc", health, damage)
+        loot = lootDictionary["Gem"]
+        super().__init__("Orc", health, damage, loot)
 
 class Ogre(Monster):
     healthLow = 17
@@ -67,7 +72,8 @@ class Ogre(Monster):
     def __init__(self):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
-        super().__init__("Ogre", health, damage)
+        loot = lootDictionary["Potion"]
+        super().__init__("Ogre", health, damage, loot)
 
 def getMonster(level:int) -> Monster:
     if level < 3:
