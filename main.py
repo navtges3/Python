@@ -45,51 +45,85 @@ def load_game():
 def welcome() -> None:
     print("Welcome to Hero vs Goblin!")
 
-def battle(myHero, myMonster) -> None:
-    while myMonster.isAlive() and myHero.isAlive():
+def battle(hero, myMonster) -> None:
+    while myMonster.isAlive() and hero.isAlive():
         print()
-        print("1. Defend with your " + str(myHero.protection))
-        print("2. Use your " + str(myHero.equipment))
-        print("3. Use your " + str(myHero.special))
+        print("1. Defend with your " + str(hero.protection))
+        print("2. Use your " + str(hero.equipment))
+        print("3. Use your " + str(hero.special))
         print("4. Run away")
         print("5. View Inventory")
         print()
         choice = input("What would you like to do? ")
         if choice == "1":
             print("You defend!")
-            damage = myMonster.getDamage() - myHero.getBlock()
+            damage = myMonster.getDamage() - hero.getBlock()
             if damage < 0:
                 damage = 0
-            myHero.takeDamage(damage)
+            hero.takeDamage(damage)
         elif choice == "2":
-            #Hero attacks first
-            myMonster.takeDamage(myHero.equipment.damage)
-            #If the monster is still alive, it attacks back
+            # Hero attacks first
+            myMonster.takeDamage(hero.equipment.damage)
+            # If the monster is still alive, it attacks back
             if myMonster.isAlive():
-                myHero.takeDamage(myMonster.getDamage())
+                hero.takeDamage(myMonster.getDamage())
         elif choice == "3":
             print("You use your special ability!")
-            myMonster.takeDamage(myHero.useSpecial())
+            myMonster.takeDamage(hero.useSpecial())
             if myMonster.isAlive():
-                myHero.takeDamage(myMonster.getDamage())
+                hero.takeDamage(myMonster.getDamage())
         elif choice == "4":
             print("You run away!")
             break
         elif choice == "5":
-            myHero.inventory.show_inventory()
+            hero.inventory.show_inventory()
         else:
             print("Invalid choice!")
 
-def retire() -> bool:
-    print()
-    print("1. Fight another monster")
-    print("2. Retire")
-    print()
+def shop(hero: Hero):
+    """Allow the hero to buy items from the shop."""
+    print("\nWelcome to the shop!")
+    print("You have " + str(hero.gold) + " gold.")
+    print("1. Buy Weapons")
+    print("2. Buy Armor")
+    print("3. Buy Items")
+    print("4. Exit Shop")
+    
     choice = input("What would you like to do? ")
-    if choice == "2":
-        return True
+    if choice == "1":
+        print("\nWeapons for sale:")
+        for name, weapon in equipmentDictionary.items():
+            print(f"{name}: {weapon.description} (Damage: {weapon.damage}) - 20 gold")
+        weapon_choice = input("Which weapon would you like to buy? ")
+        if weapon_choice in equipmentDictionary:
+            if hero.spend_gold(20):
+                hero.inventory.add_item(equipmentDictionary[weapon_choice])
+        else:
+            print("Invalid choice!")
+    elif choice == "2":
+        print("\nArmor for sale:")
+        for name, armor in protectionDictionary.items():
+            print(f"{name}: {armor.description} (Block: {armor.block}) - 15 gold")
+        armor_choice = input("Which armor would you like to buy? ")
+        if armor_choice in protectionDictionary:
+            if hero.spend_gold(15):
+                hero.inventory.add_item(protectionDictionary[armor_choice])
+        else:
+            print("Invalid choice!")
+    elif choice == "3":
+        print("\nItems for sale:")
+        for name, item in lootDictionary.items():
+            print(f"{name}: {item.description} - 10 gold")
+        item_choice = input("Which item would you like to buy? ")
+        if item_choice in lootDictionary:
+            if hero.spend_gold(10):
+                hero.inventory.add_item(lootDictionary[item_choice])
+        else:
+            print("Invalid choice!")
+    elif choice == "4":
+        print("Thank you for visiting the shop!")
     else:
-        return False
+        print("Invalid choice!")    
 
 def main() -> None:
     welcome()
@@ -124,7 +158,18 @@ def main() -> None:
         
         #Ask if the hero wants to continue
         if myHero.isAlive():
-            continueFight = not retire()
+            print()
+            print("1. Fight another monster")
+            print("2. Shop")
+            print("3. Retire")
+            print()
+            choice = input("What would you like to do? ")
+            if choice == "2":
+                shop(myHero)
+            elif choice == "3":
+                continueFight = False
+            else:
+                continueFight = True
     
     myHero.printStats()
     print("1. Save and exit")

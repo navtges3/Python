@@ -13,6 +13,7 @@ class Hero:
         self.special = special
         self.level = 1
         self.experience = 0
+        self.gold = 50
         self.inventory = Inventory()
 
     #Print the hero's name
@@ -51,6 +52,19 @@ class Hero:
             return 0
         else:
             return self.protection.block
+
+    def add_gold(self, amount):
+        self.gold += amount
+        print(f"You gained {amount} gold! Total gold: {self.gold}")
+
+    def spend_gold(self, amount) -> bool:
+        if self.gold >= amount:
+            self.gold -= amount
+            print(f"You spent {amount} gold. Remaining gold: {self.gold}")
+            return True
+        else:
+            print("Not enough gold!")
+            return False
 
     def gainExperience(self, experience:int):
         self.experience += experience
