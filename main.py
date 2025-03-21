@@ -93,30 +93,30 @@ def shop(hero: Hero):
     if choice == "1":
         print("\nWeapons for sale:")
         for name, weapon in equipmentDictionary.items():
-            print(f"{name}: {weapon.description} (Damage: {weapon.damage}) - 20 gold")
+            print(f"{name}: {weapon.description} (Damage: {weapon.damage}) - {weapon.value} gold")
         weapon_choice = input("Which weapon would you like to buy? ")
         if weapon_choice in equipmentDictionary:
-            if hero.spend_gold(20):
+            if hero.spend_gold(equipmentDictionary[weapon_choice].value):
                 hero.inventory.add_item(equipmentDictionary[weapon_choice])
         else:
             print("Invalid choice!")
     elif choice == "2":
         print("\nArmor for sale:")
         for name, armor in protectionDictionary.items():
-            print(f"{name}: {armor.description} (Block: {armor.block}) - 15 gold")
+            print(f"{name}: {armor.description} (Block: {armor.block}) - {armor.value} gold")
         armor_choice = input("Which armor would you like to buy? ")
         if armor_choice in protectionDictionary:
-            if hero.spend_gold(15):
+            if hero.spend_gold(protectionDictionary[armor_choice].value):
                 hero.inventory.add_item(protectionDictionary[armor_choice])
         else:
             print("Invalid choice!")
     elif choice == "3":
         print("\nItems for sale:")
         for name, item in lootDictionary.items():
-            print(f"{name}: {item.description} - 10 gold")
+            print(f"{name}: {item.description} - {item.value} gold")
         item_choice = input("Which item would you like to buy? ")
         if item_choice in lootDictionary:
-            if hero.spend_gold(10):
+            if hero.spend_gold(lootDictionary[item_choice].value):
                 hero.inventory.add_item(lootDictionary[item_choice])
         else:
             print("Invalid choice!")
