@@ -1,9 +1,9 @@
 from random import randint
 
-def mightySwing(myHero) -> int:
+def mighty_swing(myHero) -> int:
         return myHero.level + myHero.equipment.damage
     
-def powerAttack(myHero) -> int:
+def power_attack(myHero) -> int:
     damage = myHero.equipment.damage + randint(myHero.level, (myHero.level * 2))
     return damage
 
@@ -24,13 +24,13 @@ class ClassAction:
     def __str__(self):
         return self.name
     
-    def useAction(self, myHero):
+    def use_action(self, myHero):
         print(myHero.name + " uses " + self.name + "!")
         print(self.description)
         damage = self.damage_func(myHero)
         print(myHero.name + " does " + str(damage) + " damage!")
         return damage
     
-classActionDictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerful swing!", mightySwing),
-                        "Power Attack": ClassAction("Power Attack", "A strong attack!", powerAttack),
+classActionDictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerful swing!", mighty_swing),
+                        "Power Attack": ClassAction("Power Attack", "A strong attack!", power_attack),
                         "Backstab": ClassAction("Backstab", "A sneaky attack!", backstab)}

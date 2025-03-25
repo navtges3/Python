@@ -1,5 +1,6 @@
-from hero import Hero, makeHero
-from monster import Monster, Goblin, Orc, Ogre, getMonster
+from hero import Hero, make_hero
+from village import Village
+from monster import Monster, Goblin, Orc, Ogre, generate_wave, get_monster
 from items import equipmentDictionary, protectionDictionary, lootDictionary
 from actions import classActionDictionary
 import json
@@ -125,6 +126,63 @@ def shop(hero: Hero):
     else:
         print("Invalid choice!")    
 
+def defend_village(hero:Hero, village:Village, wave_limit:int=5):
+    pass
+    wave_number = 1
+    while not village.is_destroyed() and hero.is_alive() and wave_number <= wave_limit:
+        print(f"\nWave {wave_number} is attacking {village.name}!")
+        goblins = generate_wave(wave_number)
+        for goblin in goblins:
+            print(f"\n{goblin.name} is attacking!")
+            while goblin.is_alive() and hero.is_alive():
+                print()
+                print("1. Defend with your " + str(hero.protection))
+                print("2. Use your " + str(hero.equipment))
+                print("3. Use your " + str(hero.special))
+                print("4. Run away")
+                print()
+                choice = input("What would you like to do? ")
+                if choice == "1":
+                    print("You defend!")
+                    damage = goblin.get_damage() - hero.get_block()
+                    if damage < 0:
+                        damage = 0
+                    hero.take_damage(damage)
+                elif choice == "2":
+                    # Hero attacks first
+                    print("You attack with your weapon!")
+                    goblin.take_damage(hero.equipment.damage)
+                    # If the goblin is still alive, it attacks back
+                    if goblin.is_alive():
+                        hero.take_damage(goblin.get_damage())
+                elif choice == "3":
+                    print("You use your special ability!")
+                    goblin.take_damage(hero.use_special())
+                    if goblin.is_alive():
+                        hero.take_damage(goblin.get_damage())
+                elif choice == "4":
+                    print("You run away!")
+                    village.take_damage(goblin.get_damage())
+                    break
+                else:
+                    print("Invalid choice!")
+            if not goblin.is_alive():
+                print(f"You defeated {goblin.name}!")
+                hero.gain_experience(10)
+            elif not hero.is_alive():
+                print(f"{goblin.name} defeated you!")
+                break
+        if hero.is_alive():
+            print(f"Wave {wave_number} has been defeated!")
+            wave_number += 1
+        else:
+            print("You have been defeated! The village is lost.")
+            break
+    if village.is_destroyed():
+        print(f"The village {village.name} has been destrayed!")
+    elif hero.is_alive():
+        print(f"The village {village.name} has been saved!")
+
 def main() -> None:
     welcome()
     print("1. Start a new game")
@@ -133,45 +191,12 @@ def main() -> None:
     if choice == "2":
         myHero = load_game()
     else:
-        myHero = makeHero()
+        myHero = make_hero()
 
-    continueFight = True
-    while myHero.isAlive() and continueFight:
-        #Create a random monster
-        myMonster = getMonster(myHero.level)
-        
-        #Battle the monster
-        battle(myHero, myMonster)
-        if myHero.isAlive():
-            if myMonster.isAlive():
-                print("You ran away from the " + str(myMonster) + "!")
-            else:
-                print("You defeated the " + str(myMonster) + "!")
-                myHero.gainExperience(myMonster.experience)
-                print(f"You defeated the {myMonster.name}!")
-                loot = myMonster.drop_loot()  # Assume monsters have a drop_loot method
-                if loot:
-                    print(f"You found {loot}!")
-                    myHero.inventory.add_item(loot)
-        else:
-            print(str(myHero) + " was defeated by the " + str(myMonster) + "!")
-        
-        #Ask if the hero wants to continue
-        if myHero.isAlive():
-            print()
-            print("1. Fight another monster")
-            print("2. Shop")
-            print("3. Retire")
-            print()
-            choice = input("What would you like to do? ")
-            if choice == "2":
-                shop(myHero)
-            elif choice == "3":
-                continueFight = False
-            else:
-                continueFight = True
-    
-    myHero.printStats()
+    village = Village("Lucky Ellieton", 50)
+    defend_village(myHero, village)
+
+    myHero.print_stats()
     print("1. Save and exit")
     print("2. Exit without saving")
     choice = input("What would you like to do? ")

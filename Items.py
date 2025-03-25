@@ -7,7 +7,7 @@ class Item:
     def __str__(self):
         return self.name
     
-    def printStats(self):
+    def print_stats(self):
         print(self.name + ": " + self.description)
 
 class Weapon(Item):
@@ -15,7 +15,7 @@ class Weapon(Item):
         self.damage = damage
         super().__init__(name, description, value)
     
-    def printStats(self):
+    def print_stats(self):
         print(self.name + ": " + self.description + " Damage: " + str(self.damage))
     
 class Armor(Item):
@@ -23,7 +23,7 @@ class Armor(Item):
         self.block = block
         super().__init__(name, description, value)
 
-    def printStats(self):
+    def print_stats(self):
         print(self.name + ": " + self.description + " Block: " + str(self.block))
 
 equipmentDictionary = { "Dagger": Weapon("Dagger", "A sharp dagger", 3),

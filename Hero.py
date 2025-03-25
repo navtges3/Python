@@ -34,20 +34,20 @@ class Hero:
         }
     
     #Check if the hero is alive
-    def isAlive(self) -> bool:
+    def is_alive(self) -> bool:
         return self.health > 0
     
     #Get the damage of the hero's special ability
-    def useSpecial(self):
-        return self.special.useAction(self)
+    def use_special(self):
+        return self.special.use_action(self)
     
     #Take damage from an attacker
-    def takeDamage(self, damage:int):
+    def take_damage(self, damage:int):
         self.health = self.health - damage
         print(self.name + " has " + str(self.health) + " health remaining.")
 
     #Get the hero's block
-    def getBlock(self):
+    def get_block(self):
         if self.protection is None:
             return 0
         else:
@@ -66,23 +66,23 @@ class Hero:
             print("Not enough gold!")
             return False
 
-    def gainExperience(self, experience:int):
+    def gain_experience(self, experience:int):
         self.experience += experience
         if self.experience >= (10 * self.level):
             self.experience = 0
-            self.levelUp()
+            self.level_up()
 
     #Level up the hero
     #Increase health and damage
-    def levelUp(self):
+    def level_up(self):
         self.health += 5
         self.level += 1
         print(self.name + " has leveled up!")
-        self.printStats()
+        self.print_stats()
         print()
     
     #Print the hero's stats
-    def printStats(self):
+    def print_stats(self):
         print()
         print(self.name + " has " + str(self.health) + " health.")
         print(self.name + " is level " + str(self.level) + " with " + str(self.experience) + " experience.")
@@ -114,7 +114,7 @@ class Fighter(Hero):
         special = classActionDictionary["Power Attack"]
         super().__init__(name, health, sword, chainmail, special)
 
-def makeHero() -> Hero:
+def make_hero() -> Hero:
     theHero = None
     while theHero is None:
         print()
@@ -131,5 +131,5 @@ def makeHero() -> Hero:
         else:
             print("Invalid choice!")
             theHero = None
-    theHero.printStats()
+    theHero.print_stats()
     return theHero 
