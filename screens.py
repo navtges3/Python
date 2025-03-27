@@ -1,5 +1,7 @@
 from hero import Hero
+from items import equipmentDictionary, protectionDictionary, lootDictionary
 from constants import GameState
+import fileIO
 import pygame
 
 pygame.init()
@@ -45,7 +47,8 @@ class Screens:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_RETURN:
                         print(f"New Hero Created: {input_text}")
-                        hero = Hero(input_text, 10, 5)
+                        hero = Hero(input_text, 10, equipmentDictionary["Sword"], protectionDictionary["Chainmail"])
+                        fileIO.save_game(hero)
                         next_state = GameState.MAIN_GAME
                         running = False
                     elif event.key == pygame.K_BACKSPACE:
@@ -56,7 +59,8 @@ class Screens:
             pygame.display.update()
         return next_state, hero
 
-    def welcome_screen(self) -> GameState:
+    def welcome_screen(self) -> tuple[GameState, Hero]:
+        hero = None
         running = True
 
         # Define button rectangles
@@ -87,10 +91,11 @@ class Screens:
                     elif load_game_button.collidepoint(event.pos):  # Check if "Load Game" button is clicked
                         print("Load Game selected")
                         next_state = GameState.MAIN_GAME
+                        hero = fileIO.load_game()
                         running = False  # Exit the welcome screen
 
             pygame.display.update()  # Update the display
-        return next_state
+        return next_state, hero
 
     def main_game(self, hero:Hero) -> GameState:
         """Main game screen."""
