@@ -24,8 +24,19 @@ font = pygame.font.Font(None, 36)
 # This function is used to render text on the screen at a specified position.
 def draw_text(text, font, color, surface, x, y):
     textobj = font.render(text, True, color)
-    textrect = textobj.get_rect(center=(x, y))
+    textrect = textobj.get_rect(topleft=(x, y))
     surface.blit(textobj, textrect)
+
+def draw_multiple_lines(text, font, color, surface, x, y):
+    lines = text.split("/n")
+    for i, line in enumerate(lines):
+        draw_text(line, font, color, surface, x, y + i * 30)
+
+def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
+    button_rect = pygame.Rect(x, y, width, height)
+    pygame.draw.rect(surface, color, button_rect)
+    draw_text(text, font, BLACK, surface, x + width // 2 - font.size(text)[0] // 2, y + height // 2 - font.size(text)[1] // 2)
+    return button_rect
 
 class Screens:
 
@@ -63,20 +74,11 @@ class Screens:
         hero = None
         running = True
 
-        # Define button rectangles
-        new_game_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
-        load_game_button = pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
-
         while running:
             screen.fill(WHITE)  # Fill the screen with white
 
-            # Draw buttons
-            pygame.draw.rect(screen, GRAY, new_game_button)
-            pygame.draw.rect(screen, GRAY, load_game_button)
-
-            # Draw button text
-            draw_text("New Game", font, BLACK, screen, new_game_button.centerx, new_game_button.centery)
-            draw_text("Load Game", font, BLACK, screen, load_game_button.centerx, load_game_button.centery)
+            new_game_button = draw_button("New Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
+            load_game_button = draw_button("Load Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
 
             # Event handling
             for event in pygame.event.get():
@@ -103,11 +105,7 @@ class Screens:
         while running:
             screen.fill(BLUE)
 
-            draw_text(f"Name: {hero.name}", font, WHITE, screen, 100, 20)
-            draw_text(f"Health: {hero.health}", font, WHITE, screen, 100, 50)
-            draw_text(f"Level: {hero.level}", font, WHITE, screen, 100, 80)
-            draw_text(f"Exp: {hero.experience}", font, WHITE, screen, 100, 110)
-
+            draw_multiple_lines(f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}", font, WHITE, screen, 100, 50)
             draw_text("Press ESC to quit", font, WHITE, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
 
             for event in pygame.event.get():
