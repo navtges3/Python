@@ -1,4 +1,5 @@
 from hero import Hero
+from monster import Monster
 from items import equipmentDictionary, protectionDictionary, lootDictionary
 from constants import GameState
 import fileIO
@@ -99,14 +100,18 @@ class Screens:
             pygame.display.update()  # Update the display
         return next_state, hero
 
-    def main_game(self, hero:Hero) -> GameState:
-        """Main game screen."""
+    def battle_screen(self, hero:Hero, monster:Monster) -> GameState:
+        """Battle screen where the hero fights a monster."""
         running = True
         while running:
-            screen.fill(BLUE)
+            screen.fill(WHITE)
+            hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
+            monster_text = f"Monster: {monster.name}/nHealth: {monster.health}/nDamage: {monster.damage}"
 
-            draw_multiple_lines(f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}", font, WHITE, screen, 100, 50)
-            draw_text("Press ESC to quit", font, WHITE, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
+            draw_multiple_lines(hero_text, font, BLACK, screen, 50, 50)
+            draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 50, 50)
+
+            draw_text("Press ESC to quit", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -115,6 +120,36 @@ class Screens:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         next_state = GameState.GAME_OVER
+                        running = False
+
+            pygame.display.update()
+        return next_state
+
+    def main_game(self, hero:Hero) -> GameState:
+        """Main game screen."""
+        running = True
+        while running:
+            screen.fill(WHITE)
+            hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
+
+            draw_multiple_lines(hero_text, font, BLACK, screen, 50, 50)
+            
+            battle_button = draw_button("Battle", font, BLUE, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
+
+            draw_text("Press ESC to quit", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    next_state = GameState.GAME_OVER
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        next_state = GameState.GAME_OVER
+                        running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if battle_button.collidepoint(event.pos):
+                        print("Battle selected")
+                        next_state = GameState.BATTLE
                         running = False
             
             pygame.display.update()
