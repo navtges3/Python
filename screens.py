@@ -18,6 +18,7 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 BLUE = (0, 0, 255)
+RED = (255, 0, 0)
 
 # Fonts
 font = pygame.font.Font(None, 36)
@@ -107,6 +108,12 @@ class Screens:
             screen.fill(WHITE)
             hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
             monster_text = f"Monster: {monster.name}/nHealth: {monster.health}/nDamage: {monster.damage}"
+
+            hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+            monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+
+            pygame.draw.rect(screen, BLUE, hero_background)
+            pygame.draw.rect(screen, RED, monster_background)
 
             draw_multiple_lines(hero_text, font, BLACK, screen, 50, 50)
             draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 50, 50)
