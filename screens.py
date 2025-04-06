@@ -29,6 +29,11 @@ def draw_text(text, font, color, surface, x, y):
     textrect = textobj.get_rect(topleft=(x, y))
     surface.blit(textobj, textrect)
 
+def draw_text_centered(text, font, color, surface, x, y):
+    textobj = font.render(text, True, color)
+    textrect = textobj.get_rect(center=(x, y))
+    surface.blit(textobj, textrect)
+
 def draw_multiple_lines(text, font, color, surface, x, y):
     lines = text.split("/n")
     for i, line in enumerate(lines):
@@ -112,13 +117,13 @@ class Screens:
             hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
             monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
 
-            pygame.draw.rect(screen, BLUE, hero_background)
-            pygame.draw.rect(screen, RED, monster_background)
+            pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
+            pygame.draw.rect(screen, RED, monster_background, width=2, border_radius=10)
 
-            draw_multiple_lines(hero_text, font, BLACK, screen, 50, 50)
-            draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 50, 50)
+            draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
+            draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 15, 15)
 
-            draw_text("Press ESC to quit", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
+            draw_text_centered("Press ESC to quit", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 40)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -143,7 +148,7 @@ class Screens:
             
             battle_button = draw_button("Battle", font, BLUE, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
 
-            draw_text("Press ESC to quit", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 40)
+            draw_text_centered("Press ESC to quit", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 40)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
