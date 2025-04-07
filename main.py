@@ -19,6 +19,8 @@ def main() -> None:
         elif state == GameState.BATTLE:
             monster = get_monster(hero.level)
             state = screen.battle_screen(hero, monster)
+        elif state == GameState.SHOP:
+            state = screen.shop_screen(hero)
         else:
             state = GameState.GAME_OVER
     

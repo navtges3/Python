@@ -5,4 +5,5 @@ class GameState(Enum):
     NEW_GAME = 2
     MAIN_GAME = 3
     BATTLE = 4
-    GAME_OVER = 5
+    SHOP = 5
+    GAME_OVER = 6

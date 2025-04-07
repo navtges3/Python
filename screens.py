@@ -188,27 +188,48 @@ class Screens:
                         monster.take_damage(hero.equipment.damage)
                         if monster.is_alive():
                             hero.take_damage(monster.damage)
-                        else:
-                            print(f"{monster.name} defeated!")
-                            hero.gain_experience(monster.experience)
-                            next_state = GameState.MAIN_GAME
-                            running = False
                     if class_button.collidepoint(event.pos):
                         print("Class Attack selected")
                         monster.take_damage(hero.use_special())
                         if monster.is_alive():
                             hero.take_damage(monster.damage)
-                        else:
-                            print(f"{monster.name} defeated!")
-                            hero.gain_experience(monster.experience)
-                            next_state = GameState.MAIN_GAME
-                            running = False
                     if protection_button.collidepoint(event.pos):
                         print("Use Protection selected")
                     if flee_button.collidepoint(event.pos):
                         print("Flee selected")
                         next_state = GameState.MAIN_GAME
                         running = False
+            
+            if hero.is_alive() and not monster.is_alive():
+                print("Monster defeated!")
+                hero.gain_experience(monster.experience)
+                next_state = GameState.MAIN_GAME
+                running = False
+            elif not hero.is_alive():
+                print("Hero defeated!")
+                next_state = GameState.GAME_OVER
+                running = False
+            pygame.display.update()
+        return next_state
+
+    def shop_screen(self, hero:Hero) -> GameState:
+        running = True
+        while running:
+            screen.fill(WHITE)
+            hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
+            hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+            pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
+            draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    next_state = GameState.GAME_OVER
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        next_state = self.show_esc_popup(hero, GameState.SHOP)
+                        if next_state == GameState.GAME_OVER:
+                            running = False
 
             pygame.display.update()
         return next_state
@@ -242,6 +263,10 @@ class Screens:
                     if battle_button.collidepoint(event.pos):
                         print("Battle selected")
                         next_state = GameState.BATTLE
+                        running = False
+                    elif shop_button.collidepoint(event.pos):
+                        print("Shop selected")
+                        next_state = GameState.SHOP
                         running = False
             
             pygame.display.update()
