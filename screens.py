@@ -18,6 +18,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 BLUE = (0, 0, 255)
+GREEN = (0, 255, 0)
+YELLOW = (255, 255, 0)
 RED = (255, 0, 0)
 
 # Fonts
@@ -49,6 +51,42 @@ class Screens:
 
     def quit(self) -> None:
         pygame.quit()
+
+    def show_esc_popup(self, hero: Hero, game_state: GameState) -> GameState:
+        """Display a pop-up window with Save and Quit and Load Game options."""
+        popup_running = True
+        popup_width = 400
+        popup_height = 200
+        popup_x = (SCREEN_WIDTH - popup_width) // 2
+        popup_y = (SCREEN_HEIGHT - popup_height) // 2
+        popup_rect = pygame.Rect(popup_x, popup_y, popup_width, popup_height)
+    
+        while popup_running:
+            # Draw the semi-transparent background
+            # screen.fill((0, 0, 0, 128))  # Semi-transparent black background
+            pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
+            pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)  # Border for the popup
+            draw_text_centered("Game Paused", font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
+    
+            # Draw buttons
+            save_quit_button = draw_button("Save and Quit", font, GRAY, screen, popup_x + 50, popup_y + 50, 300, 50)
+            resume_game_button = draw_button("Resume Game", font, GRAY, screen, popup_x + 50, popup_y + 120, 300, 50)
+    
+            # Event handling
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    return GameState.GAME_OVER
+                
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if save_quit_button.collidepoint(event.pos):
+                        print("Save and Quit selected")
+                        fileIO.save_game(hero)  # Save the game
+                        return GameState.GAME_OVER
+                    elif resume_game_button.collidepoint(event.pos):
+                        print("Resume Game selected")
+                        return  game_state # Or another state for loading the game
+    
+            pygame.display.update()
 
     def new_game_screen(self) -> tuple[GameState, Hero]:
         input_text = ""
@@ -111,19 +149,26 @@ class Screens:
         running = True
         while running:
             screen.fill(WHITE)
+
+            #Hero Box
             hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
-            monster_text = f"Monster: {monster.name}/nHealth: {monster.health}/nDamage: {monster.damage}"
-
             hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-            monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-
             pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
-            pygame.draw.rect(screen, RED, monster_background, width=2, border_radius=10)
-
             draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
+
+            #Monster Box
+            monster_text = f"Monster: {monster.name}/nHealth: {monster.health}/nDamage: {monster.damage}"   
+            monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+            pygame.draw.rect(screen, RED, monster_background, width=2, border_radius=10)
             draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 15, 15)
 
-            draw_text_centered("Press ESC to quit", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 40)
+            #Action Box
+            action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
+            pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
+            weapon_button = draw_button("Weapon Attack", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            class_button = draw_button("Class Attack", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            protection_button = draw_button("Use Protection", font, BLUE, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            flee_button = draw_button("Flee", font, BLUE, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -131,7 +176,35 @@ class Screens:
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        next_state = GameState.GAME_OVER
+                        next_state = self.show_esc_popup(hero, GameState.BATTLE)
+                        if next_state == GameState.GAME_OVER:
+                            running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if weapon_button.collidepoint(event.pos):
+                        print("Weapon Attack selected")
+                        monster.take_damage(hero.equipment.damage)
+                        if monster.is_alive():
+                            hero.take_damage(monster.damage)
+                        else:
+                            print(f"{monster.name} defeated!")
+                            hero.gain_experience(monster.experience)
+                            next_state = GameState.MAIN_GAME
+                            running = False
+                    if class_button.collidepoint(event.pos):
+                        print("Class Attack selected")
+                        monster.take_damage(hero.use_special())
+                        if monster.is_alive():
+                            hero.take_damage(monster.damage)
+                        else:
+                            print(f"{monster.name} defeated!")
+                            hero.gain_experience(monster.experience)
+                            next_state = GameState.MAIN_GAME
+                            running = False
+                    if protection_button.collidepoint(event.pos):
+                        print("Use Protection selected")
+                    if flee_button.collidepoint(event.pos):
+                        print("Flee selected")
+                        next_state = GameState.MAIN_GAME
                         running = False
 
             pygame.display.update()
@@ -143,12 +216,15 @@ class Screens:
         while running:
             screen.fill(WHITE)
             hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
-
-            draw_multiple_lines(hero_text, font, BLACK, screen, 50, 50)
+            hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+            pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
+            draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
             
-            battle_button = draw_button("Battle", font, BLUE, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
-
-            draw_text_centered("Press ESC to quit", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT - 40)
+            #Action Box
+            action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
+            pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
+            battle_button = draw_button("Fight Goblins", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            shop_button = draw_button("Go to Shop", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -156,8 +232,9 @@ class Screens:
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        next_state = GameState.GAME_OVER
-                        running = False
+                        next_state = self.show_esc_popup(hero, GameState.MAIN_GAME)
+                        if next_state == GameState.GAME_OVER:
+                            running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if battle_button.collidepoint(event.pos):
                         print("Battle selected")
