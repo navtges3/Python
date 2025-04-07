@@ -91,6 +91,7 @@ class Screens:
     def new_game_screen(self) -> tuple[GameState, Hero]:
         input_text = ""
         running = True
+
         while running:
             screen.fill(WHITE)
 
@@ -119,11 +120,14 @@ class Screens:
         hero = None
         running = True
 
+        hero = fileIO.load_game()
+
         while running:
             screen.fill(WHITE)  # Fill the screen with white
 
             new_game_button = draw_button("New Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
-            load_game_button = draw_button("Load Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            if hero is not None:
+                load_game_button = draw_button("Load Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
 
             # Event handling
             for event in pygame.event.get():
@@ -138,7 +142,6 @@ class Screens:
                     elif load_game_button.collidepoint(event.pos):  # Check if "Load Game" button is clicked
                         print("Load Game selected")
                         next_state = GameState.MAIN_GAME
-                        hero = fileIO.load_game()
                         running = False  # Exit the welcome screen
 
             pygame.display.update()  # Update the display
