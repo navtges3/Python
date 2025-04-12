@@ -8,6 +8,7 @@ class Hero:
     def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=classActionDictionary["Mighty Swing"]):
         self.name = name
         self.health = health
+        self.alive = True
         self.equipment = equipment
         self.protection = protection
         self.special = special
@@ -15,6 +16,7 @@ class Hero:
         self.experience = 0
         self.gold = 50
         self.inventory = Inventory()
+        
 
     #Print the hero's name
     def __str__(self):
@@ -33,10 +35,6 @@ class Hero:
             "inventory": [str(item) for item in self.inventory.items],  # Save inventory items as strings
         }
     
-    #Check if the hero is alive
-    def is_alive(self) -> bool:
-        return self.health > 0
-    
     #Get the damage of the hero's special ability
     def use_special(self):
         return self.special.use_action(self)
@@ -44,7 +42,12 @@ class Hero:
     #Take damage from an attacker
     def take_damage(self, damage:int):
         self.health = self.health - damage
-        print(self.name + " has " + str(self.health) + " health remaining.")
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False
+            print(self.name + " has died!")
+        else:
+            print(self.name + " has taken " + str(damage) + " damage!")
 
     #Get the hero's block
     def get_block(self):

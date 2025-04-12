@@ -7,6 +7,7 @@ class Monster:
     def __init__(self, name:str, health:int, damage:int, loot:Item=None):
         self.name = name
         self.health = health
+        self.alive = True
         self.damage = damage
         self.experience = (health + damage) // 2
         self.loot = loot
@@ -15,9 +16,6 @@ class Monster:
         
     def __str__(self):
         return self.name
-    
-    def is_alive(self) -> bool:
-        return self.health > 0
 
     #Get the monster's damage
     def get_damage(self) -> int:
@@ -26,8 +24,9 @@ class Monster:
     #Take damage from an attacker
     def take_damage(self, damage:int):
         self.health = self.health - damage
-        if self.health < 0:
+        if self.health <= 0:
             self.health = 0
+            self.alive = False
         print(self.name + " has " + str(self.health) + " health remaining.")
 
     def drop_loot(self) -> Item:
