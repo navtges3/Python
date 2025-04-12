@@ -47,6 +47,18 @@ def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
     draw_text(text, font, BLACK, surface, x + width // 2 - font.size(text)[0] // 2, y + height // 2 - font.size(text)[1] // 2)
     return button_rect
 
+def draw_hero(hero:Hero) -> None:
+    """Draw the hero's stats on the screen."""
+    hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}"
+    if hero.special is not None:
+        hero_text += f"/nSpecial: {hero.special.name}"
+    if hero.equipment is not None:
+        hero_text += f"/nWeapon: {hero.equipment.name}/nDamage: {hero.equipment.damage}"
+    hero_text += f"/nExp: {hero.experience}/nGold: {hero.gold}"
+    hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+    pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
+    draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
+
 class Screens:
 
     def quit(self) -> None:
@@ -95,7 +107,7 @@ class Screens:
         while running:
             screen.fill(WHITE)
 
-            draw_text(f"Hero Name: {input_text}", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 20)
+            draw_text_centered(f"Hero Name: {input_text}", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 20)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -154,10 +166,7 @@ class Screens:
             screen.fill(WHITE)
 
             #Hero Box
-            hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
-            hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-            pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
-            draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
+            draw_hero(hero)
 
             #Monster Box
             monster_text = f"Monster: {monster.name}/nHealth: {monster.health}/nDamage: {monster.damage}"   
@@ -186,12 +195,12 @@ class Screens:
                     if weapon_button.collidepoint(event.pos):
                         print("Weapon Attack selected")
                         monster.take_damage(hero.equipment.damage)
-                        if monster.is_alive():
+                        if monster.alive:
                             hero.take_damage(monster.damage)
                     if class_button.collidepoint(event.pos):
                         print("Class Attack selected")
                         monster.take_damage(hero.use_special())
-                        if monster.is_alive():
+                        if monster.alive:
                             hero.take_damage(monster.damage)
                     if protection_button.collidepoint(event.pos):
                         print("Use Protection selected")
@@ -200,12 +209,13 @@ class Screens:
                         next_state = GameState.MAIN_GAME
                         running = False
             
-            if hero.is_alive() and not monster.is_alive():
+            if hero.alive and not monster.alive:
                 print("Monster defeated!")
                 hero.gain_experience(monster.experience)
+                hero.add_gold(10)
                 next_state = GameState.MAIN_GAME
                 running = False
-            elif not hero.is_alive():
+            elif not hero.alive:
                 print("Hero defeated!")
                 next_state = GameState.GAME_OVER
                 running = False
@@ -216,10 +226,20 @@ class Screens:
         running = True
         while running:
             screen.fill(WHITE)
-            hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
-            hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-            pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
-            draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
+            
+            draw_hero(hero)
+
+            # Buy Health
+            buy_health_button = draw_button("Buy Health", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            buy_health_cost = 100
+            draw_text(f"Cost: {buy_health_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 80)
+            # Buy damage
+            buy_damage_button = draw_button("Buy Damage", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 120, 200, 50)
+            buy_damage_cost = 200
+            draw_text(f"Cost: {buy_damage_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
+
+            # Back to Main Game
+            back_button = draw_button("Back to Main", font, BLUE, screen, 15, SCREEN_HEIGHT - 70, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -230,6 +250,25 @@ class Screens:
                         next_state = self.show_esc_popup(hero, GameState.SHOP)
                         if next_state == GameState.GAME_OVER:
                             running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if buy_health_button.collidepoint(event.pos):
+                        print("Buy Health selected")
+                        if hero.gold >= buy_health_cost:
+                            hero.health += 10
+                            hero.gold -= buy_health_cost
+                        else:
+                            print("Not enough gold!")
+                    elif buy_damage_button.collidepoint(event.pos):
+                        print("Buy Damage selected")
+                        if hero.gold >= buy_damage_cost:
+                            hero.equipment.damage += 5
+                            hero.gold -= buy_damage_cost
+                        else:
+                            print("Not enough gold!")
+                    elif back_button.collidepoint(event.pos):
+                        print("Back to Main selected")
+                        next_state = GameState.MAIN_GAME
+                        running = False
 
             pygame.display.update()
         return next_state
@@ -239,10 +278,8 @@ class Screens:
         running = True
         while running:
             screen.fill(WHITE)
-            hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}/nExp: {hero.experience}"
-            hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-            pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
-            draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
+            
+            draw_hero(hero)
             
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
