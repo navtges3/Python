@@ -4,13 +4,14 @@ import random
 class Monster:
 
     #Base class for all monsters
-    def __init__(self, name:str, health:int, damage:int, loot:Item=None):
+    def __init__(self, name:str, health:int, damage:int, loot:Item=None, image:str="goblin_image.jpg"):
         self.name = name
         self.health = health
         self.alive = True
         self.damage = damage
         self.experience = (health + damage) // 2
         self.loot = loot
+        self.image = image
         print("A new monster appears!")
         self.print_stats()
         
@@ -45,7 +46,7 @@ class Goblin(Monster):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
         loot = lootDictionary["Gold"]
-        super().__init__(name, health, damage, loot)
+        super().__init__(name, health, damage, loot, image="goblin_image.jpg")
 
 class Orc(Monster):
     healthLow = 10
@@ -57,7 +58,7 @@ class Orc(Monster):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
         loot = lootDictionary["Gem"]
-        super().__init__(name, health, damage, loot)
+        super().__init__(name, health, damage, loot, image="orc_image.jpg")
 
 class Ogre(Monster):
     healthLow = 17
@@ -69,7 +70,7 @@ class Ogre(Monster):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
         loot = lootDictionary["Potion"]
-        super().__init__(name, health, damage, loot)
+        super().__init__(name, health, damage, loot, image="ogre_image.jpg")
 
 def get_monster(level:int) -> Monster:
     if level < 3:

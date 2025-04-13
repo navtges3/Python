@@ -16,6 +16,7 @@ class Hero:
         self.experience = 0
         self.gold = 50
         self.inventory = Inventory()
+        self.image = "knight_image.jpg"
         
 
     #Print the hero's name
