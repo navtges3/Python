@@ -1,6 +1,6 @@
 from hero import Hero, make_hero
 from monster import Monster
-from items import equipmentDictionary, protectionDictionary, lootDictionary
+from items import equipmentDictionary, protectionDictionary, lootDictionary, next_equipment_dictionary
 from constants import GameState
 import fileIO
 import pygame
@@ -198,7 +198,7 @@ class Screens:
                         print("New Game selected")
                         next_state = GameState.NEW_GAME
                         running = False
-                    elif load_game_button.collidepoint(event.pos):
+                    elif load_game_button and load_game_button.collidepoint(event.pos):
                         print("Load Game selected")
                         next_state = GameState.MAIN_GAME
                         running = False
@@ -272,18 +272,21 @@ class Screens:
 
     def shop_screen(self, hero:Hero) -> GameState:
         running = True
+
+        next_equipment = next_equipment_dictionary[hero.equipment.name]
+
         while running:
             screen.fill(WHITE)
-            
             draw_hero(hero)
 
             # Buy Health
             buy_health_button = draw_button("Buy Health", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            buy_health_cost = 100
+            buy_health_cost = 75
             draw_text(f"Cost: {buy_health_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 80)
+
             # Buy damage
-            buy_damage_button = draw_button("Buy Damage", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 120, 200, 50)
-            buy_damage_cost = 200
+            equipment_button = draw_button("Upgrade Equipment", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 120, 200, 50)
+            buy_damage_cost = 150
             draw_text(f"Cost: {buy_damage_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
 
             # Back to Main Game
@@ -306,11 +309,11 @@ class Screens:
                             hero.gold -= buy_health_cost
                         else:
                             print("Not enough gold!")
-                    elif buy_damage_button.collidepoint(event.pos):
+                    elif equipment_button.collidepoint(event.pos):
                         print("Buy Damage selected")
                         if hero.gold >= buy_damage_cost:
-                            hero.equipment.damage += 5
                             hero.gold -= buy_damage_cost
+                            hero.equipment = equipmentDictionary[next_equipment]
                         else:
                             print("Not enough gold!")
                     elif back_button.collidepoint(event.pos):

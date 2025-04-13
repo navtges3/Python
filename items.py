@@ -26,6 +26,17 @@ class Armor(Item):
     def print_stats(self):
         print(self.name + ": " + self.description + " Block: " + str(self.block))
 
+next_equipment_dictionary = {"Daggers": "Rapier",
+                            "Rapier": "Throwing Knives",
+                            "Throwing Knives": "Hand Crossbow",
+                            "Hand Crossbow": "Shadow Whip",
+                            "Shadow Whip": None,
+                            "Greatsword": "Warhammer",
+                            "Warhammer": "Battleaxe",
+                            "Battleaxe": "Halberd",
+                            "Halberd": "Flaming Greataxe",
+                            "Flaming Greataxe": None}
+
 equipmentDictionary = { "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
                         "Rapier": Weapon("Rapier", "A slender, piercing sword that allows for swift, elegant combat", 5), 
                         "Throwing Knives": Weapon("Throwing Knives", "Silent, deadly, and ideal for surprise attacks from a distance", 7), 
