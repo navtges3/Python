@@ -12,6 +12,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption("Village Defense")
+pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
 # Colors
 WHITE = (255, 255, 255)
