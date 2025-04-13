@@ -132,6 +132,7 @@ class Screens:
 
             draw_text(f"Hero Name: {hero_name}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 100)
             draw_text(f"Choose your class: {hero_class}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
+
             fighter_button = draw_button("Fighter", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50)
             rogue_button = draw_button("Rogue", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50)
             create_button = draw_button("Create Hero", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50)
@@ -173,9 +174,7 @@ class Screens:
         return next_state, hero
 
     def welcome_screen(self) -> tuple[GameState, Hero]:
-        hero = None
         running = True
-
         hero = fileIO.load_game()
 
         while running:
@@ -216,13 +215,9 @@ class Screens:
         while running:
             screen.fill(WHITE)
 
-            #Hero Box
             draw_hero(hero)
-
-            #Monster Box
             draw_monster(monster)
 
-            #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
             weapon_button = draw_button("Weapon Attack", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
@@ -272,7 +267,6 @@ class Screens:
 
     def shop_screen(self, hero:Hero) -> GameState:
         running = True
-
         next_equipment = next_equipment_dictionary[hero.equipment.name]
 
         while running:
@@ -284,7 +278,7 @@ class Screens:
             buy_health_cost = 75
             draw_text(f"Cost: {buy_health_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 80)
 
-            # Buy damage
+            # Upgrade Equipment
             equipment_button = draw_button("Upgrade Equipment", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 120, 250, 50)
             buy_damage_cost = 150
             draw_text(f"Cost: {buy_damage_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
