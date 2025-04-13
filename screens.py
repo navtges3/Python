@@ -1,6 +1,6 @@
 from hero import Hero, make_hero
 from monster import Monster
-from items import equipmentDictionary, protectionDictionary, lootDictionary
+from items import equipmentDictionary, protectionDictionary, lootDictionary, next_equipment_dictionary
 from constants import GameState
 import fileIO
 import pygame
@@ -124,7 +124,7 @@ class Screens:
 
     def new_game_screen(self) -> tuple[GameState, Hero]:
         hero_name = ""
-        hero_class = None
+        hero_class = ""
         running = True
 
         while running:
@@ -198,7 +198,7 @@ class Screens:
                         print("New Game selected")
                         next_state = GameState.NEW_GAME
                         running = False
-                    elif load_game_button.collidepoint(event.pos):
+                    elif load_game_button and load_game_button.collidepoint(event.pos):
                         print("Load Game selected")
                         next_state = GameState.MAIN_GAME
                         running = False
@@ -225,10 +225,10 @@ class Screens:
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            weapon_button = draw_button("Weapon Attack", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            class_button = draw_button("Class Attack", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
-            protection_button = draw_button("Use Protection", font, BLUE, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            flee_button = draw_button("Flee", font, BLUE, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            weapon_button = draw_button("Weapon Attack", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            class_button = draw_button("Class Attack", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            protection_button = draw_button("Use Protection", font, GRAY, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            flee_button = draw_button("Flee", font, GRAY, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -272,22 +272,25 @@ class Screens:
 
     def shop_screen(self, hero:Hero) -> GameState:
         running = True
+
+        next_equipment = next_equipment_dictionary[hero.equipment.name]
+
         while running:
             screen.fill(WHITE)
-            
             draw_hero(hero)
 
             # Buy Health
-            buy_health_button = draw_button("Buy Health", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            buy_health_cost = 100
+            buy_health_button = draw_button("Buy Health", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 250, 50)
+            buy_health_cost = 75
             draw_text(f"Cost: {buy_health_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 80)
+
             # Buy damage
-            buy_damage_button = draw_button("Buy Damage", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 120, 200, 50)
-            buy_damage_cost = 200
+            equipment_button = draw_button("Upgrade Equipment", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 120, 250, 50)
+            buy_damage_cost = 150
             draw_text(f"Cost: {buy_damage_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
 
             # Back to Main Game
-            back_button = draw_button("Back to Main", font, BLUE, screen, 15, SCREEN_HEIGHT - 70, 200, 50)
+            back_button = draw_button("Back to Main", font, GRAY, screen, 15, SCREEN_HEIGHT - 70, 250, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -306,11 +309,11 @@ class Screens:
                             hero.gold -= buy_health_cost
                         else:
                             print("Not enough gold!")
-                    elif buy_damage_button.collidepoint(event.pos):
+                    elif equipment_button.collidepoint(event.pos):
                         print("Buy Damage selected")
                         if hero.gold >= buy_damage_cost:
-                            hero.equipment.damage += 5
                             hero.gold -= buy_damage_cost
+                            hero.equipment = equipmentDictionary[next_equipment]
                         else:
                             print("Not enough gold!")
                     elif back_button.collidepoint(event.pos):
@@ -332,8 +335,8 @@ class Screens:
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            battle_button = draw_button("Fight Goblins", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            shop_button = draw_button("Go to Shop", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            battle_button = draw_button("Fight Goblins", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            shop_button = draw_button("Go to Shop", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

@@ -25,7 +25,8 @@ def load_game() -> Hero:
                 health=data["health"],
                 equipment=equipmentDictionary[data["equipment"]],
                 protection=protectionDictionary[data["protection"]],
-                special=classActionDictionary[data["special"]]
+                special=classActionDictionary[data["special"]],
+                gold=data["gold"]
             )
             hero.level = data["level"]
             hero.experience = data["experience"]

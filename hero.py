@@ -5,7 +5,7 @@ from inventory import Inventory
 
 class Hero:
     #Base class for all heroes
-    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=classActionDictionary["Mighty Swing"]):
+    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=classActionDictionary["Mighty Swing"], gold:int=50):
         self.name = name
         self.health = health
         self.alive = True
@@ -14,7 +14,7 @@ class Hero:
         self.special = special
         self.level = 1
         self.experience = 0
-        self.gold = 50
+        self.gold = gold
         self.inventory = Inventory()
         self.image = "knight_image.jpg"
         
@@ -30,6 +30,7 @@ class Hero:
             "health": self.health,
             "level": self.level,
             "experience": self.experience,
+            "gold": self.gold,
             "special": str(self.special),  # Convert special to a string
             "equipment": str(self.equipment),  # Convert equipment to a string
             "protection": str(self.protection),  # Convert protection to a string
