@@ -1,11 +1,44 @@
 from random import randint
 from items import Item, equipmentDictionary, protectionDictionary
-from actions import ClassAction, classActionDictionary
-from inventory import Inventory
+
+def mighty_swing(myHero) -> int:
+        return myHero.level + myHero.equipment.damage
+    
+def power_attack(myHero) -> int:
+    damage = myHero.equipment.damage + randint(myHero.level, (myHero.level * 2))
+    return damage
+
+def backstab(myHero) -> int:
+    if myHero.level == 1:
+        damage = randint(myHero.level, (myHero.level + 1))
+    else:
+        damage = randint(myHero.level, (myHero.level * myHero.level))
+    return damage
+
+class ClassAction:
+    
+    def __init__(self, name:str, description:str, damage_func):
+        self.name = name
+        self.description = description
+        self.damage_func = damage_func
+    
+    def __str__(self):
+        return self.name
+    
+    def use_action(self, myHero):
+        print(myHero.name + " uses " + self.name + "!")
+        print(self.description)
+        damage = self.damage_func(myHero)
+        print(myHero.name + " does " + str(damage) + " damage!")
+        return damage
+    
+class_action_dictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerful swing!", mighty_swing),
+                        "Power Attack": ClassAction("Power Attack", "A strong attack!", power_attack),
+                        "Backstab": ClassAction("Backstab", "A sneaky attack!", backstab)}
 
 class Hero:
     #Base class for all heroes
-    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=classActionDictionary["Mighty Swing"], gold:int=50):
+    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=class_action_dictionary["Mighty Swing"], gold:int=50):
         self.name = name
         self.health = health
         self.alive = True
@@ -15,7 +48,6 @@ class Hero:
         self.level = 1
         self.experience = 0
         self.gold = gold
-        self.inventory = Inventory()
         self.image = "knight_image.jpg"
         
 
@@ -34,7 +66,6 @@ class Hero:
             "special": str(self.special),  # Convert special to a string
             "equipment": str(self.equipment),  # Convert equipment to a string
             "protection": str(self.protection),  # Convert protection to a string
-            "inventory": [str(item) for item in self.inventory.items],  # Save inventory items as strings
         }
     
     #Get the damage of the hero's special ability
@@ -108,7 +139,7 @@ class Rogue(Hero):
         health = randint(5, 10)
         dagger = equipmentDictionary["Daggers"]
         leather = protectionDictionary["Leather"]
-        special = classActionDictionary["Backstab"]
+        special = class_action_dictionary["Backstab"]
         super().__init__(name, health, dagger, leather, special)
 
 class Fighter(Hero):
@@ -116,7 +147,7 @@ class Fighter(Hero):
         health = randint(10, 15)
         sword = equipmentDictionary["Greatsword"]
         chainmail = protectionDictionary["Chainmail"]
-        special = classActionDictionary["Power Attack"]
+        special = class_action_dictionary["Power Attack"]
         super().__init__(name, health, sword, chainmail, special)
 
 def make_hero(hero_name:str, hero_class:str) -> Hero:

@@ -1,6 +1,5 @@
-from hero import Hero
+from hero import Hero, class_action_dictionary
 from items import equipmentDictionary, protectionDictionary, lootDictionary
-from actions import classActionDictionary
 import json
 
 def save_game(hero):
@@ -25,14 +24,11 @@ def load_game() -> Hero:
                 health=data["health"],
                 equipment=equipmentDictionary[data["equipment"]],
                 protection=protectionDictionary[data["protection"]],
-                special=classActionDictionary[data["special"]],
+                special=class_action_dictionary[data["special"]],
                 gold=data["gold"]
             )
             hero.level = data["level"]
             hero.experience = data["experience"]
-            # Load inventory items
-            for item_name in data["inventory"]:
-                hero.inventory.add_item(lootDictionary[item_name])
             print("Game loaded successfully!")
             return hero
     except FileNotFoundError:
