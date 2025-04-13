@@ -51,7 +51,3 @@ equipmentDictionary = { "Daggers": Weapon("Daggers", "A rogue’s signature: fas
 protectionDictionary = {    "Leather": Armor("Leather", "A sturdy leather suit", 2),
                             "Chainmail": Armor("Chainmail", "A suit of chainmail", 4),
                             "Plate": Armor("Plate", "A suit of plate armor", 6)}
-
-lootDictionary = {  "Gold": Item("Gold", "A small pile of gold", 1),
-                    "Gem": Item("Gem", "A shiny gemstone", 3),
-                    "Potion": Item("Potion", "A healing potion", 5)}

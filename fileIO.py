@@ -1,5 +1,5 @@
 from hero import Hero, class_action_dictionary
-from items import equipmentDictionary, protectionDictionary, lootDictionary
+from items import equipmentDictionary, protectionDictionary
 import json
 
 def save_game(hero):

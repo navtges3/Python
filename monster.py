@@ -1,16 +1,13 @@
-from items import Item, lootDictionary
 import random
 
+#Base class for all monsters
 class Monster:
-
-    #Base class for all monsters
-    def __init__(self, name:str, health:int, damage:int, loot:Item=None, image:str="goblin_image.jpg"):
+    def __init__(self, name:str, health:int, damage:int, image:str="goblin_image.jpg"):
         self.name = name
         self.health = health
         self.alive = True
         self.damage = damage
         self.experience = (health + damage) // 2
-        self.loot = loot
         self.image = image
         print("A new monster appears!")
         self.print_stats()
@@ -18,11 +15,9 @@ class Monster:
     def __str__(self):
         return self.name
 
-    #Get the monster's damage
     def get_damage(self) -> int:
         return self.damage
     
-    #Take damage from an attacker
     def take_damage(self, damage:int):
         self.health = self.health - damage
         if self.health <= 0:
@@ -30,10 +25,6 @@ class Monster:
             self.alive = False
         print(self.name + " has " + str(self.health) + " health remaining.")
 
-    def drop_loot(self) -> Item:
-        return self.loot
-
-    #Print the monster's stats
     def print_stats(self):
         print(self.name + " has " + str(self.health) + " health and " + str(self.damage) + " damage and " + str(self.experience) + " experience.")
 
@@ -45,8 +36,7 @@ class Goblin(Monster):
     def __init__(self, name:str="Goblin"):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
-        loot = lootDictionary["Gold"]
-        super().__init__(name, health, damage, loot, image="goblin_image.jpg")
+        super().__init__(name, health, damage, image="goblin_image.jpg")
 
 class Orc(Monster):
     healthLow = 10
@@ -57,8 +47,7 @@ class Orc(Monster):
     def __init__(self, name:str="Orc"):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
-        loot = lootDictionary["Gem"]
-        super().__init__(name, health, damage, loot, image="orc_image.jpg")
+        super().__init__(name, health, damage, image="orc_image.jpg")
 
 class Ogre(Monster):
     healthLow = 17
@@ -69,8 +58,7 @@ class Ogre(Monster):
     def __init__(self, name:str="Ogre"):
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
-        loot = lootDictionary["Potion"]
-        super().__init__(name, health, damage, loot, image="ogre_image.jpg")
+        super().__init__(name, health, damage, image="ogre_image.jpg")
 
 def get_monster(level:int) -> Monster:
     if level < 3:

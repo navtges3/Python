@@ -1,6 +1,6 @@
 from hero import Hero, make_hero
 from monster import Monster
-from items import equipmentDictionary, protectionDictionary, lootDictionary, next_equipment_dictionary
+from items import equipmentDictionary, protectionDictionary, next_equipment_dictionary
 from constants import GameState
 import fileIO
 import pygame
