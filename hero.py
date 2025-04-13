@@ -105,7 +105,7 @@ class Hero:
 class Rogue(Hero):
     def __init__(self, name:str):
         health = randint(5, 10)
-        dagger = equipmentDictionary["Dagger"]
+        dagger = equipmentDictionary["Daggers"]
         leather = protectionDictionary["Leather"]
         special = classActionDictionary["Backstab"]
         super().__init__(name, health, dagger, leather, special)
@@ -113,7 +113,7 @@ class Rogue(Hero):
 class Fighter(Hero):
     def __init__(self, name:str):
         health = randint(10, 15)
-        sword = equipmentDictionary["Sword"]
+        sword = equipmentDictionary["Greatsword"]
         chainmail = protectionDictionary["Chainmail"]
         special = classActionDictionary["Power Attack"]
         super().__init__(name, health, sword, chainmail, special)
