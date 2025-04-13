@@ -1,6 +1,6 @@
 from hero import Hero, make_hero
 from monster import Monster
-from items import equipmentDictionary, protectionDictionary, next_equipment_dictionary
+from items import equipment_dictionary, protection_dictionary, next_equipment_dictionary
 from constants import GameState
 import fileIO
 import pygame
@@ -335,7 +335,7 @@ class Screens:
                         print("Buy Damage selected")
                         if hero.gold >= buy_damage_cost:
                             hero.gold -= buy_damage_cost
-                            hero.equipment = equipmentDictionary[next_equipment]
+                            hero.equipment = equipment_dictionary[next_equipment]
                         else:
                             print("Not enough gold!")
                     elif back_button.collidepoint(event.pos):

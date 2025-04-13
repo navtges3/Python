@@ -1,5 +1,5 @@
 from random import randint
-from items import Item, equipmentDictionary, protectionDictionary
+from items import Item, equipment_dictionary, protection_dictionary
 
 def mighty_swing(myHero) -> int:
         return myHero.level + myHero.equipment.damage
@@ -26,10 +26,9 @@ class ClassAction:
         return self.name
     
     def use_action(self, myHero):
-        print(myHero.name + " uses " + self.name + "!")
-        print(self.description)
+        print(f"{myHero.name} uses {self.name}!")
         damage = self.damage_func(myHero)
-        print(myHero.name + " does " + str(damage) + " damage!")
+        print(f"{myHero.name} does {damage} damage!")
         return damage
     
 class_action_dictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerful swing!", mighty_swing),
@@ -78,9 +77,9 @@ class Hero:
         if self.health <= 0:
             self.health = 0
             self.alive = False
-            print(self.name + " has died!")
+            print(f"{self.name} has died!")
         else:
-            print(self.name + " has taken " + str(damage) + " damage!")
+            print(f"{self.name} has taken {damage} damage!")
 
     #Get the hero's block
     def get_block(self):
@@ -120,33 +119,33 @@ class Hero:
     #Print the hero's stats
     def print_stats(self):
         print()
-        print(self.name + " has " + str(self.health) + " health.")
-        print(self.name + " is level " + str(self.level) + " with " + str(self.experience) + " experience.")
+        print(f"{self.name} has {self.health} health.")
+        print(f"{self.name} is level {self.level} with {self.experience} experience.")
 
         if self.equipment is not None:
-            print(self.name + " is wielding a " + str(self.equipment) + ".")
+            print(f"{self.name} is wielding a {self.equipment}.")
         else:
-            print(self.name + " is not wielding any equipment.")
+            print(f"{self.name} is not wielding any equipment.")
 
         if self.protection is not None:
-            print(self.name + " is wearing " + str(self.protection) + ".")
+            print(f"{self.name} is wearing {self.protection}.")
         else:
-            print(self.name + " is not wearing any protection.")
+            print(f"{self.name} is not wearing any protection.")
         print()
 
 class Rogue(Hero):
     def __init__(self, name:str):
         health = randint(5, 10)
-        dagger = equipmentDictionary["Daggers"]
-        leather = protectionDictionary["Leather"]
+        dagger = equipment_dictionary["Daggers"]
+        leather = protection_dictionary["Leather"]
         special = class_action_dictionary["Backstab"]
         super().__init__(name, health, dagger, leather, special)
 
 class Fighter(Hero):
     def __init__(self, name:str):
         health = randint(10, 15)
-        sword = equipmentDictionary["Greatsword"]
-        chainmail = protectionDictionary["Chainmail"]
+        sword = equipment_dictionary["Greatsword"]
+        chainmail = protection_dictionary["Chainmail"]
         special = class_action_dictionary["Power Attack"]
         super().__init__(name, health, sword, chainmail, special)
 

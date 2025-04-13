@@ -1,5 +1,5 @@
 from hero import Hero, class_action_dictionary
-from items import equipmentDictionary, protectionDictionary
+from items import equipment_dictionary, protection_dictionary
 import json
 
 def save_game(hero):
@@ -24,8 +24,8 @@ def load_game() -> Hero:
             hero = Hero(
                 name=hero_data["name"],
                 health=hero_data["health"],
-                equipment=equipmentDictionary[hero_data["equipment"]],
-                protection=protectionDictionary[hero_data["protection"]],
+                equipment=equipment_dictionary[hero_data["equipment"]],
+                protection=protection_dictionary[hero_data["protection"]],
                 special=class_action_dictionary[hero_data["special"]],
                 gold=hero_data["gold"]
             )

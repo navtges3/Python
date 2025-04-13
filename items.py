@@ -37,7 +37,7 @@ next_equipment_dictionary = {"Daggers": "Rapier",
                             "Halberd": "Flaming Greataxe",
                             "Flaming Greataxe": None}
 
-equipmentDictionary = { "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
+equipment_dictionary = { "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
                         "Rapier": Weapon("Rapier", "A slender, piercing sword that allows for swift, elegant combat", 5), 
                         "Throwing Knives": Weapon("Throwing Knives", "Silent, deadly, and ideal for surprise attacks from a distance", 7), 
                         "Hand Crossbow": Weapon("Hand Crossbow", "A compact ranged weapon, great for assassinations and quick escapes", 9),
@@ -48,6 +48,6 @@ equipmentDictionary = { "Daggers": Weapon("Daggers", "A rogue’s signature: fas
                         "Halberd": Weapon("Halberd", "A polearm with a sharp axe blade and a spear tip, providing reach and versatility", 9),
                         "Flaming Greataxe": Weapon("Flaming Greataxe", "A mystical whip that ensnares foes and delivers vicious strikes", 11)}
 
-protectionDictionary = {    "Leather": Armor("Leather", "A sturdy leather suit", 2),
+protection_dictionary = {    "Leather": Armor("Leather", "A sturdy leather suit", 2),
                             "Chainmail": Armor("Chainmail", "A suit of chainmail", 4),
                             "Plate": Armor("Plate", "A suit of plate armor", 6)}

@@ -23,10 +23,10 @@ class Monster:
         if self.health <= 0:
             self.health = 0
             self.alive = False
-        print(self.name + " has " + str(self.health) + " health remaining.")
+        print(f"{self.name} has {self.health} health remaining.")
 
     def print_stats(self):
-        print(self.name + " has " + str(self.health) + " health and " + str(self.damage) + " damage and " + str(self.experience) + " experience.")
+        print(f"{self.name} has {self.health} health and {self.damage} damage and {self.experience} experience.")
 
 class Goblin(Monster):
     healthLow = 5
@@ -67,10 +67,3 @@ def get_monster(level:int) -> Monster:
         return Orc()
     else:
         return Ogre()
-
-def generate_wave(wave_number:int):
-    goblins = []
-    for i in range(wave_number):
-        goblin = Goblin(f"Goblin {i + wave_number}")
-        goblins.append(goblin)
-    return goblins
