@@ -1,4 +1,4 @@
-from hero import Hero
+from hero import Hero, Fighter, Rogue
 from monster import Monster
 from items import equipmentDictionary, protectionDictionary, lootDictionary
 from constants import GameState
@@ -101,29 +101,47 @@ class Screens:
             pygame.display.update()
 
     def new_game_screen(self) -> tuple[GameState, Hero]:
-        input_text = ""
+        hero_name = ""
+        hero_class = ""
         running = True
 
         while running:
             screen.fill(WHITE)
 
-            draw_text_centered(f"Hero Name: {input_text}", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 20)
+            draw_text(f"Hero Name: {hero_name}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 100)
+            draw_text(f"Choose your class: {hero_class}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
+            fighter_button = draw_button("Fighter", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50)
+            rogue_button = draw_button("Rogue", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50)
+            create_button = draw_button("Create Hero", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     next_state = GameState.GAME_OVER
                     running = False
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_RETURN:
-                        print(f"New Hero Created: {input_text}")
-                        hero = Hero(input_text, 10, equipmentDictionary["Sword"], protectionDictionary["Chainmail"])
-                        fileIO.save_game(hero)
-                        next_state = GameState.MAIN_GAME
-                        running = False
-                    elif event.key == pygame.K_BACKSPACE:
-                        input_text = input_text[:-1]
+                    if event.key == pygame.K_BACKSPACE:
+                        hero_name = hero_name[:-1]
                     else:
-                        input_text += event.unicode
+                        hero_name += event.unicode
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if fighter_button.collidepoint(event.pos):
+                        print("Fighter selected")
+                        hero_class = "Fighter"
+                    elif rogue_button.collidepoint(event.pos):
+                        print("Rogue selected")
+                        hero_class = "Rogue"
+                    elif create_button.collidepoint(event.pos):
+                        print("Create Hero selected")
+                        if hero_name and hero_class:
+                            if hero_class == "Fighter":
+                                hero = Fighter(hero_name)
+                            elif hero_class == "Rogue":
+                                hero = Rogue(hero_name)
+                            print(f"Hero created: {hero.name}")
+                            next_state = GameState.MAIN_GAME
+                            running = False
+                        else:
+                            print("Please enter a name and select a class.")
 
             pygame.display.update()
         return next_state, hero
