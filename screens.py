@@ -104,7 +104,7 @@ class Screens:
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    game_state = GameState.GAME_OVER
+                    game_state = GameState.EXIT
                     popup_running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -138,7 +138,7 @@ class Screens:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    next_state = GameState.GAME_OVER
+                    next_state = GameState.EXIT
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:
@@ -191,7 +191,7 @@ class Screens:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    next_state = GameState.GAME_OVER
+                    next_state = GameState.EXIT
                     running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if new_game_button.collidepoint(event.pos):
@@ -204,7 +204,7 @@ class Screens:
                         running = False
                     elif close_game_button.collidepoint(event.pos):
                         print("Exit Game selected")
-                        next_state = GameState.GAME_OVER
+                        next_state = GameState.EXIT
                         running = False
 
             pygame.display.update()
@@ -232,7 +232,7 @@ class Screens:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    next_state = GameState.GAME_OVER
+                    next_state = GameState.EXIT
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -265,7 +265,7 @@ class Screens:
                 running = False
             elif not hero.alive:
                 print("Hero defeated!")
-                next_state = GameState.WELCOME
+                next_state = GameState.GAME_OVER
                 running = False
             pygame.display.update()
         return next_state
@@ -294,7 +294,7 @@ class Screens:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    next_state = GameState.GAME_OVER
+                    next_state = GameState.EXIT
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -340,7 +340,7 @@ class Screens:
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    next_state = GameState.GAME_OVER
+                    next_state = GameState.EXIT
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
@@ -357,5 +357,24 @@ class Screens:
                         next_state = GameState.SHOP
                         running = False
             
+            pygame.display.update()
+        return next_state
+    
+    def game_over_screen(self, hero:Hero):
+        running = True
+        while running:
+            screen.fill(WHITE)
+            draw_text_centered(f"{hero.name} has been slain!", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered("Game Over", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
+            draw_text_centered("Press ESC to return to the main menu", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        next_state = GameState.WELCOME
+                        running = False
+
             pygame.display.update()
         return next_state

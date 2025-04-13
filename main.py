@@ -8,7 +8,7 @@ def main() -> None:
     monster:Monster = None
     screen = Screens()
     state = GameState.WELCOME
-    while state != GameState.GAME_OVER:
+    while state != GameState.EXIT:
         if state == GameState.WELCOME:
             state, hero = screen.welcome_screen()
         elif state == GameState.NEW_GAME:
@@ -20,8 +20,10 @@ def main() -> None:
             state = screen.battle_screen(hero, monster)
         elif state == GameState.SHOP:
             state = screen.shop_screen(hero)
+        elif state == GameState.GAME_OVER:
+            state = screen.game_over_screen(hero)
         else:
-            state = GameState.GAME_OVER
+            state = GameState.EXIT
     
     screen.quit()
 
