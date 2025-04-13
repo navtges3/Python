@@ -124,7 +124,7 @@ class Screens:
 
     def new_game_screen(self) -> tuple[GameState, Hero]:
         hero_name = ""
-        hero_class = None
+        hero_class = ""
         running = True
 
         while running:
