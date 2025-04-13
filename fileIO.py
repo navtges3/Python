@@ -7,7 +7,8 @@ def save_game(hero):
     try:
         with open("savefile.json", "w") as savefile:
             # Convert hero object to a dictionary and save it as JSON
-            json.dump(hero.to_dict(), savefile, indent=4)
+            save_data = {"hero": hero.to_dict()}
+            json.dump(save_data, savefile, indent=4)
         print("Game saved successfully!")
     except Exception as e:
         print(f"Error saving game: {e}")
@@ -18,17 +19,18 @@ def load_game() -> Hero:
         with open("savefile.json", "r") as savefile:
             # Load the hero data from the JSON file
             data = json.load(savefile)
+            hero_data = data["hero"]
             # Recreate the hero object from the saved data
             hero = Hero(
-                name=data["name"],
-                health=data["health"],
-                equipment=equipmentDictionary[data["equipment"]],
-                protection=protectionDictionary[data["protection"]],
-                special=class_action_dictionary[data["special"]],
-                gold=data["gold"]
+                name=hero_data["name"],
+                health=hero_data["health"],
+                equipment=equipmentDictionary[hero_data["equipment"]],
+                protection=protectionDictionary[hero_data["protection"]],
+                special=class_action_dictionary[hero_data["special"]],
+                gold=hero_data["gold"]
             )
-            hero.level = data["level"]
-            hero.experience = data["experience"]
+            hero.level = hero_data["level"]
+            hero.experience = hero_data["experience"]
             print("Game loaded successfully!")
             return hero
     except FileNotFoundError:
