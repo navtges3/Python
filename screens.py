@@ -58,7 +58,7 @@ def draw_hero(hero:Hero) -> None:
     pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
     draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
 
-    hero_image = pygame.image.load(f"sprites\{hero.image}")
+    hero_image = pygame.image.load(fileIO.resource_path(f"sprites\{hero.image}"))
     hero_image = pygame.transform.scale(hero_image, (100, 100))
     screen.blit(hero_image, (SCREEN_WIDTH // 2 - 120, 20))
 
@@ -68,7 +68,7 @@ def draw_monster(monster:Monster) -> None:
     pygame.draw.rect(screen, RED, monster_background, width=2, border_radius=10)
     draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 15, 15)
 
-    monster_image = pygame.image.load(f"sprites\{monster.image}")
+    monster_image = pygame.image.load(fileIO.resource_path(f"sprites\{monster.image}"))
     monster_image = pygame.transform.scale(monster_image, (100, 100))
     screen.blit(monster_image, (SCREEN_WIDTH - 120, 20))
 
