@@ -98,8 +98,8 @@ class Screens:
             draw_text_centered("Game Paused", font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
     
             # Draw buttons
-            save_quit_button = draw_button(exit_text, font, GRAY, screen, popup_x + 50, popup_y + 50, 300, 50)
-            resume_game_button = draw_button("Resume Game", font, GRAY, screen, popup_x + 50, popup_y + 120, 300, 50)
+            resume_game_button = draw_button("Resume Game", font, GRAY, screen, popup_x + 50, popup_y + 50, 300, 50)
+            save_quit_button = draw_button(exit_text, font, GRAY, screen, popup_x + 50, popup_y + 120, 300, 50)
     
             # Event handling
             for event in pygame.event.get():
