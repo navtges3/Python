@@ -36,7 +36,7 @@ def draw_text_centered(text, font, color, surface, x, y):
     surface.blit(textobj, textrect)
 
 def draw_multiple_lines(text, font, color, surface, x, y):
-    lines = text.split("/n")
+    lines = text.split("\n")
     for i, line in enumerate(lines):
         draw_text(line, font, color, surface, x, y + i * 30)
 
@@ -48,12 +48,12 @@ def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
 
 def draw_hero(hero:Hero) -> None:
     """Draw the hero's stats on the screen."""
-    hero_text = f"Name: {hero.name}/nHealth: {hero.health}/nLevel: {hero.level}"
+    hero_text = f"Name: {hero.name}\nHealth: {hero.health}\nLevel: {hero.level}"
     if hero.special is not None:
-        hero_text += f"/nSpecial: {hero.special.name}"
+        hero_text += f"\nSpecial: {hero.special.name}"
     if hero.equipment is not None:
-        hero_text += f"/nWeapon: {hero.equipment.name}/nDamage: {hero.equipment.damage}"
-    hero_text += f"/nExp: {hero.experience}/nGold: {hero.gold}"
+        hero_text += f"\nWeapon: {hero.equipment.name}\nDamage: {hero.equipment.damage}"
+    hero_text += f"\nExp: {hero.experience}\nGold: {hero.gold}"
     hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
     pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
     draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
@@ -63,7 +63,7 @@ def draw_hero(hero:Hero) -> None:
     screen.blit(hero_image, (SCREEN_WIDTH // 2 - 120, 20))
 
 def draw_monster(monster:Monster) -> None:
-    monster_text = f"Monster: {monster.name}/nHealth: {monster.health}/nDamage: {monster.damage}"   
+    monster_text = f"Monster: {monster.name}\nHealth: {monster.health}\nDamage: {monster.damage}"   
     monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
     pygame.draw.rect(screen, RED, monster_background, width=2, border_radius=10)
     draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 15, 15)
