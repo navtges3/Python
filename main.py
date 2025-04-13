@@ -6,7 +6,6 @@ from screens import Screens
 def main() -> None:
     hero:Hero = None
     monster:Monster = None
-    # Initialize the game
     screen = Screens()
     state = GameState.WELCOME
     while state != GameState.GAME_OVER:

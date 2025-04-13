@@ -1,4 +1,4 @@
-from hero import Hero, Fighter, Rogue
+from hero import Hero, make_hero
 from monster import Monster
 from items import equipmentDictionary, protectionDictionary, lootDictionary
 from constants import GameState
@@ -63,7 +63,7 @@ class Screens:
     def quit(self) -> None:
         pygame.quit()
 
-    def show_esc_popup(self, hero: Hero, game_state: GameState) -> GameState:
+    def show_esc_popup(self, hero:Hero, game_state:GameState) -> GameState:
         """Display a pop-up window with Save and Quit and Load Game options."""
         popup_running = True
         popup_width = 400
@@ -110,7 +110,7 @@ class Screens:
 
     def new_game_screen(self) -> tuple[GameState, Hero]:
         hero_name = ""
-        hero_class = ""
+        hero_class = None
         running = True
 
         while running:
@@ -136,15 +136,8 @@ class Screens:
                     elif event.key == pygame.K_RETURN:
                         print("Enter key pressed")
                         if hero_name and hero_class:
-                            if hero_class == "Fighter":
-                                hero = Fighter(hero_name)
-                            elif hero_class == "Rogue":
-                                hero = Rogue(hero_name)
-                            print(f"Hero created: {hero.name}")
                             next_state = GameState.MAIN_GAME
                             running = False
-                        else:
-                            print("Please enter a name and select a class.")
                     else:
                         hero_name += event.unicode
                 elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -157,17 +150,12 @@ class Screens:
                     elif create_button.collidepoint(event.pos):
                         print("Create Hero selected")
                         if hero_name and hero_class:
-                            if hero_class == "Fighter":
-                                hero = Fighter(hero_name)
-                            elif hero_class == "Rogue":
-                                hero = Rogue(hero_name)
-                            print(f"Hero created: {hero.name}")
                             next_state = GameState.MAIN_GAME
                             running = False
-                        else:
-                            print("Please enter a name and select a class.")
 
             pygame.display.update()
+
+        hero = make_hero(hero_name, hero_class)
         return next_state, hero
 
     def welcome_screen(self) -> tuple[GameState, Hero]:

@@ -117,22 +117,12 @@ class Fighter(Hero):
         special = classActionDictionary["Power Attack"]
         super().__init__(name, health, sword, chainmail, special)
 
-def make_hero() -> Hero:
-    theHero = None
-    while theHero is None:
-        print()
-        print("1. Rogue")
-        print("2. Fighter")
-        print()
-        choice = input("What type of hero would you like to be? ")
-        if choice == "1":
-            name = input("What is your name? ")
-            theHero = Rogue(name)
-        elif choice == "2":
-            name = input("What is your name? ")
-            theHero = Fighter(name)
-        else:
-            print("Invalid choice!")
-            theHero = None
-    theHero.print_stats()
-    return theHero 
+def make_hero(hero_name:str, hero_class:str) -> Hero:
+    the_hero = None
+    if hero_class == "Rogue":
+        the_hero = Rogue(hero_name)
+    elif hero_class == "Fighter":
+        the_hero = Fighter(hero_name)
+    else:
+        the_hero = Hero(hero_name)
+    return the_hero 
