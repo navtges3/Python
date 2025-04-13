@@ -225,10 +225,10 @@ class Screens:
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            weapon_button = draw_button("Weapon Attack", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            class_button = draw_button("Class Attack", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
-            protection_button = draw_button("Use Protection", font, BLUE, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            flee_button = draw_button("Flee", font, BLUE, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            weapon_button = draw_button("Weapon Attack", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            class_button = draw_button("Class Attack", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            protection_button = draw_button("Use Protection", font, GRAY, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            flee_button = draw_button("Flee", font, GRAY, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -280,17 +280,17 @@ class Screens:
             draw_hero(hero)
 
             # Buy Health
-            buy_health_button = draw_button("Buy Health", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            buy_health_button = draw_button("Buy Health", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 250, 50)
             buy_health_cost = 75
             draw_text(f"Cost: {buy_health_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 80)
 
             # Buy damage
-            equipment_button = draw_button("Upgrade Equipment", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 120, 200, 50)
+            equipment_button = draw_button("Upgrade Equipment", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 120, 250, 50)
             buy_damage_cost = 150
             draw_text(f"Cost: {buy_damage_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
 
             # Back to Main Game
-            back_button = draw_button("Back to Main", font, BLUE, screen, 15, SCREEN_HEIGHT - 70, 200, 50)
+            back_button = draw_button("Back to Main", font, GRAY, screen, 15, SCREEN_HEIGHT - 70, 250, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -335,8 +335,8 @@ class Screens:
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            battle_button = draw_button("Fight Goblins", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            shop_button = draw_button("Go to Shop", font, BLUE, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            battle_button = draw_button("Fight Goblins", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            shop_button = draw_button("Go to Shop", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
