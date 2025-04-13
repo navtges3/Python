@@ -58,6 +58,20 @@ def draw_hero(hero:Hero) -> None:
     pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
     draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
 
+    hero_image = pygame.image.load("sprites\knight_image.jpg")
+    hero_image = pygame.transform.scale(hero_image, (100, 100))
+    screen.blit(hero_image, (SCREEN_WIDTH // 2 - 120, 20))
+
+def draw_monster(monster:Monster) -> None:
+    monster_text = f"Monster: {monster.name}/nHealth: {monster.health}/nDamage: {monster.damage}"   
+    monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+    pygame.draw.rect(screen, RED, monster_background, width=2, border_radius=10)
+    draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 15, 15)
+
+    monster_image = pygame.image.load("sprites\goblin_image.jpg")
+    monster_image = pygame.transform.scale(monster_image, (100, 100))
+    screen.blit(monster_image, (SCREEN_WIDTH - 120, 20))
+
 class Screens:
 
     def quit(self) -> None:
@@ -206,10 +220,7 @@ class Screens:
             draw_hero(hero)
 
             #Monster Box
-            monster_text = f"Monster: {monster.name}/nHealth: {monster.health}/nDamage: {monster.damage}"   
-            monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-            pygame.draw.rect(screen, RED, monster_background, width=2, border_radius=10)
-            draw_multiple_lines(monster_text, font, BLACK, screen, SCREEN_WIDTH //2 + 15, 15)
+            draw_monster(monster)
 
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
