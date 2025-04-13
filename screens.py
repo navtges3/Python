@@ -78,7 +78,6 @@ class Screens:
         pygame.quit()
 
     def show_esc_popup(self, hero:Hero, game_state:GameState) -> GameState:
-        """Display a pop-up window with Save and Quit and Load Game options."""
         popup_running = True
         popup_width = 400
         popup_height = 200
@@ -92,16 +91,13 @@ class Screens:
             exit_text = "Save and Exit"
 
         while popup_running:
-            # Draw the semi-transparent background
             pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
             pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
             draw_text_centered("Game Paused", font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
     
-            # Draw buttons
             resume_game_button = draw_button("Resume Game", font, GRAY, screen, popup_x + 50, popup_y + 50, 300, 50)
             save_quit_button = draw_button(exit_text, font, GRAY, screen, popup_x + 50, popup_y + 120, 300, 50)
     
-            # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     game_state = GameState.EXIT
@@ -121,7 +117,39 @@ class Screens:
 
             pygame.display.update()
         return game_state
+    
+    def keep_fighting_popup(self) -> GameState:
+        popup_running = True
+        popup_width = 400
+        popup_height = 200
+        popup_x = (SCREEN_WIDTH - popup_width) // 2
+        popup_y = (SCREEN_HEIGHT - popup_height) // 2
+        popup_rect = pygame.Rect(popup_x, popup_y, popup_width, popup_height)
 
+        while popup_running:
+            pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
+            pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
+            draw_text_centered("Monster Slain!", font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
+            continue_button = draw_button("Continue Fighting", font, GRAY, screen, popup_x + 50, popup_y + 50, 300, 50)
+            retreat_button = draw_button("Retreat", font, GRAY, screen, popup_x + 50, popup_y + 120, 300, 50)
+    
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    game_state = GameState.EXIT
+                    popup_running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if continue_button.collidepoint(event.pos):
+                        print("Continue selected")
+                        game_state = GameState.BATTLE
+                        popup_running = False
+                    elif retreat_button.collidepoint(event.pos):
+                        print("Retreat selected")
+                        game_state = GameState.MAIN_GAME
+                        popup_running = False
+
+            pygame.display.update()
+        return game_state
+    
     def new_game_screen(self) -> tuple[GameState, Hero]:
         hero_name = ""
         hero_class = ""
@@ -256,7 +284,7 @@ class Screens:
                 print("Monster defeated!")
                 hero.gain_experience(monster.experience)
                 hero.add_gold(10)
-                next_state = GameState.MAIN_GAME
+                next_state = self.keep_fighting_popup()
                 running = False
             elif not hero.alive:
                 print("Hero defeated!")
