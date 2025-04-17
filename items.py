@@ -52,5 +52,5 @@ equipment_dictionary = { "Daggers": Weapon("Daggers", "A rogue’s signature: fa
                         "Flaming Greataxe": Weapon("Flaming Greataxe", "A mystical whip that ensnares foes and delivers vicious strikes", 11)}
 
 protection_dictionary = {    "Leather": Armor("Leather", "A sturdy leather suit", 0, 10, 5),
-                            "Chainmail": Armor("Chainmail", "A suit of chainmail", 4, 0, 5),
+                            "Chainmail": Armor("Chainmail", "A suit of chainmail", 1, 0, 5),
                             "Plate": Armor("Plate", "A suit of plate armor", 6, 0, 5),}

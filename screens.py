@@ -86,8 +86,12 @@ def draw_hero(hero:Hero) -> None:
     pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
     draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
      # Protection Status
+    if hero.special is not None:
+        special_status_text = f"{hero.special}: Cooldown {hero.special.active}" if hero.special and hero.special.active > 0 else f"{hero.special}: Available"
+        special_status_color = RED if hero.special and hero.special.active > 0 else GREEN
+        draw_text(special_status_text, font, special_status_color, screen, 15, SCREEN_HEIGHT // 2 - 100)
     if hero.protection is not None:
-        protection_status_text = f"Protection: Active {hero.protection.active} Turns" if hero.protection and hero.protection.active > 0 else "Protection: Inactive"
+        protection_status_text = f"{hero.protection}: Active {hero.protection.active} Turns" if hero.protection and hero.protection.active > 0 else f"{hero.protection}: Inactive"
         protection_status_color = GREEN if hero.protection and hero.protection.active > 0 else RED
         draw_text(protection_status_text, font, protection_status_color, screen, 15, SCREEN_HEIGHT // 2 - 50)
 
@@ -432,7 +436,7 @@ class Screens:
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 10)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            battle_button = draw_button("Fight Goblins", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            battle_button = draw_button("Fight Monsters", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
             shop_button = draw_button("Go to Shop", font, LIGHT_YELLOW, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
