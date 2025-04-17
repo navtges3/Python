@@ -8,7 +8,7 @@ class Item:
         return self.name
     
     def print_stats(self):
-        print(self.name + ": " + self.description)
+        print(f"{self.name}: {self.description}")
 
 class Weapon(Item):
     def __init__(self, name:str, description:str, damage:int, value:int=10):
@@ -16,15 +16,18 @@ class Weapon(Item):
         super().__init__(name, description, value)
     
     def print_stats(self):
-        print(self.name + ": " + self.description + " Damage: " + str(self.damage))
+        print(f"{self.name}: {self.description} Damage: {self.damage}")
     
 class Armor(Item):
-    def __init__(self, name:str, description:str, block:int, value:int=10):
+    def __init__(self, name:str, description:str, block:int, dodge:int, cooldown:int, value:int=10):
         self.block = block
-        super().__init__(name, description, value)
+        self.dodge = dodge
+        self.cooldown = cooldown
+        self.active = 0
+        super().__init__(name, description, value)        
 
     def print_stats(self):
-        print(self.name + ": " + self.description + " Block: " + str(self.block))
+        print(f"self.name {self.description} Block: {self.block} Dodge: {self.dodge}, Cooldown: {self.cooldown}")
 
 next_equipment_dictionary = {"Daggers": "Rapier",
                             "Rapier": "Throwing Knives",
@@ -48,6 +51,6 @@ equipment_dictionary = { "Daggers": Weapon("Daggers", "A rogue’s signature: fa
                         "Halberd": Weapon("Halberd", "A polearm with a sharp axe blade and a spear tip, providing reach and versatility", 9),
                         "Flaming Greataxe": Weapon("Flaming Greataxe", "A mystical whip that ensnares foes and delivers vicious strikes", 11)}
 
-protection_dictionary = {    "Leather": Armor("Leather", "A sturdy leather suit", 2),
-                            "Chainmail": Armor("Chainmail", "A suit of chainmail", 4),
-                            "Plate": Armor("Plate", "A suit of plate armor", 6)}
+protection_dictionary = {    "Leather": Armor("Leather", "A sturdy leather suit", 0, 10, 5),
+                            "Chainmail": Armor("Chainmail", "A suit of chainmail", 4, 0, 5),
+                            "Plate": Armor("Plate", "A suit of plate armor", 6, 0, 5),}

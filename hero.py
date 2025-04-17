@@ -38,16 +38,17 @@ class_action_dictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerf
 class Hero:
     #Base class for all heroes
     def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=class_action_dictionary["Mighty Swing"], gold:int=50):
+        self.alive = True
+        self.image = "knight_image.jpg"
         self.name = name
         self.health = health
-        self.alive = True
         self.equipment = equipment
-        self.protection = protection
         self.special = special
+        self.protection = protection
         self.level = 1
         self.experience = 0
         self.gold = gold
-        self.image = "knight_image.jpg"
+        
         
 
     #Print the hero's name
@@ -73,6 +74,22 @@ class Hero:
     
     #Take damage from an attacker
     def take_damage(self, damage:int):
+
+        if self.protection is not None and self.protection.active > 0:
+            if self.protection.dodge > 0:
+                dodge_roll = randint(1, 100)
+                if dodge_roll <= self.protection.dodge:
+                    print(f"{self.name} dodged the attack!")
+                    damage = 0
+            if self.protection.block > 0:
+                damage = damage - self.protection.block
+                if damage < 0:
+                    damage = 0
+                print(f"{self.name} blocked {self.protection.block} damage!")
+            self.protection.active -= 1
+            if self.protection.active <= 0:
+                print(f"{self.name}'s {self.protection.name} has expired!")
+        
         self.health = self.health - damage
         if self.health <= 0:
             self.health = 0

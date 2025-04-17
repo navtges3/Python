@@ -287,6 +287,9 @@ class Screens:
                             hero.take_damage(monster.damage)
                     if protection_button.collidepoint(event.pos):
                         print("Use Protection selected")
+                        if hero.protection is not None:
+                            if hero.protection.active == 0:
+                                hero.protection.active = hero.protection.cooldown
                     if flee_button.collidepoint(event.pos):
                         print("Flee selected")
                         next_state = GameState.MAIN_GAME
