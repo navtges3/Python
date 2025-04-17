@@ -1,7 +1,6 @@
 
 from hero import Hero, make_hero
 from monster import Monster, get_monster
-from monster import Monster, get_monster
 from items import equipment_dictionary, protection_dictionary, next_equipment_dictionary
 from constants import GameState
 import fileIO
@@ -292,8 +291,6 @@ class Screens:
 
     def battle_screen(self, hero:Hero, monster:Monster) -> GameState:
         running = True
-        battle_log = []
-
         battle_log = []
 
         while running:
