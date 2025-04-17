@@ -19,9 +19,14 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 BLUE = (0, 0, 255)
+RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 YELLOW = (255, 255, 0)
-RED = (255, 0, 0)
+LIGHT_GRAY = (211, 211, 211)
+LIGHT_BLUE = (173, 216, 230)
+LIGHT_RED = (255, 182, 193)
+LIGHT_YELLOW = (255, 255, 224)
+LIGHT_GREEN = (144, 238, 144)
 
 # Fonts
 font = pygame.font.Font(None, 36)
@@ -43,7 +48,8 @@ def draw_multiple_lines(text, font, color, surface, x, y):
 
 def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
     button_rect = pygame.Rect(x, y, width, height)
-    pygame.draw.rect(surface, color, button_rect)
+    pygame.draw.rect(surface, color, button_rect, border_radius=10)
+    pygame.draw.rect(surface, BLACK, button_rect, width=2, border_radius=10)
     draw_text(text, font, BLACK, surface, x + width // 2 - font.size(text)[0] // 2, y + height // 2 - font.size(text)[1] // 2)
     return button_rect
 
@@ -96,8 +102,8 @@ class Screens:
             pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
             draw_text_centered("Game Paused", font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
     
-            resume_game_button = draw_button("Resume Game", font, GRAY, screen, popup_x + 50, popup_y + 50, 300, 50)
-            save_quit_button = draw_button(exit_text, font, GRAY, screen, popup_x + 50, popup_y + 120, 300, 50)
+            resume_game_button = draw_button("Resume Game", font, LIGHT_GREEN, screen, popup_x + 50, popup_y + 50, 300, 50)
+            save_quit_button = draw_button(exit_text, font, LIGHT_RED, screen, popup_x + 50, popup_y + 120, 300, 50)
     
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -131,8 +137,8 @@ class Screens:
             pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
             pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
             draw_text_centered("Monster Slain!", font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
-            continue_button = draw_button("Continue Fighting", font, GRAY, screen, popup_x + 50, popup_y + 50, 300, 50)
-            retreat_button = draw_button("Retreat", font, GRAY, screen, popup_x + 50, popup_y + 120, 300, 50)
+            continue_button = draw_button("Continue Fighting", font, LIGHT_GREEN, screen, popup_x + 50, popup_y + 50, 300, 50)
+            retreat_button = draw_button("Retreat", font, LIGHT_RED, screen, popup_x + 50, popup_y + 120, 300, 50)
     
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -162,9 +168,14 @@ class Screens:
             draw_text(f"Hero Name: {hero_name}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 100)
             draw_text(f"Choose your class: {hero_class}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
 
-            fighter_button = draw_button("Fighter", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50)
-            rogue_button = draw_button("Rogue", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50)
-            create_button = draw_button("Create Hero", font, GRAY, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50)
+            if hero_name and hero_class:
+                create_button_color = LIGHT_GREEN
+            else:
+                create_button_color = LIGHT_GRAY
+
+            fighter_button = draw_button("Fighter", font, LIGHT_RED, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50)
+            rogue_button = draw_button("Rogue", font, LIGHT_BLUE, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50)
+            create_button = draw_button("Create Hero", font, create_button_color, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -209,13 +220,13 @@ class Screens:
         while running:
             screen.fill(WHITE)
 
-            new_game_button = draw_button("New Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
+            new_game_button = draw_button("New Game", font, LIGHT_GREEN, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
             if hero is not None:
-                load_game_button = draw_button("Load Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
-                close_game_button = draw_button("Exit Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50)
+                load_game_button = draw_button("Load Game", font, LIGHT_BLUE, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
+                close_game_button = draw_button("Exit Game", font, LIGHT_RED, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50)
             else:
                 load_game_button = None
-                close_game_button = draw_button("Exit Game", font, GRAY, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
+                close_game_button = draw_button("Exit Game", font, LIGHT_RED, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -249,10 +260,10 @@ class Screens:
 
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            weapon_button = draw_button("Weapon Attack", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            class_button = draw_button("Class Attack", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
-            protection_button = draw_button("Use Protection", font, GRAY, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            flee_button = draw_button("Flee", font, GRAY, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            weapon_button = draw_button("Weapon Attack", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            class_button = draw_button("Class Attack", font, LIGHT_GREEN, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            protection_button = draw_button("Use Protection", font, LIGHT_BLUE, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            flee_button = draw_button("Flee", font, LIGHT_YELLOW, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -301,19 +312,22 @@ class Screens:
         while running:
             screen.fill(WHITE)
             draw_hero(hero)
+            buy_health_cost = 75
+            buy_damage_cost = 150
+
+            health_button_color = LIGHT_GREEN if hero.gold >= buy_health_cost else LIGHT_GRAY
+            damage_button_color = LIGHT_GREEN if hero.gold >= buy_damage_cost else LIGHT_GRAY
 
             # Buy Health
-            buy_health_button = draw_button("Buy Health", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 250, 50)
-            buy_health_cost = 75
+            buy_health_button = draw_button("Buy Health", font, health_button_color, screen, 15, SCREEN_HEIGHT // 2 + 20, 250, 50)
             draw_text(f"Cost: {buy_health_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 80)
 
             # Upgrade Equipment
-            equipment_button = draw_button("Upgrade Equipment", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 120, 250, 50)
-            buy_damage_cost = 150
+            equipment_button = draw_button("Upgrade Equipment", font, damage_button_color, screen, 15, SCREEN_HEIGHT // 2 + 120, 250, 50)
             draw_text(f"Cost: {buy_damage_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
 
             # Back to Main Game
-            back_button = draw_button("Back to Main", font, GRAY, screen, 15, SCREEN_HEIGHT - 70, 250, 50)
+            back_button = draw_button("Back to Main", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT - 70, 250, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -358,8 +372,8 @@ class Screens:
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            battle_button = draw_button("Fight Goblins", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            shop_button = draw_button("Go to Shop", font, GRAY, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            battle_button = draw_button("Fight Goblins", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            shop_button = draw_button("Go to Shop", font, LIGHT_YELLOW, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
