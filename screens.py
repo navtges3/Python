@@ -66,8 +66,12 @@ def draw_hero(hero:Hero) -> None:
     pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
     draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
      # Protection Status
+    if hero.special is not None:
+        special_status_text = f"{hero.special}: Cooldown {hero.special.active}" if hero.special and hero.special.active > 0 else f"{hero.special}: Available"
+        special_status_color = RED if hero.special and hero.special.active > 0 else GREEN
+        draw_text(special_status_text, font, special_status_color, screen, 15, SCREEN_HEIGHT // 2 - 100)
     if hero.protection is not None:
-        protection_status_text = f"Protection: Active {hero.protection.active} Turns" if hero.protection and hero.protection.active > 0 else "Protection: Inactive"
+        protection_status_text = f"{hero.protection}: Active {hero.protection.active} Turns" if hero.protection and hero.protection.active > 0 else f"{hero.protection}: Inactive"
         protection_status_color = GREEN if hero.protection and hero.protection.active > 0 else RED
         draw_text(protection_status_text, font, protection_status_color, screen, 15, SCREEN_HEIGHT // 2 - 50)
 
@@ -278,12 +282,16 @@ class Screens:
                 protection_button_color = LIGHT_BLUE
             else:
                 protection_button_color = LIGHT_GRAY
+            if hero.special is not None and hero.special.active == 0:
+                special_button_color = LIGHT_GREEN
+            else:
+                special_button_color = LIGHT_GRAY
 
 
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
             weapon_button = draw_button(hero.equipment.name, font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            class_button = draw_button(hero.special.name, font, LIGHT_GREEN, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            class_button = draw_button(hero.special.name, font, special_button_color, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
             protection_button = draw_button(hero.protection.name, font, protection_button_color, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
             flee_button = draw_button("Flee", font, LIGHT_YELLOW, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
@@ -304,13 +312,16 @@ class Screens:
                             hero.take_damage(monster.damage)
                     if class_button.collidepoint(event.pos):
                         print("Class Attack selected")
-                        monster.take_damage(hero.use_special())
-                        if monster.alive:
-                            hero.take_damage(monster.damage)
+                        if hero.special is not None and hero.special.active == 0:
+                            hero.special.active = hero.special.cooldown
+                            monster.take_damage(hero.use_special())
+                            if monster.alive:
+                                hero.take_damage(monster.damage)
                     if protection_button.collidepoint(event.pos):
                         print("Use Protection selected")
                         if hero.protection is not None and hero.protection.active == 0:
                             hero.protection.active = hero.protection.cooldown
+                            hero.take_damage(monster.damage)
                     if flee_button.collidepoint(event.pos):
                         print("Flee selected")
                         next_state = GameState.MAIN_GAME

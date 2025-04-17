@@ -17,10 +17,12 @@ def backstab(myHero) -> int:
 
 class ClassAction:
     
-    def __init__(self, name:str, description:str, damage_func):
+    def __init__(self, name:str, description:str, damage_func, cooldown:int=5):
+        self.active = 0
         self.name = name
         self.description = description
         self.damage_func = damage_func
+        self.cooldown = cooldown
     
     def __str__(self):
         return self.name
@@ -32,8 +34,8 @@ class ClassAction:
         return damage
     
 class_action_dictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerful swing!", mighty_swing),
-                        "Power Attack": ClassAction("Power Attack", "A strong attack!", power_attack),
-                        "Backstab": ClassAction("Backstab", "A sneaky attack!", backstab)}
+                        "Power Attack": ClassAction("Power Attack", "A strong attack!", power_attack, 5),
+                        "Backstab": ClassAction("Backstab", "A sneaky attack!", backstab, 3)}
 
 class Hero:
     #Base class for all heroes
@@ -89,6 +91,11 @@ class Hero:
             self.protection.active -= 1
             if self.protection.active <= 0:
                 print(f"{self.name}'s {self.protection.name} has expired!")
+        
+        if self.special is not None and self.special.active > 0:
+            self.special.active -= 1
+            if self.special.active <= 0:
+                print(f"{self.name}'s {self.special.name} is ready to use!")
         
         self.health = self.health - damage
         if self.health <= 0:
