@@ -121,8 +121,9 @@ class Screens:
                         popup_running = False
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if save_quit_button.collidepoint(event.pos):
-                        print("Save and Quit selected")
-                        fileIO.save_game(hero)
+                        print(f"{exit_text} selected")
+                        if game_state != GameState.NEW_GAME:
+                            fileIO.save_game(hero)
                         game_state = GameState.WELCOME
                         popup_running = False
                     elif resume_game_button.collidepoint(event.pos):
@@ -182,7 +183,8 @@ class Screens:
 
             fighter_button = draw_button("Fighter", font, LIGHT_RED, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50)
             rogue_button = draw_button("Rogue", font, LIGHT_BLUE, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50)
-            create_button = draw_button("Create Hero", font, create_button_color, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50)
+            back_button = draw_button("Back", font, LIGHT_RED, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50)
+            create_button = draw_button("Create Hero", font, create_button_color, screen, SCREEN_WIDTH // 16 * 9, SCREEN_HEIGHT // 2 + 170, 200, 50)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -214,10 +216,18 @@ class Screens:
                         if hero_name and hero_class:
                             next_state = GameState.MAIN_GAME
                             running = False
+                    elif back_button.collidepoint(event.pos):
+                        print("Back selected")
+                        next_state = GameState.WELCOME
+                        running = False
 
             pygame.display.update()
 
-        hero = make_hero(hero_name, hero_class)
+        if next_state == GameState.MAIN_GAME:
+            print(f"Creating hero: {hero_name}, Class: {hero_class}")
+            hero = make_hero(hero_name, hero_class)
+        else:
+            hero = None
         return next_state, hero
 
     def welcome_screen(self) -> tuple[GameState, Hero]:
