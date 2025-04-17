@@ -57,9 +57,11 @@ def draw_hero(hero:Hero) -> None:
     """Draw the hero's stats on the screen."""
     hero_text = f"Name: {hero.name}\nHealth: {hero.health}\nLevel: {hero.level}"
     if hero.special is not None:
-        hero_text += f"\nSpecial: {hero.special.name}"
+        hero_text += f"\nSpecial: {hero.special}"
     if hero.equipment is not None:
-        hero_text += f"\nWeapon: {hero.equipment.name}\nDamage: {hero.equipment.damage}"
+        hero_text += f"\nWeapon: {hero.equipment}"
+    if hero.protection is not None:
+        hero_text += f"\nProtection: {hero.protection}"
     hero_text += f"\nExp: {hero.experience}\nGold: {hero.gold}"
     hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
     pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)

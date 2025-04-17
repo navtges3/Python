@@ -16,7 +16,7 @@ class Weapon(Item):
         super().__init__(name, description, value)
     
     def print_stats(self):
-        print(f"{self.name}: {self.description} Damage: {self.damage}")
+        print(f"{self.name}: Damage: {self.damage}")
     
 class Armor(Item):
     def __init__(self, name:str, description:str, block:int, dodge:int, cooldown:int, value:int=10):
@@ -27,7 +27,7 @@ class Armor(Item):
         super().__init__(name, description, value)        
 
     def print_stats(self):
-        print(f"self.name {self.description} Block: {self.block} Dodge: {self.dodge}, Cooldown: {self.cooldown}")
+        print(f"{self.name} Block: {self.block} Dodge: {self.dodge}")
 
 next_equipment_dictionary = {"Daggers": "Rapier",
                             "Rapier": "Throwing Knives",
