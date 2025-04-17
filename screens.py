@@ -407,7 +407,7 @@ class Screens:
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            battle_button = draw_button("Fight Goblins", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            battle_button = draw_button("Fight Monsters", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
             shop_button = draw_button("Go to Shop", font, LIGHT_YELLOW, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
             for event in pygame.event.get():
