@@ -55,14 +55,13 @@ def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
 
 def draw_hero(hero:Hero) -> None:
     """Draw the hero's stats on the screen."""
-    hero_text = f"Name: {hero.name}\nHealth: {hero.health}\nLevel: {hero.level}"
+    hero_text = f"Name: {hero.name}\nHealth: {hero.health}   Gold: {hero.gold}\nLevel: {hero.level}   Exp: {hero.experience}"
     if hero.special is not None:
         hero_text += f"\nSpecial: {hero.special}"
     if hero.equipment is not None:
         hero_text += f"\nWeapon: {hero.equipment}"
     if hero.protection is not None:
         hero_text += f"\nProtection: {hero.protection}"
-    hero_text += f"\nExp: {hero.experience}\nGold: {hero.gold}"
     hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
     pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
     draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
