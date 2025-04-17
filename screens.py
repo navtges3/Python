@@ -258,12 +258,22 @@ class Screens:
             draw_hero(hero)
             draw_monster(monster)
 
+            if hero.protection.active > 0:
+                protection_button_color = LIGHT_GRAY
+            else:
+                protection_button_color = LIGHT_BLUE
+
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
             weapon_button = draw_button(hero.equipment.name, font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
             class_button = draw_button(hero.special.name, font, LIGHT_GREEN, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
-            protection_button = draw_button(hero.protection.name, font, LIGHT_BLUE, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
+            protection_button = draw_button(hero.protection.name, font, protection_button_color, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
             flee_button = draw_button("Flee", font, LIGHT_YELLOW, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
+
+            # Protection Status
+            protection_status_text = "Protection: Active" if hero.protection and hero.protection.active > 0 else "Protection: Inactive"
+            protection_status_color = GREEN if hero.protection and hero.protection.active > 0 else RED
+            draw_text(protection_status_text, font, protection_status_color, screen, 500, SCREEN_HEIGHT // 2 + 20)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -287,9 +297,8 @@ class Screens:
                             hero.take_damage(monster.damage)
                     if protection_button.collidepoint(event.pos):
                         print("Use Protection selected")
-                        if hero.protection is not None:
-                            if hero.protection.active == 0:
-                                hero.protection.active = hero.protection.cooldown
+                        if hero.protection is not None and hero.protection.active == 0:
+                            hero.protection.active = hero.protection.cooldown
                     if flee_button.collidepoint(event.pos):
                         print("Flee selected")
                         next_state = GameState.MAIN_GAME
