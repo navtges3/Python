@@ -1,5 +1,6 @@
+
 from hero import Hero, make_hero
-from monster import Monster
+from monster import Monster, get_monster
 from items import equipment_dictionary, protection_dictionary, next_equipment_dictionary
 from constants import GameState
 import fileIO
@@ -41,6 +42,26 @@ def draw_text_centered(text, font, color, surface, x, y):
     textrect = textobj.get_rect(center=(x, y))
     surface.blit(textobj, textrect)
 
+def draw_wrapped_text(text, font, color, surface, x, y, max_width) -> int:
+    words = text.split(' ')
+    wrapped_lines = []
+    current_line = ""
+
+    for word in words:
+        test_line = f"{current_line} {word}".strip()
+        if font.size(test_line)[0] <= max_width:
+            current_line = test_line
+        else:
+            wrapped_lines.append(current_line)
+            current_line = word
+    if current_line:
+        wrapped_lines.append(current_line)
+
+    for i, line in enumerate(wrapped_lines):
+        text_surface = font.render(line, True, color)
+        surface.blit(text_surface, (x, y + i * font.get_linesize()))
+    return i
+
 def draw_multiple_lines(text, font, color, surface, x, y):
     lines = text.split("\n")
     for i, line in enumerate(lines):
@@ -55,7 +76,7 @@ def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
 
 def draw_hero(hero:Hero) -> None:
     """Draw the hero's stats on the screen."""
-    hero_text = f"Name: {hero.name}\nHealth: {hero.health}   Gold: {hero.gold}\nLevel: {hero.level}   Exp: {hero.experience}"
+    hero_text = f"Name: {hero.name}\nHealth: {hero.health}    Level: {hero.level}\nGold: {hero.gold}    Exp: {hero.experience}"
     if hero.special is not None:
         hero_text += f"\nSpecial: {hero.special}"
     if hero.equipment is not None:
@@ -270,30 +291,31 @@ class Screens:
         return next_state, hero
 
     def battle_screen(self, hero:Hero, monster:Monster) -> GameState:
-        """Battle screen where the hero fights a monster."""
         running = True
+        battle_log = []
+
         while running:
             screen.fill(WHITE)
 
             draw_hero(hero)
             draw_monster(monster)
 
-            if hero.protection is not None and hero.protection.active == 0:
-                protection_button_color = LIGHT_BLUE
-            else:
-                protection_button_color = LIGHT_GRAY
-            if hero.special is not None and hero.special.active == 0:
-                special_button_color = LIGHT_GREEN
-            else:
-                special_button_color = LIGHT_GRAY
-
-
-            action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
+            protection_button_color = LIGHT_BLUE if hero.protection is not None and hero.protection.active == 0 else LIGHT_GRAY
+            
+            action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH //2 - 10, SCREEN_HEIGHT // 2 - 10)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
+
             weapon_button = draw_button(hero.equipment.name, font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            class_button = draw_button(hero.special.name, font, special_button_color, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
-            protection_button = draw_button(hero.protection.name, font, protection_button_color, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            flee_button = draw_button("Flee", font, LIGHT_YELLOW, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            class_button = draw_button(hero.special.name, font, LIGHT_GREEN, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
+            protection_button = draw_button(hero.protection.name, font, protection_button_color, screen, 15, SCREEN_HEIGHT // 2 + 140, 200, 50)
+            flee_button = draw_button("Flee", font, LIGHT_YELLOW, screen, 15, SCREEN_HEIGHT // 2 + 200, 200, 50)
+
+            log_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+            pygame.draw.rect(screen, LIGHT_GRAY, log_background, width=2, border_radius=10)
+
+            lines = 0
+            for i, log_entry in enumerate(battle_log[-5:]):
+                lines += draw_wrapped_text(log_entry, font, BLACK, screen, SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 15 + (i + lines) * font.get_linesize(), SCREEN_WIDTH // 2 - 30)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -308,20 +330,23 @@ class Screens:
                     if weapon_button.collidepoint(event.pos):
                         print("Weapon Attack selected")
                         monster.take_damage(hero.equipment.damage)
+                        battle_log.append(f"{hero.name} attacks {monster.name} with {hero.equipment.name} for {hero.equipment.damage} damage.")
                         if monster.alive:
                             hero.take_damage(monster.damage)
+                            battle_log.append(f"{monster.name} attacks {hero.name} for {monster.damage} damage.")
                     if class_button.collidepoint(event.pos):
                         print("Class Attack selected")
-                        if hero.special is not None and hero.special.active == 0:
-                            hero.special.active = hero.special.cooldown
-                            monster.take_damage(hero.use_special())
-                            if monster.alive:
-                                hero.take_damage(monster.damage)
+                        damage = hero.use_special()
+                        monster.take_damage(damage)
+                        battle_log.append(f"{hero.name} uses {hero.special.name} on {monster.name} for {damage} damage.")
+                        if monster.alive:
+                            hero.take_damage(monster.damage)
+                            battle_log.append(f"{monster.name} attacks {hero.name} for {monster.damage} damage.")
                     if protection_button.collidepoint(event.pos):
                         print("Use Protection selected")
                         if hero.protection is not None and hero.protection.active == 0:
                             hero.protection.active = hero.protection.cooldown
-                            hero.take_damage(monster.damage)
+                            battle_log.append(f"{hero.name} uses {hero.protection.name} for {hero.protection.cooldown} turns.")
                     if flee_button.collidepoint(event.pos):
                         print("Flee selected")
                         next_state = GameState.MAIN_GAME
@@ -332,7 +357,11 @@ class Screens:
                 hero.gain_experience(monster.experience)
                 hero.add_gold(10)
                 next_state = self.keep_fighting_popup()
-                running = False
+                if next_state == GameState.BATTLE:
+                    monster = get_monster(hero.level)
+                    battle_log.append(f"{monster.name} appears!")
+                else:
+                    next_state = GameState.MAIN_GAME
             elif not hero.alive:
                 print("Hero defeated!")
                 next_state = GameState.GAME_OVER
@@ -351,7 +380,7 @@ class Screens:
             buy_damage_cost = 150
 
             health_button_color = LIGHT_GREEN if hero.gold >= buy_health_cost else LIGHT_GRAY
-            damage_button_color = LIGHT_GREEN if hero.gold >= buy_damage_cost else LIGHT_GRAY
+            damage_button_color = LIGHT_GREEN if hero.gold >= buy_damage_cost and next_equipment is not None else LIGHT_GRAY
 
             # Buy Health
             buy_health_button = draw_button("Buy Health", font, health_button_color, screen, 15, SCREEN_HEIGHT // 2 + 20, 250, 50)
@@ -381,11 +410,12 @@ class Screens:
                             hero.gold -= buy_health_cost
                         else:
                             print("Not enough gold!")
-                    elif equipment_button.collidepoint(event.pos):
+                    elif equipment_button.collidepoint(event.pos) and next_equipment is not None:
                         print("Buy Damage selected")
                         if hero.gold >= buy_damage_cost:
                             hero.gold -= buy_damage_cost
                             hero.equipment = equipment_dictionary[next_equipment]
+                            next_equipment = next_equipment_dictionary[hero.equipment.name]
                         else:
                             print("Not enough gold!")
                     elif back_button.collidepoint(event.pos):
@@ -405,7 +435,7 @@ class Screens:
             draw_hero(hero)
             
             #Action Box
-            action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
+            action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 10)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
             battle_button = draw_button("Fight Monsters", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
             shop_button = draw_button("Go to Shop", font, LIGHT_YELLOW, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
