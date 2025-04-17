@@ -64,6 +64,11 @@ def draw_hero(hero:Hero) -> None:
     hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
     pygame.draw.rect(screen, BLUE, hero_background, width=2, border_radius=10)
     draw_multiple_lines(hero_text, font, BLACK, screen, 15, 15)
+     # Protection Status
+    if hero.protection is not None:
+        protection_status_text = f"Protection: Active {hero.protection.active} Turns" if hero.protection and hero.protection.active > 0 else "Protection: Inactive"
+        protection_status_color = GREEN if hero.protection and hero.protection.active > 0 else RED
+        draw_text(protection_status_text, font, protection_status_color, screen, 15, SCREEN_HEIGHT // 2 - 50)
 
     hero_image = pygame.image.load(fileIO.resource_path(f"sprites\{hero.image}"))
     hero_image = pygame.transform.scale(hero_image, (100, 100))
@@ -258,10 +263,11 @@ class Screens:
             draw_hero(hero)
             draw_monster(monster)
 
-            if hero.protection.active > 0:
-                protection_button_color = LIGHT_GRAY
-            else:
+            if hero.protection is not None and hero.protection.active == 0:
                 protection_button_color = LIGHT_BLUE
+            else:
+                protection_button_color = LIGHT_GRAY
+
 
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 80)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
@@ -269,11 +275,6 @@ class Screens:
             class_button = draw_button(hero.special.name, font, LIGHT_GREEN, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
             protection_button = draw_button(hero.protection.name, font, protection_button_color, screen, 245, SCREEN_HEIGHT // 2 + 20, 200, 50)
             flee_button = draw_button("Flee", font, LIGHT_YELLOW, screen, 245, SCREEN_HEIGHT // 2 + 80, 200, 50)
-
-            # Protection Status
-            protection_status_text = "Protection: Active" if hero.protection and hero.protection.active > 0 else "Protection: Inactive"
-            protection_status_color = GREEN if hero.protection and hero.protection.active > 0 else RED
-            draw_text(protection_status_text, font, protection_status_color, screen, 500, SCREEN_HEIGHT // 2 + 20)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:

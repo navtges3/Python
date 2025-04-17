@@ -1,5 +1,5 @@
 from random import randint
-from items import Item, equipment_dictionary, protection_dictionary
+from items import Item, Armor, Weapon, equipment_dictionary, protection_dictionary
 
 def mighty_swing(myHero) -> int:
         return myHero.level + myHero.equipment.damage
@@ -37,7 +37,7 @@ class_action_dictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerf
 
 class Hero:
     #Base class for all heroes
-    def __init__(self, name:str="Hero", health:int=10, equipment:Item=None, protection:Item=None, special:ClassAction=class_action_dictionary["Mighty Swing"], gold:int=50):
+    def __init__(self, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, special:ClassAction=class_action_dictionary["Mighty Swing"], gold:int=50):
         self.alive = True
         self.image = "knight_image.jpg"
         self.name = name
