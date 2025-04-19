@@ -1,3 +1,4 @@
+
 from hero import Hero, make_hero
 from monster import Monster, get_monster
 from items import equipment_dictionary, protection_dictionary, next_equipment_dictionary
@@ -6,6 +7,14 @@ import fileIO
 import pygame
 
 pygame.init()
+
+# Initialize the mixer for music
+pygame.mixer.init()
+
+# Load and play background music
+pygame.mixer.music.load(fileIO.resource_path("music\\background_music.mp3"))  # Replace with your music file path
+pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
+pygame.mixer.music.play(-1)  # Play music in a loop
 
 # Set up the game window
 SCREEN_WIDTH = 800
@@ -59,7 +68,7 @@ def draw_wrapped_text(text, font, color, surface, x, y, max_width) -> int:
     for i, line in enumerate(wrapped_lines):
         text_surface = font.render(line, True, color)
         surface.blit(text_surface, (x, y + i * font.get_linesize()))
-    return i  # Return the number of lines drawn
+    return i
 
 def draw_multiple_lines(text, font, color, surface, x, y):
     lines = text.split("\n")
@@ -74,7 +83,6 @@ def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
     return button_rect
 
 def draw_hero(hero:Hero) -> None:
-    """Draw the hero's stats on the screen."""
     hero_text = f"Name: {hero.name}\nHealth: {hero.health}    Level: {hero.level}\nGold: {hero.gold}    Exp: {hero.experience}"
     if hero.special is not None:
         hero_text += f"\nSpecial: {hero.special}"
@@ -358,9 +366,8 @@ class Screens:
                 next_state = self.keep_fighting_popup()
                 if next_state == GameState.BATTLE:
                     monster = get_monster(hero.level)
-                    battle_log.append(f"{monster.name} appears!")
-                else:
-                    next_state = GameState.MAIN_GAME
+                elif next_state == GameState.MAIN_GAME:
+                    running = False
             elif not hero.alive:
                 print("Hero defeated!")
                 next_state = GameState.GAME_OVER
