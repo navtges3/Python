@@ -8,6 +8,14 @@ import pygame
 
 pygame.init()
 
+# Initialize the mixer for music
+pygame.mixer.init()
+
+# Load and play background music
+pygame.mixer.music.load(fileIO.resource_path("music\\background_music.mp3"))  # Replace with your music file path
+pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
+pygame.mixer.music.play(-1)  # Play music in a loop
+
 # Set up the game window
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
