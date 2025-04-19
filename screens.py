@@ -16,6 +16,9 @@ pygame.mixer.music.load(fileIO.resource_path("music\\background_music.mp3"))  # 
 pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
 pygame.mixer.music.play(-1)  # Play music in a loop
 
+POPUP_WIDTH = 400
+POPUP_HEIGHT = 200
+
 # Set up the game window
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -117,6 +120,29 @@ def draw_monster(monster:Monster) -> None:
     monster_image = pygame.transform.scale(monster_image, (100, 100))
     screen.blit(monster_image, (SCREEN_WIDTH - 120, 20))
 
+def draw_popup(title:str, buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]]) -> None:
+        popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
+        popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
+        popup_rect = pygame.Rect(popup_x, popup_y, POPUP_WIDTH, POPUP_HEIGHT)
+
+        pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
+        pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
+        draw_text_centered(title, font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
+
+        for button_text, button_rect, color in buttons:
+            draw_button(button_text, font, color, screen, button_rect.x, button_rect.y, button_rect.width, button_rect.height)
+
+def handle_popup_event(buttons:dict[str, callable]) -> str:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            return "quit"
+        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            return "close"
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            for button_text, action in buttons.items():
+                if action["rect"].collidepoint(event.pos):
+                    return button_text
+
 class Screens:
 
     def quit(self) -> None:
@@ -124,43 +150,29 @@ class Screens:
 
     def show_esc_popup(self, hero:Hero, game_state:GameState) -> GameState:
         popup_running = True
-        popup_width = 400
-        popup_height = 200
-        popup_x = (SCREEN_WIDTH - popup_width) // 2
-        popup_y = (SCREEN_HEIGHT - popup_height) // 2
-        popup_rect = pygame.Rect(popup_x, popup_y, popup_width, popup_height)
+        popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
+        popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
+        exit_text = "Exit Game" if game_state == GameState.NEW_GAME else "Save and Exit"
 
-        if game_state == GameState.NEW_GAME:
-            exit_text = "Exit Game"
-        else:
-            exit_text = "Save and Exit"
+        buttons = {
+            "Resume": {"rect": pygame.Rect(popup_x + 50, popup_y + 50, 300, 50), "color": LIGHT_GREEN},
+            exit_text: {"rect": pygame.Rect(popup_x + 50, popup_y + 120, 300, 50), "color": LIGHT_BLUE},
+        }
 
         while popup_running:
-            pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
-            pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
-            draw_text_centered("Game Paused", font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
-    
-            resume_game_button = draw_button("Resume Game", font, LIGHT_GREEN, screen, popup_x + 50, popup_y + 50, 300, 50)
-            save_quit_button = draw_button(exit_text, font, LIGHT_RED, screen, popup_x + 50, popup_y + 120, 300, 50)
-    
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    game_state = GameState.EXIT
-                    popup_running = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        popup_running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if save_quit_button.collidepoint(event.pos):
-                        print(f"{exit_text} selected")
-                        if game_state != GameState.NEW_GAME:
-                            fileIO.save_game(hero)
-                        game_state = GameState.WELCOME
-                        popup_running = False
-                    elif resume_game_button.collidepoint(event.pos):
-                        print("Resume Game selected")
-                        popup_running = False
+            draw_popup("Pause Menu", [(text, data["rect"], data["color"]) for text, data in buttons.items()])
+            action = handle_popup_event(buttons)
 
+            if action == "Resume":
+                popup_running = False
+            elif action == exit_text:
+                if game_state != GameState.NEW_GAME:
+                    fileIO.save_game(hero)
+                game_state = GameState.WELCOME
+                popup_running = False
+            elif action == "quit":
+                game_state = GameState.EXIT
+                popup_running = False
             pygame.display.update()
         return game_state
     
