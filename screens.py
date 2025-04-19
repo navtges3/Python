@@ -358,8 +358,8 @@ class Screens:
                 next_state = self.keep_fighting_popup()
                 if next_state == GameState.BATTLE:
                     monster = get_monster(hero.level)
-                else:
-                    next_state = GameState.MAIN_GAME
+                elif next_state == GameState.MAIN_GAME:
+                    running = False
             elif not hero.alive:
                 print("Hero defeated!")
                 next_state = GameState.GAME_OVER
