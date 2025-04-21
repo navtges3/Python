@@ -242,6 +242,7 @@ class Screens:
                 "Back": {"rect": pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50), "color": LIGHT_RED},
                 "Create Hero": {"rect": pygame.Rect(SCREEN_WIDTH // 16 * 9, SCREEN_HEIGHT - 70, 250, 50), "color": create_button_color},
             }
+            
             draw_text(f"Hero Name: {hero_name}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 100)
             draw_text(f"Choose your class: {hero_class}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
