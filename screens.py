@@ -145,7 +145,7 @@ def draw_popup(title:str, buttons:list[tuple[str, pygame.Rect, tuple[int, int, i
     draw_buttons(buttons)
                 
 def handle_events(events:list[pygame.event.Event], buttons:dict[str, callable]=None, key_actions:dict[int, str]=None):
-    """Handle events for the main game screen and return the action taken."""
+    """Handle events and return the action taken."""
     for event in events:
         if event.type == pygame.QUIT:
             return "quit"
