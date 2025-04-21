@@ -85,6 +85,10 @@ def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
     draw_text(text, font, BLACK, surface, x + width // 2 - font.size(text)[0] // 2, y + height // 2 - font.size(text)[1] // 2)
     return button_rect
 
+def draw_buttons(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]]) -> None:
+    for button_text, button_rect, color in buttons:
+        draw_button(button_text, font, color, screen, button_rect.x, button_rect.y, button_rect.width, button_rect.height)
+
 def draw_hero(hero:Hero) -> None:
     hero_text = f"Name: {hero.name}\nHealth: {hero.health}    Level: {hero.level}\nGold: {hero.gold}    Exp: {hero.experience}"
     if hero.special is not None:
@@ -142,6 +146,20 @@ def handle_popup_event(buttons:dict[str, callable]) -> str:
             for button_text, action in buttons.items():
                 if action["rect"].collidepoint(event.pos):
                     return button_text
+                
+def handle_action_event(events, buttons, key_actions=None):
+    for event in events:
+        if event.type == pygame.QUIT:
+            return "quit"
+        elif event.type == pygame.KEYDOWN:
+            if key_actions and event.key in key_actions:
+                return key_actions[event.key]
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            for button_name, button_data in buttons.items():
+                if button_data["rect"].collidepoint(event.pos):
+                    return button_name
+    return None
+
 
 class Screens:
 
@@ -449,27 +467,33 @@ class Screens:
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 10)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-            battle_button = draw_button("Fight Monsters", font, LIGHT_RED, screen, 15, SCREEN_HEIGHT // 2 + 20, 200, 50)
-            shop_button = draw_button("Go to Shop", font, LIGHT_YELLOW, screen, 15, SCREEN_HEIGHT // 2 + 80, 200, 50)
 
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    next_state = GameState.EXIT
+            buttons = {
+                "Battle": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
+                "Shop": {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 80, 200, 50), "color": LIGHT_YELLOW},
+            }
+            key_actions = {
+                pygame.K_ESCAPE: "escape",
+            }
+
+            draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
+
+            action = handle_action_event(pygame.event.get(), buttons, key_actions)
+            if action == "escape":
+                next_state = self.show_esc_popup(hero, GameState.MAIN_GAME)
+                if next_state == GameState.WELCOME:
                     running = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        next_state = self.show_esc_popup(hero, GameState.MAIN_GAME)
-                        if next_state == GameState.WELCOME:
-                            running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if battle_button.collidepoint(event.pos):
-                        print("Battle selected")
-                        next_state = GameState.BATTLE
-                        running = False
-                    elif shop_button.collidepoint(event.pos):
-                        print("Shop selected")
-                        next_state = GameState.SHOP
-                        running = False
+            elif action == "quit":
+                next_state = GameState.EXIT
+                running = False
+            elif action == "Battle":
+                print("Battle selected")
+                next_state = GameState.BATTLE
+                running = False
+            elif action == "Shop":
+                print("Shop selected")
+                next_state = GameState.SHOP
+                running = False
             
             pygame.display.update()
         return next_state
