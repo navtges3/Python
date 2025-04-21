@@ -78,12 +78,11 @@ def draw_multiple_lines(text, font, color, surface, x, y):
     for i, line in enumerate(lines):
         draw_text(line, font, color, surface, x, y + i * 30)
 
-def draw_button(text, font, color, surface, x, y, width, height) -> pygame.Rect:
+def draw_button(text, font, color, surface, x, y, width, height):
     button_rect = pygame.Rect(x, y, width, height)
     pygame.draw.rect(surface, color, button_rect, border_radius=10)
     pygame.draw.rect(surface, BLACK, button_rect, width=2, border_radius=10)
     draw_text(text, font, BLACK, surface, x + width // 2 - font.size(text)[0] // 2, y + height // 2 - font.size(text)[1] // 2)
-    return button_rect
 
 def draw_buttons(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]]) -> None:
     for button_text, button_rect, color in buttons:
@@ -133,8 +132,7 @@ def draw_popup(title:str, buttons:list[tuple[str, pygame.Rect, tuple[int, int, i
         pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
         draw_text_centered(title, font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
 
-        for button_text, button_rect, color in buttons:
-            draw_button(button_text, font, color, screen, button_rect.x, button_rect.y, button_rect.width, button_rect.height)
+        draw_buttons(buttons)
 
 def handle_popup_event(buttons:dict[str, callable]) -> str:
     for event in pygame.event.get():
@@ -154,6 +152,9 @@ def handle_action_event(events, buttons, key_actions=None):
         elif event.type == pygame.KEYDOWN:
             if key_actions and event.key in key_actions:
                 return key_actions[event.key]
+            else:
+                if event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
+                    return event.unicode
         elif event.type == pygame.MOUSEBUTTONDOWN:
             for button_name, button_data in buttons.items():
                 if button_data["rect"].collidepoint(event.pos):
@@ -221,103 +222,104 @@ class Screens:
         return game_state
     
     def new_game_screen(self) -> tuple[GameState, Hero]:
+        hero = None
         hero_name = ""
         hero_class = ""
-        running = True
-
+        running = True        
+        key_actions = {
+            pygame.K_ESCAPE: "escape",
+            pygame.K_BACKSPACE: "backspace",
+            pygame.K_RETURN: "enter",
+            pygame.K_DELETE: "delete",
+            pygame.K_TAB: "tab",
+        }
         while running:
             screen.fill(WHITE)
-
+            create_button_color = LIGHT_GREEN if hero_name and hero_class else LIGHT_GRAY
+            buttons = {
+                "Fighter": {"rect": pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50), "color": LIGHT_RED},
+                "Rogue": {"rect" : pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50), "color": LIGHT_GREEN},
+                "Back": {"rect": pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50), "color": LIGHT_RED},
+                "Create Hero": {"rect": pygame.Rect(SCREEN_WIDTH // 16 * 9, SCREEN_HEIGHT - 70, 250, 50), "color": create_button_color},
+            }
             draw_text(f"Hero Name: {hero_name}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 100)
             draw_text(f"Choose your class: {hero_class}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
+            draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
 
-            if hero_name and hero_class:
-                create_button_color = LIGHT_GREEN
-            else:
-                create_button_color = LIGHT_GRAY
-
-            fighter_button = draw_button("Fighter", font, LIGHT_RED, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50)
-            rogue_button = draw_button("Rogue", font, LIGHT_BLUE, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50)
-            back_button = draw_button("Back", font, LIGHT_RED, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50)
-            create_button = draw_button("Create Hero", font, create_button_color, screen, SCREEN_WIDTH // 16 * 9, SCREEN_HEIGHT // 2 + 170, 200, 50)
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    next_state = GameState.EXIT
+            action = handle_action_event(pygame.event.get(), buttons, key_actions)
+            if action == "escape":
+                next_state = self.show_esc_popup(hero, GameState.NEW_GAME)
+                if next_state == GameState.WELCOME:
                     running = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_BACKSPACE:
-                        hero_name = hero_name[:-1]
-                    elif event.key == pygame.K_ESCAPE:
-                        next_state = self.show_esc_popup(None, GameState.NEW_GAME)
-                        if next_state == GameState.WELCOME:
-                            running = False
-                    elif event.key == pygame.K_RETURN:
-                        print("Enter key pressed")
-                        if hero_name and hero_class:
-                            next_state = GameState.MAIN_GAME
-                            running = False
-                    else:
-                        hero_name += event.unicode
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if fighter_button.collidepoint(event.pos):
-                        print("Fighter selected")
-                        hero_class = "Fighter"
-                    elif rogue_button.collidepoint(event.pos):
-                        print("Rogue selected")
-                        hero_class = "Rogue"
-                    elif create_button.collidepoint(event.pos):
-                        print("Create Hero selected")
-                        if hero_name and hero_class:
-                            next_state = GameState.MAIN_GAME
-                            running = False
-                    elif back_button.collidepoint(event.pos):
-                        print("Back selected")
-                        next_state = GameState.WELCOME
-                        running = False
-
+            elif action == "quit":
+                next_state = GameState.EXIT
+                running = False
+            elif action == "Fighter":
+                print("Fighter selected")
+                hero_class = "Fighter"
+            elif action == "Rogue":
+                print("Rogue selected")
+                hero_class = "Rogue"
+            elif action == "Back":
+                print("Back selected")
+                next_state = GameState.WELCOME
+                running = False
+            elif action == "Create Hero" or action == "enter":
+                print("Create Hero selected")
+                if hero_name and hero_class:
+                    hero = make_hero(hero_name, hero_class)
+                    next_state = GameState.MAIN_GAME
+                    running = False
+            elif action == "backspace":
+                hero_name = hero_name[:-1]
+            elif action == "delete":
+                hero_name = ""
+            elif action == "tab":
+                hero_name += "   "
+            elif action and len(action) == 1 and action.isprintable():
+                if len(hero_name) < 20:
+                    hero_name += action
             pygame.display.update()
-
-        if next_state == GameState.MAIN_GAME:
-            print(f"Creating hero: {hero_name}, Class: {hero_class}")
-            hero = make_hero(hero_name, hero_class)
-        else:
-            hero = None
         return next_state, hero
 
     def welcome_screen(self) -> tuple[GameState, Hero]:
         running = True
         hero = fileIO.load_game()
 
+        if hero is not None:
+            buttons = {
+                "New Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50), "color": LIGHT_GREEN},
+                "Load Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_BLUE},
+                "Exit Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50), "color": LIGHT_RED},
+            }
+        else:
+            buttons = {
+                "New Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50), "color": LIGHT_GREEN},
+                "Exit Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
+            }
+        key_actions = {
+            pygame.K_ESCAPE: "escape",
+        }
         while running:
             screen.fill(WHITE)
-
-            new_game_button = draw_button("New Game", font, LIGHT_GREEN, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50)
-            if hero is not None:
-                load_game_button = draw_button("Load Game", font, LIGHT_BLUE, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
-                close_game_button = draw_button("Exit Game", font, LIGHT_RED, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50)
-            else:
-                load_game_button = None
-                close_game_button = draw_button("Exit Game", font, LIGHT_RED, screen, SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50)
-
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    next_state = GameState.EXIT
-                    running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if new_game_button.collidepoint(event.pos):
-                        print("New Game selected")
-                        next_state = GameState.NEW_GAME
-                        running = False
-                    elif load_game_button and load_game_button.collidepoint(event.pos):
-                        print("Load Game selected")
-                        next_state = GameState.MAIN_GAME
-                        running = False
-                    elif close_game_button.collidepoint(event.pos):
-                        print("Exit Game selected")
-                        next_state = GameState.EXIT
-                        running = False
-
+            draw_text_centered("Welcome to Village Defense!", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
+            action = handle_action_event(pygame.event.get(), buttons, key_actions)
+            if action == "quit":
+                next_state = GameState.EXIT
+                running = False
+            elif action == "New Game":
+                print("New Game selected")
+                next_state = GameState.NEW_GAME
+                running = False
+            elif action == "Load Game":
+                print("Load Game selected")
+                next_state = GameState.MAIN_GAME
+                running = False
+            elif action == "Exit Game":
+                print("Exit Game selected")
+                next_state = GameState.EXIT
+                running = False
             pygame.display.update()
         return next_state, hero
 
@@ -325,19 +327,19 @@ class Screens:
         running = True
         battle_log = []
 
+        action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH //2 - 10, SCREEN_HEIGHT // 2 - 10)
+        log_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
+
         while running:
             screen.fill(WHITE)
             draw_hero(hero)
             draw_monster(monster)
+            pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
+            pygame.draw.rect(screen, LIGHT_GRAY, log_background, width=2, border_radius=10)
 
             protection_button_color = LIGHT_BLUE if hero.protection is not None and hero.protection.active == 0 else LIGHT_GRAY
             special_button_color = LIGHT_GREEN if hero.special is not None and hero.special.active == 0 else LIGHT_GRAY
 
-            action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH //2 - 10, SCREEN_HEIGHT // 2 - 10)
-            pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-
-            log_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-            pygame.draw.rect(screen, LIGHT_GRAY, log_background, width=2, border_radius=10)
             lines = 0
             for i, log_entry in enumerate(battle_log[-5:]):
                 lines += draw_wrapped_text(log_entry, font, BLACK, screen, SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 15 + (i + lines) * font.get_linesize(), SCREEN_WIDTH // 2 - 30)
@@ -356,7 +358,7 @@ class Screens:
 
             action = handle_action_event(pygame.event.get(), buttons, key_actions)
             if action == "escape":
-                next_state = self.show_esc_popup(hero, GameState.MAIN_GAME)
+                next_state = self.show_esc_popup(hero, GameState.BATTLE)
                 if next_state == GameState.WELCOME:
                     running = False
             elif action == "quit":
@@ -430,7 +432,7 @@ class Screens:
 
             action = handle_action_event(pygame.event.get(), buttons, key_actions)
             if action == "escape":
-                next_state = self.show_esc_popup(hero, GameState.MAIN_GAME)
+                next_state = self.show_esc_popup(hero, GameState.SHOP)
                 if next_state == GameState.WELCOME:
                     running = False
             elif action == "quit":
@@ -462,22 +464,20 @@ class Screens:
     def main_game(self, hero:Hero) -> GameState:
         """Main game screen."""
         running = True
+        buttons = {
+            "Battle": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
+            "Shop": {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 80, 200, 50), "color": LIGHT_YELLOW},
+        }
+        key_actions = {
+            pygame.K_ESCAPE: "escape",
+        }
         while running:
             screen.fill(WHITE)
-            
             draw_hero(hero)
             
             #Action Box
             action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 10)
             pygame.draw.rect(screen, GREEN, action_background, width=2, border_radius=10)
-
-            buttons = {
-                "Battle": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
-                "Shop": {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 80, 200, 50), "color": LIGHT_YELLOW},
-            }
-            key_actions = {
-                pygame.K_ESCAPE: "escape",
-            }
 
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
 
