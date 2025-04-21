@@ -176,35 +176,28 @@ class Screens:
             pygame.display.update()
         return game_state
     
-    def keep_fighting_popup(self) -> GameState:
+    def keep_fighting_popup(self, game_state:GameState) -> GameState:
         popup_running = True
-        popup_width = 400
-        popup_height = 200
-        popup_x = (SCREEN_WIDTH - popup_width) // 2
-        popup_y = (SCREEN_HEIGHT - popup_height) // 2
-        popup_rect = pygame.Rect(popup_x, popup_y, popup_width, popup_height)
+        popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
+        popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
+        
+        buttons = {
+            "Continue Fighting": {"rect": pygame.Rect(popup_x + 50, popup_y + 50, 300, 50), "color": LIGHT_GREEN},
+            "Retreat": {"rect": pygame.Rect(popup_x + 50, popup_y + 120, 300, 50), "color": LIGHT_RED},
+        }
 
         while popup_running:
-            pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
-            pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
-            draw_text_centered("Monster Slain!", font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
-            continue_button = draw_button("Continue Fighting", font, LIGHT_GREEN, screen, popup_x + 50, popup_y + 50, 300, 50)
-            retreat_button = draw_button("Retreat", font, LIGHT_RED, screen, popup_x + 50, popup_y + 120, 300, 50)
-    
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    game_state = GameState.EXIT
-                    popup_running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if continue_button.collidepoint(event.pos):
-                        print("Continue selected")
-                        game_state = GameState.BATTLE
-                        popup_running = False
-                    elif retreat_button.collidepoint(event.pos):
-                        print("Retreat selected")
-                        game_state = GameState.MAIN_GAME
-                        popup_running = False
+            draw_popup("Monster Defeated!", [(text, data["rect"], data["color"]) for text, data in buttons.items()])
+            action = handle_popup_event(buttons)
 
+            if action == "Continue Fighting":
+                popup_running = False
+            elif action == "Retreat":
+                game_state = GameState.MAIN_GAME
+                popup_running = False
+            elif action == "quit":
+                game_state = GameState.EXIT
+                popup_running = False
             pygame.display.update()
         return game_state
     
@@ -375,7 +368,7 @@ class Screens:
                 print("Monster defeated!")
                 hero.gain_experience(monster.experience)
                 hero.add_gold(10)
-                next_state = self.keep_fighting_popup()
+                next_state = self.keep_fighting_popup(GameState.BATTLE)
                 if next_state == GameState.BATTLE:
                     monster = get_monster(hero.level)
                 elif next_state == GameState.MAIN_GAME:
