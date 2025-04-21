@@ -6,6 +6,7 @@ import sys
 
 
 def resource_path(relative_path: str) -> str:
+    """Get the absolute path to the resource, works for dev and PyInstaller."""
     try:
         base_path = sys._MEIPASS
     except Exception:

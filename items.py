@@ -1,25 +1,37 @@
 class Item:
+    """
+    Base class for all items in the game.
+    Each item has a name, description, and value.
+    """
     def __init__(self, name:str, description:str, value:int=0):
+        """Initialize the item with a name, description, and value."""
         self.name = name
         self.description = description
         self.value = value
 
     def __str__(self):
+        """Returns the name of the item."""
         return self.name
     
     def print_stats(self):
+        """Prints the item's stats."""
         print(f"{self.name}: {self.description}")
 
 class Weapon(Item):
+    """A class representing a weapon item."""
     def __init__(self, name:str, description:str, damage:int, value:int=10):
+        """Initialize the weapon with a name, description, and damage."""
         self.damage = damage
         super().__init__(name, description, value)
     
     def print_stats(self):
+        """Prints the weapon's stats."""
         print(f"{self.name}: Damage: {self.damage}")
     
 class Armor(Item):
+    """A class representing an armor item."""
     def __init__(self, name:str, description:str, block:int, dodge:int, cooldown:int, value:int=10):
+        """Initialize the armor with a name, description, block, dodge, and cooldown."""
         self.block = block
         self.dodge = dodge
         self.cooldown = cooldown
@@ -27,6 +39,7 @@ class Armor(Item):
         super().__init__(name, description, value)        
 
     def print_stats(self):
+        """Prints the armor's stats."""
         print(f"{self.name} Block: {self.block} Dodge: {self.dodge}")
 
 next_equipment_dictionary = {"Daggers": "Rapier",
