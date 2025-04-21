@@ -43,17 +43,20 @@ LIGHT_GREEN = (144, 238, 144)
 # Fonts
 font = pygame.font.Font(None, 36)
 
-def draw_text(text, font, color, surface, x, y):
+def draw_text(text:str, font:pygame.font, color:tuple, surface:pygame.Rect, x:int, y:int) -> None:
+    """Draw text on the screen at the specified position."""
     textobj = font.render(text, True, color)
     textrect = textobj.get_rect(topleft=(x, y))
     surface.blit(textobj, textrect)
 
-def draw_text_centered(text, font, color, surface, x, y):
+def draw_text_centered(text:str, font:pygame.font, color:tuple, surface:pygame.Rect, x:int, y:int) -> None:
+    """Draw centered text on the screen at the specified position."""
     textobj = font.render(text, True, color)
     textrect = textobj.get_rect(center=(x, y))
     surface.blit(textobj, textrect)
 
-def draw_wrapped_text(text, font, color, surface, x, y, max_width) -> int:
+def draw_wrapped_text(text:str, font:pygame.font, color:tuple, surface:pygame.Rect, x:int, y:int, max_width:int) -> int:
+    """Draw wrapped text on the screen at the specified position."""
     words = text.split(' ')
     wrapped_lines = []
     current_line = ""
@@ -73,22 +76,27 @@ def draw_wrapped_text(text, font, color, surface, x, y, max_width) -> int:
         surface.blit(text_surface, (x, y + i * font.get_linesize()))
     return i
 
-def draw_multiple_lines(text, font, color, surface, x, y):
+def draw_multiple_lines(text:str, font:pygame.font, color:tuple, surface:pygame.Rect, x:int, y:int) -> None:
+    """Draw multiple lines of text on the screen at the specified position."""
     lines = text.split("\n")
     for i, line in enumerate(lines):
         draw_text(line, font, color, surface, x, y + i * 30)
 
 def draw_button(text, font, color, surface, x, y, width, height):
+    """Draw a button with text on the screen."""
     button_rect = pygame.Rect(x, y, width, height)
     pygame.draw.rect(surface, color, button_rect, border_radius=10)
     pygame.draw.rect(surface, BLACK, button_rect, width=2, border_radius=10)
     draw_text(text, font, BLACK, surface, x + width // 2 - font.size(text)[0] // 2, y + height // 2 - font.size(text)[1] // 2)
 
 def draw_buttons(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]]) -> None:
+    """Draw multiple buttons on the screen."""
     for button_text, button_rect, color in buttons:
         draw_button(button_text, font, color, screen, button_rect.x, button_rect.y, button_rect.width, button_rect.height)
 
 def draw_hero(hero:Hero) -> None:
+    """Draw the hero's information on the screen."""
+    # Hero Information
     hero_text = f"Name: {hero.name}\nHealth: {hero.health}    Level: {hero.level}\nGold: {hero.gold}    Exp: {hero.experience}"
     if hero.special is not None:
         hero_text += f"\nSpecial: {hero.special}"
@@ -114,6 +122,7 @@ def draw_hero(hero:Hero) -> None:
     screen.blit(hero_image, (SCREEN_WIDTH // 2 - 120, 20))
 
 def draw_monster(monster:Monster) -> None:
+    """Draw the monster's information on the screen."""
     monster_text = f"Monster: {monster.name}\nHealth: {monster.health}\nDamage: {monster.damage}"   
     monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
     pygame.draw.rect(screen, RED, monster_background, width=2, border_radius=10)
@@ -124,28 +133,19 @@ def draw_monster(monster:Monster) -> None:
     screen.blit(monster_image, (SCREEN_WIDTH - 120, 20))
 
 def draw_popup(title:str, buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]]) -> None:
-        popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
-        popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
-        popup_rect = pygame.Rect(popup_x, popup_y, POPUP_WIDTH, POPUP_HEIGHT)
+    """Draw a popup window with a title and buttons."""
+    popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
+    popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
+    popup_rect = pygame.Rect(popup_x, popup_y, POPUP_WIDTH, POPUP_HEIGHT)
 
-        pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
-        pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
-        draw_text_centered(title, font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
+    pygame.draw.rect(screen, WHITE, popup_rect, border_radius=10)
+    pygame.draw.rect(screen, BLACK, popup_rect, width=5, border_radius=10)
+    draw_text_centered(title, font, BLACK, screen, SCREEN_WIDTH // 2, popup_y + 20)
 
-        draw_buttons(buttons)
-
-def handle_popup_event(buttons:dict[str, callable]) -> str:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            return "quit"
-        elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            return "close"
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            for button_text, action in buttons.items():
-                if action["rect"].collidepoint(event.pos):
-                    return button_text
+    draw_buttons(buttons)
                 
-def handle_action_event(events, buttons, key_actions=None):
+def handle_events(events:list[pygame.event.Event], buttons:dict[str, callable]=None, key_actions:dict[int, str]=None):
+    """Handle events for the main game screen and return the action taken."""
     for event in events:
         if event.type == pygame.QUIT:
             return "quit"
@@ -156,18 +156,25 @@ def handle_action_event(events, buttons, key_actions=None):
                 if event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
                     return event.unicode
         elif event.type == pygame.MOUSEBUTTONDOWN:
-            for button_name, button_data in buttons.items():
-                if button_data["rect"].collidepoint(event.pos):
-                    return button_name
+            if buttons is not None:
+                for button_name, button_data in buttons.items():
+                    if button_data["rect"].collidepoint(event.pos):
+                        return button_name
     return None
 
 
 class Screens:
+    """Class to manage different game screens."""
+    def __init__(self) -> None:
+        #self.game_state = GameState.WELCOME
+        return
 
     def quit(self) -> None:
+        """Quit the game."""
         pygame.quit()
 
     def show_esc_popup(self, hero:Hero, game_state:GameState) -> GameState:
+        """Show the escape popup menu."""
         popup_running = True
         popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
         popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
@@ -177,11 +184,13 @@ class Screens:
             "Resume": {"rect": pygame.Rect(popup_x + 50, popup_y + 50, 300, 50), "color": LIGHT_GREEN},
             exit_text: {"rect": pygame.Rect(popup_x + 50, popup_y + 120, 300, 50), "color": LIGHT_BLUE},
         }
+        key_actions = {
+            pygame.K_ESCAPE: exit_text,
+        }
 
         while popup_running:
             draw_popup("Pause Menu", [(text, data["rect"], data["color"]) for text, data in buttons.items()])
-            action = handle_popup_event(buttons)
-
+            action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "Resume":
                 popup_running = False
             elif action == exit_text:
@@ -196,6 +205,7 @@ class Screens:
         return game_state
     
     def keep_fighting_popup(self) -> GameState:
+        """Show the popup after defeating a monster."""
         popup_running = True
         popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
         popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
@@ -207,7 +217,7 @@ class Screens:
 
         while popup_running:
             draw_popup("Monster Defeated!", [(text, data["rect"], data["color"]) for text, data in buttons.items()])
-            action = handle_popup_event(buttons)
+            action = handle_events(pygame.event.get(), buttons)
 
             if action == "Continue Fighting":
                 popup_running = False
@@ -222,6 +232,7 @@ class Screens:
         return game_state
     
     def new_game_screen(self) -> tuple[GameState, Hero]:
+        """New game screen for creating a hero."""
         hero = None
         hero_name = ""
         hero_class = ""
@@ -247,7 +258,7 @@ class Screens:
             draw_text(f"Choose your class: {hero_class}", font, BLACK, screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
 
-            action = handle_action_event(pygame.event.get(), buttons, key_actions)
+            action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
                 next_state = self.show_esc_popup(hero, GameState.NEW_GAME)
                 if next_state == GameState.WELCOME:
@@ -284,6 +295,7 @@ class Screens:
         return next_state, hero
 
     def welcome_screen(self) -> tuple[GameState, Hero]:
+        """Welcome screen with options to start a new game or load an existing game."""
         running = True
         hero = fileIO.load_game()
 
@@ -305,7 +317,7 @@ class Screens:
             screen.fill(WHITE)
             draw_text_centered("Welcome to Village Defense!", font, BLACK, screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
-            action = handle_action_event(pygame.event.get(), buttons, key_actions)
+            action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "quit":
                 next_state = GameState.EXIT
                 running = False
@@ -325,6 +337,7 @@ class Screens:
         return next_state, hero
 
     def battle_screen(self, hero:Hero, monster:Monster) -> GameState:
+        """Battle screen where the hero fights a monster."""
         running = True
         battle_log = []
 
@@ -357,7 +370,7 @@ class Screens:
 
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
 
-            action = handle_action_event(pygame.event.get(), buttons, key_actions)
+            action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
                 next_state = self.show_esc_popup(hero, GameState.BATTLE)
                 if next_state == GameState.WELCOME:
@@ -407,6 +420,7 @@ class Screens:
         return next_state
 
     def shop_screen(self, hero:Hero) -> GameState:
+        """Shop screen where the hero can buy items."""
         running = True
         next_equipment = next_equipment_dictionary[hero.equipment.name]
         while running:
@@ -431,7 +445,7 @@ class Screens:
             draw_text(f"Cost: {buy_health_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 80)
             draw_text(f"Cost: {buy_damage_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
 
-            action = handle_action_event(pygame.event.get(), buttons, key_actions)
+            action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
                 next_state = self.show_esc_popup(hero, GameState.SHOP)
                 if next_state == GameState.WELCOME:
@@ -482,7 +496,7 @@ class Screens:
 
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
 
-            action = handle_action_event(pygame.event.get(), buttons, key_actions)
+            action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
                 next_state = self.show_esc_popup(hero, GameState.MAIN_GAME)
                 if next_state == GameState.WELCOME:
@@ -503,6 +517,7 @@ class Screens:
         return next_state
     
     def game_over_screen(self, hero:Hero):
+        """Game over screen."""
         running = True
         while running:
             screen.fill(WHITE)
