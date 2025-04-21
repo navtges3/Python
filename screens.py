@@ -176,7 +176,7 @@ class Screens:
             pygame.display.update()
         return game_state
     
-    def keep_fighting_popup(self, game_state:GameState) -> GameState:
+    def keep_fighting_popup(self) -> GameState:
         popup_running = True
         popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
         popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
@@ -192,6 +192,7 @@ class Screens:
 
             if action == "Continue Fighting":
                 popup_running = False
+                game_state = GameState.BATTLE
             elif action == "Retreat":
                 game_state = GameState.MAIN_GAME
                 popup_running = False
@@ -368,7 +369,7 @@ class Screens:
                 print("Monster defeated!")
                 hero.gain_experience(monster.experience)
                 hero.add_gold(10)
-                next_state = self.keep_fighting_popup(GameState.BATTLE)
+                next_state = self.keep_fighting_popup()
                 if next_state == GameState.BATTLE:
                     monster = get_monster(hero.level)
                 elif next_state == GameState.MAIN_GAME:
