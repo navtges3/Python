@@ -50,6 +50,7 @@ class Hero:
         self.image = "knight_image.jpg"
         self.name = name
         self.health = health
+        self.max_health = health
         self.equipment = equipment
         self.special = special
         self.protection = protection
@@ -149,6 +150,8 @@ class Hero:
     def level_up(self):
         """Level up the hero."""
         self.health += 5
+        if self.health > self.max_health:
+            self.max_health = self.health
         self.level += 1
         print(self.name + " has leveled up!")
         self.print_stats()

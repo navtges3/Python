@@ -78,9 +78,58 @@ def draw_buttons(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]], su
     for button_text, button_rect, color in buttons:
         draw_button(button_text, font, color, surface, button_rect.x, button_rect.y, button_rect.width, button_rect.height)
 
-def draw_hero(hero:Hero, surface, font) -> None:
-    """Draw the hero's information on the screen."""
-    # Hero Information
+def draw_health_bar(surface, x:int, y:int, width:int, height:int, health_percentage:float) -> None:
+    """Draw a health bar on the screen."""
+    health_bar_rect = pygame.Rect(x, y, width, height)
+    pygame.draw.rect(surface, RED, health_bar_rect)
+    health_fill_rect = pygame.Rect(x, y, width * health_percentage, height)
+    pygame.draw.rect(surface, GREEN, health_fill_rect)
+
+def draw_hero(hero:Hero, surface, font,) -> None:
+    """Draw the hero's information on the surface."""
+
+    # Border
+    hero_border = pygame.Rect(0, SCREEN_HEIGHT // 2, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
+    pygame.draw.rect(surface, BLUE, hero_border, width=5, border_radius=10)
+
+    # Portrait
+    hero_image = pygame.image.load(fileIO.resource_path(f"sprites\{hero.image}"))
+    hero_image = pygame.transform.scale(hero_image, (100, 100))
+    surface.blit(hero_image, (hero_border.x + 10, hero_border.y + 10))
+
+    # Health Bar
+    health_bar_width = 90
+    health_bar_height = 10
+    health_bar_x = hero_border.x + 15
+    health_bar_y = hero_border.y + hero_image.get_height() + 15
+    health_percentage = hero.health / 100
+    draw_health_bar(surface, health_bar_x, health_bar_y, health_bar_width, health_bar_height, health_percentage)
+
+    # Hero Stats
+    hero_text = f"{hero.name}\nLevel: {hero.level}\nExp: {hero.experience}\nGold: {hero.gold}"
+    draw_multiple_lines(hero_text, font, BLACK, surface, hero_border.x + hero_image.get_width() + 10, hero_border.y + 10)
+
+    # Hero Special
+    if hero.special is not None:
+        special_border = pygame.Rect(hero_border.x + hero_border.width // 2 + 5, hero_border.y + 10, hero_border.width // 2 - 15, hero_border.height - 130)
+        pygame.draw.rect(surface, LIGHT_GREEN, special_border, width=2, border_radius=10)
+        special_text = f"{hero.special.name}\nDamage: {hero.special.damage_func(hero)}\nCooldown: {hero.special.cooldown}"
+        draw_multiple_lines(special_text, font, BLACK, surface, special_border.x + 5, special_border.y + 5)
+
+    # Draw the hero's weapon and protection
+    if hero.equipment is not None:
+        equipment_border = pygame.Rect(hero_border.x + 10, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
+        pygame.draw.rect(surface, LIGHT_RED, equipment_border, width=2, border_radius=10)
+        equipment_text = f"{hero.equipment.name}\nDamage {hero.equipment.damage}"
+        draw_multiple_lines(equipment_text, font, BLACK, surface, equipment_border.x + 5, equipment_border.y + 5)
+    if hero.protection is not None:
+        protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 + 5, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
+        pygame.draw.rect(surface, LIGHT_BLUE, protection_border, width=2, border_radius=10)
+        protection_text = f"{hero.protection.name}\nDamage: {hero.protection.block}\nDodge: {hero.protection.dodge}"
+        draw_multiple_lines(protection_text, font, BLACK, surface, protection_border.x + 5, protection_border.y + 5)
+
+
+    """
     hero_text = f"Name: {hero.name}\nHealth: {hero.health}    Level: {hero.level}\nGold: {hero.gold}    Exp: {hero.experience}"
     if hero.special is not None:
         hero_text += f"\nSpecial: {hero.special}"
@@ -100,10 +149,7 @@ def draw_hero(hero:Hero, surface, font) -> None:
         protection_status_text = f"{hero.protection}: Active {hero.protection.active} Turns" if hero.protection and hero.protection.active > 0 else f"{hero.protection}: Inactive"
         protection_status_color = GREEN if hero.protection and hero.protection.active > 0 else RED
         draw_text(protection_status_text, font, protection_status_color, surface, 15, SCREEN_HEIGHT // 2 - 50)
-
-    hero_image = pygame.image.load(fileIO.resource_path(f"sprites\{hero.image}"))
-    hero_image = pygame.transform.scale(hero_image, (100, 100))
-    surface.blit(hero_image, (SCREEN_WIDTH // 2 - 120, 20))
+    """
 
 def draw_monster(monster:Monster, surface, font) -> None:
     """Draw the monster's information on the screen."""
@@ -165,7 +211,7 @@ class Screens:
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
         # Fonts
-        self.font = pygame.font.Font(None, 36)
+        self.font = pygame.font.Font(None, 30)
 
 
     def quit(self) -> None:
@@ -496,10 +542,10 @@ class Screens:
             draw_hero(hero, self.screen, self.font)
             
             #Action Box
-            action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 10)
-            pygame.draw.rect(self.screen, GREEN, action_background, width=2, border_radius=10)
+            #action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 10)
+            #pygame.draw.rect(self.screen, GREEN, action_background, width=2, border_radius=10)
 
-            draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
+            #draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
 
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
