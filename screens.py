@@ -102,7 +102,7 @@ def draw_hero(hero:Hero, surface, font,) -> None:
     health_bar_height = 10
     health_bar_x = hero_border.x + 15
     health_bar_y = hero_border.y + hero_image.get_height() + 15
-    health_percentage = hero.health / 100
+    health_percentage = hero.health / hero.max_health
     draw_health_bar(surface, health_bar_x, health_bar_y, health_bar_width, health_bar_height, health_percentage)
 
     # Hero Stats
@@ -128,30 +128,14 @@ def draw_hero(hero:Hero, surface, font,) -> None:
         protection_text = f"{hero.protection.name}\nDamage: {hero.protection.block}\nDodge: {hero.protection.dodge}"
         draw_multiple_lines(protection_text, font, BLACK, surface, protection_border.x + 5, protection_border.y + 5)
 
+def draw_screen_actions(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]], surface, font) -> None:
 
-    """
-    hero_text = f"Name: {hero.name}\nHealth: {hero.health}    Level: {hero.level}\nGold: {hero.gold}    Exp: {hero.experience}"
-    if hero.special is not None:
-        hero_text += f"\nSpecial: {hero.special}"
-    if hero.equipment is not None:
-        hero_text += f"\nWeapon: {hero.equipment}"
-    if hero.protection is not None:
-        hero_text += f"\nProtection: {hero.protection}"
-    hero_background = pygame.Rect(5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-    pygame.draw.rect(surface, BLUE, hero_background, width=2, border_radius=10)
-    draw_multiple_lines(hero_text, font, BLACK, surface, 15, 15)
-     # Protection Status
-    if hero.special is not None:
-        special_status_text = f"{hero.special}: Cooldown {hero.special.active}" if hero.special and hero.special.active > 0 else f"{hero.special}: Available"
-        special_status_color = RED if hero.special and hero.special.active > 0 else GREEN
-        draw_text(special_status_text, font, special_status_color, surface, 15, SCREEN_HEIGHT // 2 - 100)
-    if hero.protection is not None:
-        protection_status_text = f"{hero.protection}: Active {hero.protection.active} Turns" if hero.protection and hero.protection.active > 0 else f"{hero.protection}: Inactive"
-        protection_status_color = GREEN if hero.protection and hero.protection.active > 0 else RED
-        draw_text(protection_status_text, font, protection_status_color, surface, 15, SCREEN_HEIGHT // 2 - 50)
-    """
+    screen_action_border = pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
+    pygame.draw.rect(surface, GREEN, screen_action_border, width=5, border_radius=10)
 
-def draw_monster(monster:Monster, surface, font) -> None:
+    draw_buttons(buttons, surface, font)
+
+def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
     """Draw the monster's information on the screen."""
     monster_text = f"Monster: {monster.name}\nHealth: {monster.health}\nDamage: {monster.damage}"   
     monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
@@ -531,8 +515,8 @@ class Screens:
         """Main game screen."""
         running = True
         buttons = {
-            "Battle": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
-            "Shop": {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 80, 200, 50), "color": LIGHT_YELLOW},
+            "Battle": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
+            "Shop": {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 80, 200, 50), "color": LIGHT_YELLOW},
         }
         key_actions = {
             pygame.K_ESCAPE: "escape",
@@ -540,13 +524,8 @@ class Screens:
         while running:
             self.screen.fill(WHITE)
             draw_hero(hero, self.screen, self.font)
-            
-            #Action Box
-            #action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH - 10, SCREEN_HEIGHT // 2 - 10)
-            #pygame.draw.rect(self.screen, GREEN, action_background, width=2, border_radius=10)
-
-            #draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
-
+            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
+            draw_text_centered("Main Game", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
                 next_state = self.show_esc_popup(hero, GameState.MAIN_GAME)
