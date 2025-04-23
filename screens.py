@@ -2,10 +2,11 @@
 import random
 from hero import Hero, make_hero
 from monster import Monster, get_monster
-from items import equipment_dictionary, armor_dictionary
+from items import equipment_dictionary, armor_dictionary, Weapon, Armor
 from constants import GameState
 import fileIO
 import pygame
+import math
 
 # Set up the game window
 SCREEN_WIDTH = 800
@@ -26,6 +27,7 @@ LIGHT_BLUE = (173, 216, 230)
 LIGHT_RED = (255, 182, 193)
 LIGHT_YELLOW = (255, 255, 224)
 LIGHT_GREEN = (144, 238, 144)
+GOLD = (255, 215, 0)
 
 def draw_text(text:str, font:pygame.font, color:tuple, surface, x:int, y:int) -> None:
     """Draw text on the screen at the specified position."""
@@ -148,7 +150,25 @@ def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
 
     draw_multiple_lines(monster_text, font, BLACK, surface, monster_border.x + 15, monster_border.y + monster_image.get_height() + 15)
 
+def draw_item_card(item, surface, font, x:int, y:int) -> pygame.Rect:
+    """Draw an item card on the screen."""
+    item_text = f"{item.name}"
+    if isinstance(item, Weapon):
+        item_text += f"\nDamage: {item.damage}"
+    elif isinstance(item, Armor):
+        item_text += f"\nBlock: {item.block}\nDodge: {item.dodge}\nCooldown: {item.cooldown}"
+
+    # Border
+    item_border = pygame.Rect(x, y, 3 * SCREEN_WIDTH // 16, SCREEN_HEIGHT // 3)
+    pygame.draw.rect(surface, LIGHT_GRAY, item_border, width=5, border_radius=10)
     
+    # Cost
+    cost_rect = pygame.Rect(item_border.x + item_border.width // 2 - 25, item_border.y + item_border.height - 30, 50, 25)
+    pygame.draw.rect(surface, GOLD, cost_rect, border_top_left_radius=25, border_top_right_radius=25, border_bottom_left_radius=2, border_bottom_right_radius=2)
+    draw_text_centered(f"{item.value}G", font, BLACK, surface, cost_rect.x + cost_rect.width // 2, cost_rect.y + cost_rect.height // 2 + 5)
+    draw_multiple_lines(item_text, font, BLACK, surface, item_border.x + 15, item_border.y + 15)
+
+    return item_border
 
 def draw_popup(title:str, buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]], surface, font) -> None:
     """Draw a popup window with a title and buttons."""
@@ -482,7 +502,7 @@ class Screens:
             self.screen.fill(WHITE)
             draw_hero(hero, self.screen, self.font)
             draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
-            draw_text_centered("Shop", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            draw_item_card(equipment_dictionary[equipment_name], self.screen, self.font, 25, 25)
 
             health_button_color = LIGHT_GREEN if hero.gold >= buy_health_cost else LIGHT_GRAY
             equipment_button_color = LIGHT_GREEN if hero.gold >= buy_equipment_cost and equipment_name is not None else LIGHT_GRAY
