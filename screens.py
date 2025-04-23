@@ -277,15 +277,18 @@ class Screens:
             pygame.K_DELETE: "delete",
             pygame.K_TAB: "tab",
         }
+        buttons = {
+            "Fighter": {"rect": pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50), "color": LIGHT_RED},
+            "Rogue": {"rect" : pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50), "color": LIGHT_GREEN},
+            "Back": {"rect": pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50), "color": LIGHT_RED},
+            "Create Hero": {"rect": pygame.Rect(SCREEN_WIDTH // 16 * 9, SCREEN_HEIGHT - 70, 250, 50), "color": LIGHT_GRAY},
+        }
         while running:
             self.screen.fill(WHITE)
             create_button_color = LIGHT_GREEN if hero_name and hero_class else LIGHT_GRAY
-            buttons = {
-                "Fighter": {"rect": pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30, 200, 50), "color": LIGHT_RED},
-                "Rogue": {"rect" : pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100, 200, 50), "color": LIGHT_GREEN},
-                "Back": {"rect": pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170, 200, 50), "color": LIGHT_RED},
-                "Create Hero": {"rect": pygame.Rect(SCREEN_WIDTH // 16 * 9, SCREEN_HEIGHT - 70, 250, 50), "color": create_button_color},
-            }
+            if create_button_color != buttons["Create Hero"]["color"]:
+                buttons["Create Hero"]["color"] = create_button_color
+            
             
             draw_text(f"Hero Name: {hero_name}", self.font, BLACK, self.screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 100)
             draw_text(f"Choose your class: {hero_class}", self.font, BLACK, self.screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
@@ -393,10 +396,10 @@ class Screens:
             protection_button_color = LIGHT_BLUE if hero.protection is not None and hero.protection.active == 0 else LIGHT_GRAY
             special_button_color = LIGHT_GREEN if hero.special is not None and hero.special.active == 0 else LIGHT_GRAY
 
-            buttons.update({
-                hero.special.name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": special_button_color},
-                hero.protection.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 200, 50), "color": protection_button_color},
-            })
+            if protection_button_color != buttons[hero.protection.name]["color"]:
+                buttons[hero.protection.name]["color"] = protection_button_color
+            if special_button_color != buttons[hero.special.name]["color"]:
+                buttons[hero.special.name]["color"] = special_button_color
 
             lines = 0
             for i, log_entry in enumerate(battle_log[-5:]):
@@ -458,13 +461,18 @@ class Screens:
 
     def shop_screen(self, hero:Hero) -> GameState:
         """Shop screen where the hero can buy items."""
+        buy_health_cost = 25
+        buy_equipment_cost = 50
+        buy_protection_cost = 50
         running = True
         equipment_name = random.choice(list(equipment_dictionary.keys()))
+        protection_name = random.choice(list(armor_dictionary.keys()))
 
         buttons = {
-            "Buy Health": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": LIGHT_GRAY},
-            equipment_name: {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 120, 250, 50), "color": LIGHT_GRAY},
-            "Back to Main": {"rect": pygame.Rect(15, SCREEN_HEIGHT - 70, 250, 50), "color": LIGHT_RED},
+            "Buy Health": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": LIGHT_GRAY},
+            equipment_name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 250, 50), "color": LIGHT_GRAY},
+            protection_name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 250, 50), "color": LIGHT_GRAY},
+            "Leave the Shop": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185, 250, 50), "color": LIGHT_RED},
         }
         key_actions = {
             pygame.K_ESCAPE: "escape",
@@ -473,20 +481,19 @@ class Screens:
         while running:
             self.screen.fill(WHITE)
             draw_hero(hero, self.screen, self.font)
-            buy_health_cost = 25
-            buy_equipment_cost = 50
+            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
+            draw_text_centered("Shop", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
 
             health_button_color = LIGHT_GREEN if hero.gold >= buy_health_cost else LIGHT_GRAY
             equipment_button_color = LIGHT_GREEN if hero.gold >= buy_equipment_cost and equipment_name is not None else LIGHT_GRAY
+            protection_button_color = LIGHT_GREEN if hero.gold >= buy_protection_cost and protection_name is not None else LIGHT_GRAY
 
-            buttons.update({
-                "Buy Health": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": health_button_color},
-                equipment_name: {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 120, 250, 50), "color": equipment_button_color},
-            })
-
-            draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
-            draw_text(f"Cost: {buy_health_cost}", self.font, BLACK, self.screen, 15, SCREEN_HEIGHT // 2 + 80)
-            draw_text(f"Cost: {buy_equipment_cost}", self.font, BLACK, self.screen, 15, SCREEN_HEIGHT // 2 + 180)
+            if health_button_color != buttons["Buy Health"]["color"]:
+                buttons["Buy Health"]["color"] = health_button_color
+            if equipment_button_color != buttons[equipment_name]["color"]:
+                buttons[equipment_name]["color"] = equipment_button_color
+            if protection_button_color != buttons[protection_name]["color"]:
+                buttons[protection_name]["color"] = protection_button_color
 
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
@@ -508,10 +515,28 @@ class Screens:
                 if hero.gold >= buy_equipment_cost:
                     hero.gold -= buy_equipment_cost
                     hero.equipment = equipment_dictionary[equipment_name]
-                    equipment_name = random.choice(list(equipment_dictionary.keys()))
+                    buttons.pop(equipment_name)
+                    next_equipment_name = random.choice(list(equipment_dictionary.keys()))
+                    while next_equipment_name == equipment_name:
+                        next_equipment_name = random.choice(list(equipment_dictionary.keys()))
+                    equipment_name = next_equipment_name
+                    buttons.update({equipment_name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 250, 50), "color": LIGHT_GRAY}})
                 else:
                     print("Not enough gold!")
-            elif action == "Back to Main":
+            elif action == protection_name:
+                print("Buy Protection selected")
+                if hero.gold >= buy_protection_cost:
+                    hero.gold -= buy_protection_cost
+                    hero.protection = armor_dictionary[protection_name]
+                    buttons.pop(protection_name)
+                    next_protection_name = random.choice(list(armor_dictionary.keys()))
+                    while next_protection_name == protection_name:
+                        next_protection_name = random.choice(list(armor_dictionary.keys()))
+                    protection_name = next_protection_name
+                    buttons.update({protection_name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 250, 50), "color": LIGHT_GRAY}})
+                else:
+                    print("Not enough gold!")
+            elif action == "Leave the Shop":
                 print("Back to Main selected")
                 next_state = GameState.MAIN_GAME
                 running = False
