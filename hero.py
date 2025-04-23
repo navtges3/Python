@@ -1,5 +1,5 @@
 from random import randint
-from items import Item, Armor, Weapon, equipment_dictionary, protection_dictionary
+from items import Item, Armor, Weapon, equipment_dictionary, armor_dictionary
 
 def mighty_swing(myHero) -> int:
         return myHero.level + myHero.equipment.damage
@@ -179,7 +179,7 @@ class Rogue(Hero):
         """Initialize the Rogue with random health and a dagger."""
         health = randint(5, 10)
         dagger = equipment_dictionary["Daggers"]
-        leather = protection_dictionary["Leather"]
+        leather = armor_dictionary["Leather"]
         special = class_action_dictionary["Backstab"]
         super().__init__(name, health, dagger, leather, special)
 
@@ -190,7 +190,7 @@ class Fighter(Hero):
         """Initialize the Fighter with random health and a greatsword."""
         health = randint(10, 15)
         sword = equipment_dictionary["Greatsword"]
-        chainmail = protection_dictionary["Chainmail"]
+        chainmail = armor_dictionary["Chainmail"]
         special = class_action_dictionary["Power Attack"]
         super().__init__(name, health, sword, chainmail, special)
 

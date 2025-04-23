@@ -1,7 +1,8 @@
 
+import random
 from hero import Hero, make_hero
 from monster import Monster, get_monster
-from items import equipment_dictionary, protection_dictionary, next_equipment_dictionary
+from items import equipment_dictionary, armor_dictionary
 from constants import GameState
 import fileIO
 import pygame
@@ -422,28 +423,34 @@ class Screens:
     def shop_screen(self, hero:Hero) -> GameState:
         """Shop screen where the hero can buy items."""
         running = True
-        next_equipment = next_equipment_dictionary[hero.equipment.name]
+        equipment_name = random.choice(list(equipment_dictionary.keys()))
+
+        buttons = {
+            "Buy Health": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": LIGHT_GRAY},
+            equipment_name: {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 120, 250, 50), "color": LIGHT_GRAY},
+            "Back to Main": {"rect": pygame.Rect(15, SCREEN_HEIGHT - 70, 250, 50), "color": LIGHT_RED},
+        }
+        key_actions = {
+            pygame.K_ESCAPE: "escape",
+        }
+        
         while running:
             screen.fill(WHITE)
             draw_hero(hero)
-            buy_health_cost = 75
-            buy_damage_cost = 150
+            buy_health_cost = 25
+            buy_equipment_cost = 50
 
             health_button_color = LIGHT_GREEN if hero.gold >= buy_health_cost else LIGHT_GRAY
-            damage_button_color = LIGHT_GREEN if hero.gold >= buy_damage_cost and next_equipment is not None else LIGHT_GRAY
+            equipment_button_color = LIGHT_GREEN if hero.gold >= buy_equipment_cost and equipment_name is not None else LIGHT_GRAY
 
-            buttons = {
+            buttons.update({
                 "Buy Health": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": health_button_color},
-                "Upgrade Equipment": {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 120, 250, 50), "color": damage_button_color},
-                "Back to Main": {"rect": pygame.Rect(15, SCREEN_HEIGHT - 70, 250, 50), "color": LIGHT_RED},
-            }
-            key_actions = {
-                pygame.K_ESCAPE: "escape",
-            }
+                equipment_name: {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 120, 250, 50), "color": equipment_button_color},
+            })
 
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()])
             draw_text(f"Cost: {buy_health_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 80)
-            draw_text(f"Cost: {buy_damage_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
+            draw_text(f"Cost: {buy_equipment_cost}", font, BLACK, screen, 15, SCREEN_HEIGHT // 2 + 180)
 
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
@@ -460,12 +467,12 @@ class Screens:
                     hero.gold -= buy_health_cost
                 else:
                     print("Not enough gold!")
-            elif action == "Upgrade Equipment":
+            elif action == equipment_name:
                 print("Buy Damage selected")
-                if hero.gold >= buy_damage_cost:
-                    hero.gold -= buy_damage_cost
-                    hero.equipment = equipment_dictionary[next_equipment]
-                    next_equipment = next_equipment_dictionary[hero.equipment.name]
+                if hero.gold >= buy_equipment_cost:
+                    hero.gold -= buy_equipment_cost
+                    hero.equipment = equipment_dictionary[equipment_name]
+                    equipment_name = random.choice(list(equipment_dictionary.keys()))
                 else:
                     print("Not enough gold!")
             elif action == "Back to Main":
