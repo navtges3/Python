@@ -179,7 +179,7 @@ class Rogue(Hero):
         """Initialize the Rogue with random health and a dagger."""
         health = randint(5, 10)
         dagger = equipment_dictionary["Daggers"]
-        leather = armor_dictionary["Leather"]
+        leather = armor_dictionary["Leather Armor"]
         special = class_action_dictionary["Backstab"]
         super().__init__(name, health, dagger, leather, special)
 
