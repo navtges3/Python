@@ -137,14 +137,18 @@ def draw_screen_actions(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int
 
 def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
     """Draw the monster's information on the screen."""
-    monster_text = f"Monster: {monster.name}\nHealth: {monster.health}\nDamage: {monster.damage}"   
-    monster_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-    pygame.draw.rect(surface, RED, monster_background, width=2, border_radius=10)
-    draw_multiple_lines(monster_text, font, BLACK, surface, SCREEN_WIDTH //2 + 15, 15)
-
+    monster_text = f"Monster: {monster.name}\nHealth: {monster.health}\nDamage: {monster.damage}"  
+    # Border 
+    monster_border = pygame.Rect(x, y, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 10)
+    pygame.draw.rect(surface, RED, monster_border, width=5, border_radius=10)
+    # Image
     monster_image = pygame.image.load(fileIO.resource_path(f"sprites\{monster.image}"))
     monster_image = pygame.transform.scale(monster_image, (100, 100))
-    surface.blit(monster_image, (SCREEN_WIDTH - 120, 20))
+    surface.blit(monster_image, (monster_border.x + 10, monster_border.y + 10))
+
+    draw_multiple_lines(monster_text, font, BLACK, surface, monster_border.x + 15, monster_border.y + monster_image.get_height() + 15)
+
+    
 
 def draw_popup(title:str, buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]], surface, font) -> None:
     """Draw a popup window with a title and buttons."""
@@ -370,32 +374,36 @@ class Screens:
         running = True
         battle_log = []
 
-        action_background = pygame.Rect(5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH //2 - 10, SCREEN_HEIGHT // 2 - 10)
         log_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
 
+        buttons = {
+            hero.equipment.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
+            hero.special.name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": LIGHT_GRAY},
+            hero.protection.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 200, 50), "color": LIGHT_GRAY},
+            "Flee": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185, 200, 50), "color": LIGHT_YELLOW},
+        }
+        key_actions = {
+            pygame.K_ESCAPE: "escape",
+        }
+        
         while running:
             self.screen.fill(WHITE)
             draw_hero(hero, self.screen, self.font)
-            draw_monster(monster, self.screen, self.font)
-            pygame.draw.rect(self.screen, GREEN, action_background, width=2, border_radius=10)
-            pygame.draw.rect(self.screen, LIGHT_GRAY, log_background, width=2, border_radius=10)
+            draw_monster(monster, self.screen, self.font, 0, 0)
+            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
 
             protection_button_color = LIGHT_BLUE if hero.protection is not None and hero.protection.active == 0 else LIGHT_GRAY
             special_button_color = LIGHT_GREEN if hero.special is not None and hero.special.active == 0 else LIGHT_GRAY
+
+            buttons.update({
+                hero.special.name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": special_button_color},
+                hero.protection.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 200, 50), "color": protection_button_color},
+            })
 
             lines = 0
             for i, log_entry in enumerate(battle_log[-5:]):
                 lines += draw_wrapped_text(log_entry, self.font, BLACK, self.screen, SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 15 + (i + lines) * self.font.get_linesize(), SCREEN_WIDTH // 2 - 30)
 
-            buttons = {
-                hero.equipment.name: {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
-                hero.special.name: {"rect" : pygame.Rect(15, SCREEN_HEIGHT // 2 + 80, 200, 50), "color": special_button_color},
-                hero.protection.name: {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 140, 200, 50), "color": protection_button_color},
-                "Flee": {"rect": pygame.Rect(15, SCREEN_HEIGHT // 2 + 200, 200, 50), "color": LIGHT_YELLOW},
-            }
-            key_actions = {
-                pygame.K_ESCAPE: "escape",
-            }
 
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
 
