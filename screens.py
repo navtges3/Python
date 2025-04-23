@@ -374,8 +374,6 @@ class Screens:
         running = True
         battle_log = []
 
-        log_background = pygame.Rect(SCREEN_WIDTH // 2 + 5, SCREEN_HEIGHT // 2 + 5, SCREEN_WIDTH // 2 - 10, SCREEN_HEIGHT // 2 - 10)
-
         buttons = {
             hero.equipment.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
             hero.special.name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": LIGHT_GRAY},
@@ -402,7 +400,7 @@ class Screens:
 
             lines = 0
             for i, log_entry in enumerate(battle_log[-5:]):
-                lines += draw_wrapped_text(log_entry, self.font, BLACK, self.screen, SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 15 + (i + lines) * self.font.get_linesize(), SCREEN_WIDTH // 2 - 30)
+                lines += draw_wrapped_text(log_entry, self.font, BLACK, self.screen, SCREEN_WIDTH // 2 + 15, 15 + (i + lines) * self.font.get_linesize(), SCREEN_WIDTH // 2 - 30)
 
 
             draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
@@ -442,6 +440,8 @@ class Screens:
     
             if hero.alive and not monster.alive:
                 print("Monster defeated!")
+                battle_log.append(f"{monster.name} has been defeated!")
+                battle_log.append(f"{hero.name} gains {monster.experience} experience and 10 gold.")
                 hero.gain_experience(monster.experience)
                 hero.add_gold(10)
                 next_state = self.keep_fighting_popup()
