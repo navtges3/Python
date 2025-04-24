@@ -1,31 +1,25 @@
 from hero import Hero
 from monster import Monster, get_monster
 from constants import GameState
-from screens import Screens
+from game import Game
 
 def main() -> None:
-    hero:Hero = None
-    monster:Monster = None
-    screen = Screens()
-    state = GameState.WELCOME
-    while state != GameState.EXIT:
-        if state == GameState.WELCOME:
-            state, hero = screen.welcome_screen()
-        elif state == GameState.NEW_GAME:
-            state, hero = screen.new_game_screen()
-        elif state == GameState.MAIN_GAME:
-            state = screen.main_game(hero)
-        elif state == GameState.BATTLE:
-            monster = get_monster(hero.level)
-            state = screen.battle_screen(hero, monster)
-        elif state == GameState.SHOP:
-            state = screen.shop_screen(hero)
-        elif state == GameState.GAME_OVER:
-            state = screen.game_over_screen(hero)
-        else:
-            state = GameState.EXIT
+    my_game = Game()
+    while my_game.game_state != GameState.EXIT:
+        if my_game.game_state == GameState.WELCOME:
+            my_game.welcome_screen()
+        elif my_game.game_state == GameState.NEW_GAME:
+            my_game.new_game_screen()
+        elif my_game.game_state == GameState.MAIN_GAME:
+            my_game.main_game()
+        elif my_game.game_state == GameState.BATTLE:
+            my_game.battle_screen()
+        elif my_game.game_state == GameState.SHOP:
+            my_game.shop_screen()
+        elif my_game.game_state == GameState.GAME_OVER:
+            my_game.game_over_screen()
     
-    screen.quit()
+    my_game.quit()
 
 if __name__ == "__main__":
     main()

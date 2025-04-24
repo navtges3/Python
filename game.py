@@ -14,6 +14,8 @@ SCREEN_HEIGHT = 600
 POPUP_WIDTH = 400
 POPUP_HEIGHT = 200
 
+FPS = 60
+
 # Colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -198,19 +200,22 @@ def handle_events(events:list[pygame.event.Event], buttons:dict[str, callable]=N
     return None
 
 
-class Screens:
+class Game:
     """Class to manage different game screens."""
     def __init__(self) -> None:
-        pygame.init()
+        self.game_state = GameState.WELCOME
+        self.hero = None
+        self.monster = None
 
+        pygame.init()
         # Initialize the mixer for music
         pygame.mixer.init()
-
         # Load and play background music
         pygame.mixer.music.load(fileIO.resource_path("music\\background_music.mp3"))  # Replace with your music file path
         pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
         pygame.mixer.music.play(-1)  # Play music in a loop
 
+        self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Village Defense")
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
@@ -218,17 +223,20 @@ class Screens:
         # Fonts
         self.font = pygame.font.Font(None, 30)
 
+    def update(self) -> None:
+        self.clock.tick(FPS)
+        pygame.display.update()
 
     def quit(self) -> None:
         """Quit the game."""
         pygame.quit()
 
-    def show_esc_popup(self, hero:Hero, game_state:GameState) -> GameState:
+    def show_esc_popup(self) -> None:
         """Show the escape popup menu."""
         popup_running = True
         popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
         popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
-        exit_text = "Exit Game" if game_state == GameState.NEW_GAME else "Save and Exit"
+        exit_text = "Exit Game" if self.game_state == GameState.NEW_GAME else "Save and Exit"
 
         buttons = {
             "Resume": {"rect": pygame.Rect(popup_x + 50, popup_y + 50, 300, 50), "color": LIGHT_GREEN},
@@ -244,17 +252,16 @@ class Screens:
             if action == "Resume":
                 popup_running = False
             elif action == exit_text:
-                if game_state != GameState.NEW_GAME:
-                    fileIO.save_game(hero)
-                game_state = GameState.WELCOME
+                if self.game_state != GameState.NEW_GAME:
+                    fileIO.save_game(self.hero)
+                self.game_state = GameState.WELCOME
                 popup_running = False
             elif action == "quit":
-                game_state = GameState.EXIT
+                self.game_state = GameState.EXIT
                 popup_running = False
-            pygame.display.update()
-        return game_state
+            self.update()
     
-    def keep_fighting_popup(self) -> GameState:
+    def keep_fighting_popup(self) -> None:
         """Show the popup after defeating a monster."""
         popup_running = True
         popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
@@ -271,19 +278,59 @@ class Screens:
 
             if action == "Continue Fighting":
                 popup_running = False
-                game_state = GameState.BATTLE
+                self.game_state = GameState.BATTLE
             elif action == "Retreat":
-                game_state = GameState.MAIN_GAME
+                self.game_state = GameState.MAIN_GAME
                 popup_running = False
             elif action == "quit":
-                game_state = GameState.EXIT
+                self.game_state = GameState.EXIT
                 popup_running = False
-            pygame.display.update()
-        return game_state
-    
-    def new_game_screen(self) -> tuple[GameState, Hero]:
+            self.update()
+
+    def welcome_screen(self) -> None:
+        """Welcome screen with options to start a new game or load an existing game."""
+        running = True
+        self.hero = fileIO.load_game()
+        self.game_state = self.game_state
+
+        if self.hero is not None:
+            buttons = {
+                "New Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50), "color": LIGHT_GREEN},
+                "Load Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_BLUE},
+                "Exit Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50), "color": LIGHT_RED},
+            }
+        else:
+            buttons = {
+                "New Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50), "color": LIGHT_GREEN},
+                "Exit Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
+            }
+        key_actions = {
+            pygame.K_ESCAPE: "escape",
+        }
+        while running:
+            self.screen.fill(WHITE)
+            draw_text_centered("Welcome to Village Defense!", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
+            action = handle_events(pygame.event.get(), buttons, key_actions)
+            if action == "quit":
+                self.game_state = GameState.EXIT
+                running = False
+            elif action == "New Game":
+                print("New Game selected")
+                self.game_state = GameState.NEW_GAME
+                running = False
+            elif action == "Load Game":
+                print("Load Game selected")
+                self.game_state = GameState.MAIN_GAME
+                running = False
+            elif action == "Exit Game":
+                print("Exit Game selected")
+                self.game_state = GameState.EXIT
+                running = False
+            self.update()
+
+    def new_game_screen(self) -> None:
         """New game screen for creating a hero."""
-        hero = None
         hero_name = ""
         hero_class = ""
         running = True        
@@ -313,11 +360,11 @@ class Screens:
 
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
-                next_state = self.show_esc_popup(hero, GameState.NEW_GAME)
-                if next_state == GameState.WELCOME:
+                self.show_esc_popup()
+                if self.game_state == GameState.WELCOME:
                     running = False
             elif action == "quit":
-                next_state = GameState.EXIT
+                self.game_state = GameState.EXIT
                 running = False
             elif action == "Fighter":
                 print("Fighter selected")
@@ -327,13 +374,13 @@ class Screens:
                 hero_class = "Rogue"
             elif action == "Back":
                 print("Back selected")
-                next_state = GameState.WELCOME
+                self.game_state = GameState.WELCOME
                 running = False
             elif action == "Create Hero" or action == "enter":
                 print("Create Hero selected")
                 if hero_name and hero_class:
-                    hero = make_hero(hero_name, hero_class)
-                    next_state = GameState.MAIN_GAME
+                    self.hero = make_hero(hero_name, hero_class)
+                    self.game_state = GameState.MAIN_GAME
                     running = False
             elif action == "backspace":
                 hero_name = hero_name[:-1]
@@ -344,60 +391,21 @@ class Screens:
             elif action and len(action) == 1 and action.isprintable():
                 if len(hero_name) < 20:
                     hero_name += action
-            pygame.display.update()
-        return next_state, hero
+            self.update()
+        self.game_state = self.game_state
 
-    def welcome_screen(self) -> tuple[GameState, Hero]:
-        """Welcome screen with options to start a new game or load an existing game."""
-        running = True
-        hero = fileIO.load_game()
-
-        if hero is not None:
-            buttons = {
-                "New Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50), "color": LIGHT_GREEN},
-                "Load Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_BLUE},
-                "Exit Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100, 200, 50), "color": LIGHT_RED},
-            }
-        else:
-            buttons = {
-                "New Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 60, 200, 50), "color": LIGHT_GREEN},
-                "Exit Game": {"rect": pygame.Rect(SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
-            }
-        key_actions = {
-            pygame.K_ESCAPE: "escape",
-        }
-        while running:
-            self.screen.fill(WHITE)
-            draw_text_centered("Welcome to Village Defense!", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
-            draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
-            action = handle_events(pygame.event.get(), buttons, key_actions)
-            if action == "quit":
-                next_state = GameState.EXIT
-                running = False
-            elif action == "New Game":
-                print("New Game selected")
-                next_state = GameState.NEW_GAME
-                running = False
-            elif action == "Load Game":
-                print("Load Game selected")
-                next_state = GameState.MAIN_GAME
-                running = False
-            elif action == "Exit Game":
-                print("Exit Game selected")
-                next_state = GameState.EXIT
-                running = False
-            pygame.display.update()
-        return next_state, hero
-
-    def battle_screen(self, hero:Hero, monster:Monster) -> GameState:
+    def battle_screen(self) -> None:
         """Battle screen where the hero fights a monster."""
         running = True
         battle_log = []
 
+        if self.monster is None or not self.monster.alive:
+            self.monster = get_monster(self.hero.level)
+
         buttons = {
-            hero.equipment.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
-            hero.special.name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": LIGHT_GRAY},
-            hero.protection.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 200, 50), "color": LIGHT_GRAY},
+            self.hero.equipment.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
+            self.hero.special.name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": LIGHT_GRAY},
+            self.hero.protection.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 200, 50), "color": LIGHT_GRAY},
             "Flee": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185, 200, 50), "color": LIGHT_YELLOW},
         }
         key_actions = {
@@ -406,17 +414,17 @@ class Screens:
         
         while running:
             self.screen.fill(WHITE)
-            draw_hero(hero, self.screen, self.font)
-            draw_monster(monster, self.screen, self.font, 0, 0)
+            draw_hero(self.hero, self.screen, self.font)
+            draw_monster(self.monster, self.screen, self.font, 0, 0)
             draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
 
-            protection_button_color = LIGHT_BLUE if hero.protection is not None and hero.protection.active == 0 else LIGHT_GRAY
-            special_button_color = LIGHT_GREEN if hero.special is not None and hero.special.active == 0 else LIGHT_GRAY
+            protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.active == 0 else LIGHT_GRAY
+            special_button_color = LIGHT_GREEN if self.hero.special is not None and self.hero.special.active == 0 else LIGHT_GRAY
 
-            if protection_button_color != buttons[hero.protection.name]["color"]:
-                buttons[hero.protection.name]["color"] = protection_button_color
-            if special_button_color != buttons[hero.special.name]["color"]:
-                buttons[hero.special.name]["color"] = special_button_color
+            if protection_button_color != buttons[self.hero.protection.name]["color"]:
+                buttons[self.hero.protection.name]["color"] = protection_button_color
+            if special_button_color != buttons[self.hero.special.name]["color"]:
+                buttons[self.hero.special.name]["color"] = special_button_color
 
             lines = 0
             for i, log_entry in enumerate(battle_log[-5:]):
@@ -427,61 +435,57 @@ class Screens:
 
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
-                next_state = self.show_esc_popup(hero, GameState.BATTLE)
-                if next_state == GameState.WELCOME:
+                self.show_esc_popup()
+                if self.game_state == GameState.WELCOME:
                     running = False
             elif action == "quit":
-                next_state = GameState.EXIT
+                self.game_state = GameState.EXIT
                 running = False
-            elif action == hero.equipment.name:
+            elif action == self.hero.equipment.name:
                 print("weapon attack selected")
-                monster.take_damage(hero.equipment.damage)
-                battle_log.append(f"{hero.name} attacks {monster.name} with {hero.equipment.name} for {hero.equipment.damage} damage.")
-                if monster.alive:
-                    hero.take_damage(monster.damage)
-                    battle_log.append(f"{monster.name} attacks {hero.name} for {monster.damage} damage.")
-            elif action == hero.special.name:
+                self.monster.take_damage(self.hero.equipment.damage)
+                battle_log.append(f"{self.hero.name} attacks {self.monster.name} with {self.hero.equipment.name} for {self.hero.equipment.damage} damage.")
+                if self.monster.alive:
+                    self.hero.take_damage(self.monster.damage)
+                    battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
+            elif action == self.hero.special.name:
                 print("special attack selected")
-                damage = hero.use_special()
-                monster.take_damage(damage)
-                battle_log.append(f"{hero.name} uses {hero.special.name} on {monster.name} for {damage} damage.")
-                if monster.alive:
-                    hero.take_damage(monster.damage)
-                    battle_log.append(f"{monster.name} attacks {hero.name} for {monster.damage} damage.")
-            elif action == hero.protection.name:
+                damage = self.hero.use_special()
+                self.monster.take_damage(damage)
+                battle_log.append(f"{self.hero.name} uses {self.hero.special.name} on {self.monster.name} for {damage} damage.")
+                if self.monster.alive:
+                    self.hero.take_damage(self.monster.damage)
+                    battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
+            elif action == self.hero.protection.name:
                 print("Use Protection selected")
-                if hero.protection is not None and hero.protection.active == 0:
-                    hero.protection.active = hero.protection.cooldown
-                    battle_log.append(f"{hero.name} uses {hero.protection.name} for {hero.protection.cooldown} turns.")
+                if self.hero.protection is not None and self.hero.protection.active == 0:
+                    self.hero.protection.active = self.hero.protection.cooldown
+                    battle_log.append(f"{self.hero.name} uses {self.hero.protection.name} for {self.hero.protection.cooldown} turns.")
             elif action == "Flee":
                 print("Flee selected")
-                next_state = GameState.MAIN_GAME
+                self.game_state = GameState.MAIN_GAME
                 running = False
     
-            if hero.alive and not monster.alive:
+            if self.hero.alive and not self.monster.alive:
                 print("Monster defeated!")
-                battle_log.append(f"{monster.name} has been defeated!")
-                battle_log.append(f"{hero.name} gains {monster.experience} experience and 10 gold.")
-                hero.gain_experience(monster.experience)
-                hero.add_gold(10)
-                next_state = self.keep_fighting_popup()
-                if next_state == GameState.BATTLE:
-                    monster = get_monster(hero.level)
-                elif next_state == GameState.MAIN_GAME:
+                battle_log.append(f"{self.monster.name} has been defeated!")
+                battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
+                self.hero.gain_experience(self.monster.experience)
+                self.hero.add_gold(10)
+                self.keep_fighting_popup()
+                if self.game_state == GameState.BATTLE:
+                    self.monster = get_monster(self.hero.level)
+                elif self.game_state == GameState.MAIN_GAME:
                     running = False
-            elif not hero.alive:
+            elif not self.hero.alive:
                 print("Hero defeated!")
-                next_state = GameState.GAME_OVER
+                self.game_state = GameState.GAME_OVER
                 running = False
-            pygame.display.update()
-        return next_state
+            self.update()
 
-    def shop_screen(self, hero:Hero) -> GameState:
+    def shop_screen(self) -> None:
         """Shop screen where the hero can buy items."""
         card_selected = None
-        buy_health_cost = 25
-        buy_equipment_cost = 50
-        buy_protection_cost = 50
         running = True
         equipment_name = random.choice(list(equipment_dictionary.keys()))
         protection_name = random.choice(list(armor_dictionary.keys()))
@@ -498,14 +502,14 @@ class Screens:
         }
         
         while running:
-            if card_selected is not None and hero.gold >= buttons[card_selected]["cost"]:
+            if card_selected is not None and self.hero.gold >= buttons[card_selected]["cost"]:
                 buttons["Purchase"]["color"] = LIGHT_GREEN
             else:
                 buttons["Purchase"]["color"] = LIGHT_GRAY
             action_list = list(buttons.items())[:2]
 
             self.screen.fill(WHITE)
-            draw_hero(hero, self.screen, self.font)
+            draw_hero(self.hero, self.screen, self.font)
             draw_screen_actions([(text, data["rect"], data["color"]) for text, data in action_list], self.screen, self.font)
             draw_item_card(health_potion, self.screen, self.font, buttons["Health Potion"]["rect"], buttons["Health Potion"]["color"])
             draw_item_card(equipment_dictionary[equipment_name], self.screen, self.font, buttons["Equipment Card"]["rect"], buttons["Equipment Card"]["color"])
@@ -513,11 +517,11 @@ class Screens:
 
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
-                next_state = self.show_esc_popup(hero, GameState.SHOP)
-                if next_state == GameState.WELCOME:
+                self.show_esc_popup()
+                if self.game_state == GameState.WELCOME:
                     running = False
             elif action == "quit":
-                next_state = GameState.EXIT
+                self.game_state = GameState.EXIT
                 running = False
             elif action == "Health Potion":
                 print("Health Potion selected")
@@ -540,29 +544,28 @@ class Screens:
             elif action == "Purchase":
                 print("Purchase selected")
                 if buttons["Health Potion"]["color"] == LIGHT_GREEN:
-                    hero.add_gold(-buttons["Health Potion"]["cost"])
-                    hero.health += 10
-                    if hero.health > hero.max_health:
-                        hero.health = hero.max_health
+                    self.hero.add_gold(-buttons["Health Potion"]["cost"])
+                    self.hero.health += 10
+                    if self.hero.health > self.hero.max_health:
+                        self.hero.health = self.hero.max_health
                 elif buttons["Equipment Card"]["color"] == LIGHT_GREEN:
-                    hero.add_gold(-buttons["Equipment Card"]["cost"])
-                    hero.equipment = equipment_dictionary[equipment_name]
-                    while equipment_name == hero.equipment.name:
+                    self.hero.add_gold(-buttons["Equipment Card"]["cost"])
+                    self.hero.equipment = equipment_dictionary[equipment_name]
+                    while equipment_name == self.hero.equipment.name:
                         equipment_name = random.choice(list(equipment_dictionary.keys()))
                 elif buttons["Protection Card"]["color"] == LIGHT_GREEN:
-                    hero.add_gold(-buttons["Protection Card"]["cost"])
-                    hero.protection = armor_dictionary[protection_name]
-                    while protection_name == hero.protection.name:
+                    self.hero.add_gold(-buttons["Protection Card"]["cost"])
+                    self.hero.protection = armor_dictionary[protection_name]
+                    while protection_name == self.hero.protection.name:
                         protection_name = random.choice(list(armor_dictionary.keys()))
             elif action == "Leave":
                 print("Back to Main selected")
-                next_state = GameState.MAIN_GAME
+                self.game_state = GameState.MAIN_GAME
                 running = False
             
-            pygame.display.update()
-        return next_state
+            self.update()
 
-    def main_game(self, hero:Hero) -> GameState:
+    def main_game(self) -> None:
         """Main game screen."""
         running = True
         buttons = {
@@ -574,45 +577,44 @@ class Screens:
         }
         while running:
             self.screen.fill(WHITE)
-            draw_hero(hero, self.screen, self.font)
+            draw_hero(self.hero, self.screen, self.font)
             draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
             draw_text_centered("Main Game", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
-                next_state = self.show_esc_popup(hero, GameState.MAIN_GAME)
-                if next_state == GameState.WELCOME:
+                self.show_esc_popup()
+                if self.game_state == GameState.WELCOME:
                     running = False
             elif action == "quit":
-                next_state = GameState.EXIT
+                self.game_state = GameState.EXIT
                 running = False
             elif action == "Battle":
                 print("Battle selected")
-                next_state = GameState.BATTLE
+                self.game_state = GameState.BATTLE
                 running = False
             elif action == "Shop":
                 print("Shop selected")
-                next_state = GameState.SHOP
+                self.game_state = GameState.SHOP
                 running = False
             
-            pygame.display.update()
-        return next_state
+            self.update()
     
-    def game_over_screen(self, hero:Hero):
+    def game_over_screen(self) -> None:
         """Game over screen."""
         running = True
         while running:
             self.screen.fill(WHITE)
-            draw_text_centered(f"{hero.name} has been slain!", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered(f"{self.hero.name} has been slain!", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
             draw_text_centered("Game Over", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
             draw_text_centered("Press ESC to return to the main menu", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
                     running = False
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
-                        next_state = GameState.WELCOME
+                        self.game_state = GameState.WELCOME
                         running = False
 
-            pygame.display.update()
-        return next_state
+            self.update()
