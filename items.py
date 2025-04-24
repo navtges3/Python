@@ -42,6 +42,8 @@ class Armor(Item):
         """Prints the armor's stats."""
         print(f"{self.name} Block: {self.block} Dodge: {self.dodge}")
 
+health_potion = Item("Health Potion", "Restores 10 health points", 5)
+
 equipment_dictionary = { 
     "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
     "Rapier": Weapon("Rapier", "A slender, piercing sword that allows for swift, elegant combat", 5), 

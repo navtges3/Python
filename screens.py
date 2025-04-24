@@ -2,7 +2,7 @@
 import random
 from hero import Hero, make_hero
 from monster import Monster, get_monster
-from items import equipment_dictionary, armor_dictionary, Weapon, Armor
+from items import equipment_dictionary, armor_dictionary, health_potion, Weapon, Armor
 from constants import GameState
 import fileIO
 import pygame
@@ -150,7 +150,7 @@ def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
 
     draw_multiple_lines(monster_text, font, BLACK, surface, monster_border.x + 15, monster_border.y + monster_image.get_height() + 15)
 
-def draw_item_card(item, surface, font, x:int, y:int) -> pygame.Rect:
+def draw_item_card(item, surface, font, item_border:pygame.Rect, border_color=LIGHT_GRAY) -> None:
     """Draw an item card on the screen."""
     item_text = f"{item.name}"
     if isinstance(item, Weapon):
@@ -159,16 +159,13 @@ def draw_item_card(item, surface, font, x:int, y:int) -> pygame.Rect:
         item_text += f"\nBlock: {item.block}\nDodge: {item.dodge}\nCooldown: {item.cooldown}"
 
     # Border
-    item_border = pygame.Rect(x, y, 3 * SCREEN_WIDTH // 16, SCREEN_HEIGHT // 3)
-    pygame.draw.rect(surface, LIGHT_GRAY, item_border, width=5, border_radius=10)
+    pygame.draw.rect(surface, border_color, item_border, width=5, border_radius=10)
     
     # Cost
     cost_rect = pygame.Rect(item_border.x + item_border.width // 2 - 25, item_border.y + item_border.height - 30, 50, 25)
     pygame.draw.rect(surface, GOLD, cost_rect, border_top_left_radius=25, border_top_right_radius=25, border_bottom_left_radius=2, border_bottom_right_radius=2)
     draw_text_centered(f"{item.value}G", font, BLACK, surface, cost_rect.x + cost_rect.width // 2, cost_rect.y + cost_rect.height // 2 + 5)
     draw_multiple_lines(item_text, font, BLACK, surface, item_border.x + 15, item_border.y + 15)
-
-    return item_border
 
 def draw_popup(title:str, buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]], surface, font) -> None:
     """Draw a popup window with a title and buttons."""
@@ -481,6 +478,7 @@ class Screens:
 
     def shop_screen(self, hero:Hero) -> GameState:
         """Shop screen where the hero can buy items."""
+        card_selected = None
         buy_health_cost = 25
         buy_equipment_cost = 50
         buy_protection_cost = 50
@@ -489,31 +487,29 @@ class Screens:
         protection_name = random.choice(list(armor_dictionary.keys()))
 
         buttons = {
-            "Buy Health": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": LIGHT_GRAY},
-            equipment_name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 250, 50), "color": LIGHT_GRAY},
-            protection_name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 250, 50), "color": LIGHT_GRAY},
-            "Leave the Shop": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185, 250, 50), "color": LIGHT_RED},
+            "Purchase": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": LIGHT_GRAY},
+            "Leave": {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 250, 50), "color": LIGHT_RED},
+            "Health Potion": {"rect": pygame.Rect(SCREEN_WIDTH // 8, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": health_potion.value},
+            "Equipment Card": {"rect": pygame.Rect(SCREEN_WIDTH // 32 * 13, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": equipment_dictionary[equipment_name].value},
+            "Protection Card": {"rect": pygame.Rect(SCREEN_WIDTH // 16 * 11, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": armor_dictionary[protection_name].value},
         }
         key_actions = {
             pygame.K_ESCAPE: "escape",
         }
         
         while running:
+            if card_selected is not None and hero.gold >= buttons[card_selected]["cost"]:
+                buttons["Purchase"]["color"] = LIGHT_GREEN
+            else:
+                buttons["Purchase"]["color"] = LIGHT_GRAY
+            action_list = list(buttons.items())[:2]
+
             self.screen.fill(WHITE)
             draw_hero(hero, self.screen, self.font)
-            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
-            draw_item_card(equipment_dictionary[equipment_name], self.screen, self.font, 25, 25)
-
-            health_button_color = LIGHT_GREEN if hero.gold >= buy_health_cost else LIGHT_GRAY
-            equipment_button_color = LIGHT_GREEN if hero.gold >= buy_equipment_cost and equipment_name is not None else LIGHT_GRAY
-            protection_button_color = LIGHT_GREEN if hero.gold >= buy_protection_cost and protection_name is not None else LIGHT_GRAY
-
-            if health_button_color != buttons["Buy Health"]["color"]:
-                buttons["Buy Health"]["color"] = health_button_color
-            if equipment_button_color != buttons[equipment_name]["color"]:
-                buttons[equipment_name]["color"] = equipment_button_color
-            if protection_button_color != buttons[protection_name]["color"]:
-                buttons[protection_name]["color"] = protection_button_color
+            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in action_list], self.screen, self.font)
+            draw_item_card(health_potion, self.screen, self.font, buttons["Health Potion"]["rect"], buttons["Health Potion"]["color"])
+            draw_item_card(equipment_dictionary[equipment_name], self.screen, self.font, buttons["Equipment Card"]["rect"], buttons["Equipment Card"]["color"])
+            draw_item_card(armor_dictionary[protection_name], self.screen, self.font, buttons["Protection Card"]["rect"], buttons["Protection Card"]["color"])
 
             action = handle_events(pygame.event.get(), buttons, key_actions)
             if action == "escape":
@@ -523,40 +519,42 @@ class Screens:
             elif action == "quit":
                 next_state = GameState.EXIT
                 running = False
-            elif action == "Buy Health":
-                print("Buy Health selected")
-                if hero.gold >= buy_health_cost:
+            elif action == "Health Potion":
+                print("Health Potion selected")
+                if card_selected is not None:
+                    buttons[card_selected]["color"] = LIGHT_GRAY
+                card_selected = "Health Potion"
+                buttons[card_selected]["color"] = LIGHT_GREEN
+            elif action == "Equipment Card":
+                print("Equipment Card selected")
+                if card_selected is not None:
+                    buttons[card_selected]["color"] = LIGHT_GRAY
+                card_selected = "Equipment Card"
+                buttons[card_selected]["color"] = LIGHT_GREEN
+            elif action == "Protection Card":
+                print("Protection Card selected")
+                if card_selected is not None:
+                    buttons[card_selected]["color"] = LIGHT_GRAY
+                card_selected = "Protection Card"
+                buttons[card_selected]["color"] = LIGHT_GREEN
+            elif action == "Purchase":
+                print("Purchase selected")
+                if buttons["Health Potion"]["color"] == LIGHT_GREEN:
+                    hero.add_gold(-buttons["Health Potion"]["cost"])
                     hero.health += 10
-                    hero.gold -= buy_health_cost
-                else:
-                    print("Not enough gold!")
-            elif action == equipment_name:
-                print("Buy Damage selected")
-                if hero.gold >= buy_equipment_cost:
-                    hero.gold -= buy_equipment_cost
+                    if hero.health > hero.max_health:
+                        hero.health = hero.max_health
+                elif buttons["Equipment Card"]["color"] == LIGHT_GREEN:
+                    hero.add_gold(-buttons["Equipment Card"]["cost"])
                     hero.equipment = equipment_dictionary[equipment_name]
-                    buttons.pop(equipment_name)
-                    next_equipment_name = random.choice(list(equipment_dictionary.keys()))
-                    while next_equipment_name == equipment_name:
-                        next_equipment_name = random.choice(list(equipment_dictionary.keys()))
-                    equipment_name = next_equipment_name
-                    buttons.update({equipment_name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 250, 50), "color": LIGHT_GRAY}})
-                else:
-                    print("Not enough gold!")
-            elif action == protection_name:
-                print("Buy Protection selected")
-                if hero.gold >= buy_protection_cost:
-                    hero.gold -= buy_protection_cost
+                    while equipment_name == hero.equipment.name:
+                        equipment_name = random.choice(list(equipment_dictionary.keys()))
+                elif buttons["Protection Card"]["color"] == LIGHT_GREEN:
+                    hero.add_gold(-buttons["Protection Card"]["cost"])
                     hero.protection = armor_dictionary[protection_name]
-                    buttons.pop(protection_name)
-                    next_protection_name = random.choice(list(armor_dictionary.keys()))
-                    while next_protection_name == protection_name:
-                        next_protection_name = random.choice(list(armor_dictionary.keys()))
-                    protection_name = next_protection_name
-                    buttons.update({protection_name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 250, 50), "color": LIGHT_GRAY}})
-                else:
-                    print("Not enough gold!")
-            elif action == "Leave the Shop":
+                    while protection_name == hero.protection.name:
+                        protection_name = random.choice(list(armor_dictionary.keys()))
+            elif action == "Leave":
                 print("Back to Main selected")
                 next_state = GameState.MAIN_GAME
                 running = False
