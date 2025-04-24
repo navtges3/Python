@@ -229,6 +229,13 @@ class Game:
         # Fonts
         self.font = pygame.font.Font(None, 30)
 
+        self.buttons = {
+            "Menu":         {"rect": pygame.Rect(0, SCREEN_HEIGHT - SCREEN_HEIGHT // 12, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), "color": LIGHT_RED},
+            "Inventory":    {"rect": pygame.Rect(SCREEN_WIDTH // 4, SCREEN_HEIGHT - SCREEN_HEIGHT // 12, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), "color": LIGHT_BLUE},
+            "Battle":       {"rect": pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCREEN_HEIGHT // 12, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), "color": LIGHT_RED},
+            "Shop":         {"rect": pygame.Rect(SCREEN_WIDTH // 4 * 3, SCREEN_HEIGHT - SCREEN_HEIGHT // 12, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), "color": LIGHT_YELLOW},
+        }
+
     def update(self) -> None:
         self.clock.tick(FPS)
         pygame.display.update()
@@ -408,12 +415,12 @@ class Game:
         if self.monster is None or not self.monster.alive:
             self.monster = get_monster(self.hero.level)
 
-        buttons = {
+        self.buttons.update({
             self.hero.equipment.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
             self.hero.special.name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": LIGHT_GRAY},
             self.hero.protection.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 200, 50), "color": LIGHT_GRAY},
             "Flee": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185, 200, 50), "color": LIGHT_YELLOW},
-        }
+        })
         key_actions = {
             pygame.K_ESCAPE: "escape",
         }
@@ -422,30 +429,34 @@ class Game:
             self.screen.fill(WHITE)
             draw_hero(self.hero, self.screen, self.font)
             draw_monster(self.monster, self.screen, self.font, 0, 0)
-            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
+            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in self.buttons.items()], self.screen, self.font)
 
             protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.active == 0 else LIGHT_GRAY
             special_button_color = LIGHT_GREEN if self.hero.special is not None and self.hero.special.active == 0 else LIGHT_GRAY
 
-            if protection_button_color != buttons[self.hero.protection.name]["color"]:
-                buttons[self.hero.protection.name]["color"] = protection_button_color
-            if special_button_color != buttons[self.hero.special.name]["color"]:
-                buttons[self.hero.special.name]["color"] = special_button_color
+            if protection_button_color != self.buttons[self.hero.protection.name]["color"]:
+                self.buttons[self.hero.protection.name]["color"] = protection_button_color
+            if special_button_color != self.buttons[self.hero.special.name]["color"]:
+                self.buttons[self.hero.special.name]["color"] = special_button_color
 
             lines = 0
             for i, log_entry in enumerate(battle_log[-5:]):
                 lines += draw_wrapped_text(log_entry, self.font, BLACK, self.screen, SCREEN_WIDTH // 2 + 15, 15 + (i + lines) * self.font.get_linesize(), SCREEN_WIDTH // 2 - 30)
 
 
-            draw_buttons([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
+            draw_buttons([(text, data["rect"], data["color"]) for text, data in self.buttons.items()], self.screen, self.font)
 
-            action = handle_events(pygame.event.get(), buttons, key_actions)
-            if action == "escape":
+            action = handle_events(pygame.event.get(), self.buttons, key_actions)
+            if action == "escape" or action == "Menu":
                 self.show_esc_popup()
                 if self.game_state == GameState.WELCOME:
                     running = False
             elif action == "quit":
                 self.game_state = GameState.EXIT
+                running = False
+            elif action == "Shop":
+                print("Shop selected")
+                self.game_state = GameState.SHOP
                 running = False
             elif action == self.hero.equipment.name:
                 print("weapon attack selected")
@@ -489,6 +500,11 @@ class Game:
                 running = False
             self.update()
 
+        self.buttons.pop(self.hero.equipment.name)
+        self.buttons.pop(self.hero.special.name)
+        self.buttons.pop(self.hero.protection.name)
+        self.buttons.pop("Flee")
+
     def shop_screen(self) -> None:
         """Shop screen where the hero can buy items."""
         card_selected = None
@@ -496,71 +512,76 @@ class Game:
         equipment_name = random.choice(list(equipment_dictionary.keys()))
         protection_name = random.choice(list(armor_dictionary.keys()))
 
-        buttons = {
+        self.buttons.update({
             "Purchase": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": LIGHT_GRAY},
             "Leave": {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 250, 50), "color": LIGHT_RED},
             "Health Potion": {"rect": pygame.Rect(SCREEN_WIDTH // 8, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": health_potion.value},
             "Equipment Card": {"rect": pygame.Rect(SCREEN_WIDTH // 32 * 13, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": equipment_dictionary[equipment_name].value},
             "Protection Card": {"rect": pygame.Rect(SCREEN_WIDTH // 16 * 11, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": armor_dictionary[protection_name].value},
-        }
+            })
+        
         key_actions = {
             pygame.K_ESCAPE: "escape",
         }
         
         while running:
-            if card_selected is not None and self.hero.gold >= buttons[card_selected]["cost"]:
-                buttons["Purchase"]["color"] = LIGHT_GREEN
+            if card_selected is not None and self.hero.gold >= self.buttons[card_selected]["cost"]:
+                self.buttons["Purchase"]["color"] = LIGHT_GREEN
             else:
-                buttons["Purchase"]["color"] = LIGHT_GRAY
-            action_list = list(buttons.items())[:2]
+                self.buttons["Purchase"]["color"] = LIGHT_GRAY
+            action_list = list(self.buttons.items())[:2]
 
             self.screen.fill(WHITE)
             draw_hero(self.hero, self.screen, self.font)
-            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in action_list], self.screen, self.font)
-            draw_item_card(health_potion, self.screen, self.font, buttons["Health Potion"]["rect"], buttons["Health Potion"]["color"])
-            draw_item_card(equipment_dictionary[equipment_name], self.screen, self.font, buttons["Equipment Card"]["rect"], buttons["Equipment Card"]["color"])
-            draw_item_card(armor_dictionary[protection_name], self.screen, self.font, buttons["Protection Card"]["rect"], buttons["Protection Card"]["color"])
+            draw_buttons([(text, data["rect"], data["color"]) for text, data in list(self.buttons.items())[:6]], self.screen, self.font)
+            draw_item_card(health_potion, self.screen, self.font, self.buttons["Health Potion"]["rect"], self.buttons["Health Potion"]["color"])
+            draw_item_card(equipment_dictionary[equipment_name], self.screen, self.font, self.buttons["Equipment Card"]["rect"], self.buttons["Equipment Card"]["color"])
+            draw_item_card(armor_dictionary[protection_name], self.screen, self.font, self.buttons["Protection Card"]["rect"], self.buttons["Protection Card"]["color"])
 
-            action = handle_events(pygame.event.get(), buttons, key_actions)
-            if action == "escape":
+            action = handle_events(pygame.event.get(), self.buttons, key_actions)
+            if action == "escape" or action == "Menu":
                 self.show_esc_popup()
                 if self.game_state == GameState.WELCOME:
                     running = False
             elif action == "quit":
                 self.game_state = GameState.EXIT
                 running = False
+            elif action == "Battle":
+                print("Battle selected")
+                self.game_state = GameState.BATTLE
+                running = False
             elif action == "Health Potion":
                 print("Health Potion selected")
                 if card_selected is not None:
-                    buttons[card_selected]["color"] = LIGHT_GRAY
+                    self.buttons[card_selected]["color"] = LIGHT_GRAY
                 card_selected = "Health Potion"
-                buttons[card_selected]["color"] = LIGHT_GREEN
+                self.buttons[card_selected]["color"] = LIGHT_GREEN
             elif action == "Equipment Card":
                 print("Equipment Card selected")
                 if card_selected is not None:
-                    buttons[card_selected]["color"] = LIGHT_GRAY
+                    self.buttons[card_selected]["color"] = LIGHT_GRAY
                 card_selected = "Equipment Card"
-                buttons[card_selected]["color"] = LIGHT_GREEN
+                self.buttons[card_selected]["color"] = LIGHT_GREEN
             elif action == "Protection Card":
                 print("Protection Card selected")
                 if card_selected is not None:
-                    buttons[card_selected]["color"] = LIGHT_GRAY
+                    self.buttons[card_selected]["color"] = LIGHT_GRAY
                 card_selected = "Protection Card"
-                buttons[card_selected]["color"] = LIGHT_GREEN
+                self.buttons[card_selected]["color"] = LIGHT_GREEN
             elif action == "Purchase":
                 print("Purchase selected")
-                if buttons["Health Potion"]["color"] == LIGHT_GREEN:
-                    self.hero.add_gold(-buttons["Health Potion"]["cost"])
+                if self.buttons["Health Potion"]["color"] == LIGHT_GREEN:
+                    self.hero.add_gold(-self.buttons["Health Potion"]["cost"])
                     self.hero.health += 10
                     if self.hero.health > self.hero.max_health:
                         self.hero.health = self.hero.max_health
-                elif buttons["Equipment Card"]["color"] == LIGHT_GREEN:
-                    self.hero.add_gold(-buttons["Equipment Card"]["cost"])
+                elif self.buttons["Equipment Card"]["color"] == LIGHT_GREEN:
+                    self.hero.add_gold(-self.buttons["Equipment Card"]["cost"])
                     self.hero.equipment = equipment_dictionary[equipment_name]
                     while equipment_name == self.hero.equipment.name:
                         equipment_name = random.choice(list(equipment_dictionary.keys()))
-                elif buttons["Protection Card"]["color"] == LIGHT_GREEN:
-                    self.hero.add_gold(-buttons["Protection Card"]["cost"])
+                elif self.buttons["Protection Card"]["color"] == LIGHT_GREEN:
+                    self.hero.add_gold(-self.buttons["Protection Card"]["cost"])
                     self.hero.protection = armor_dictionary[protection_name]
                     while protection_name == self.hero.protection.name:
                         protection_name = random.choice(list(armor_dictionary.keys()))
@@ -571,23 +592,26 @@ class Game:
             
             self.update()
 
+        self.buttons.pop("Purchase")
+        self.buttons.pop("Leave")
+        self.buttons.pop("Health Potion")
+        self.buttons.pop("Equipment Card")
+        self.buttons.pop("Protection Card")
+
     def main_game(self) -> None:
         """Main game screen."""
         running = True
-        buttons = {
-            "Battle": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
-            "Shop": {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 80, 200, 50), "color": LIGHT_YELLOW},
-        }
         key_actions = {
             pygame.K_ESCAPE: "escape",
         }
         while running:
             self.screen.fill(WHITE)
             draw_hero(self.hero, self.screen, self.font)
-            draw_screen_actions([(text, data["rect"], data["color"]) for text, data in buttons.items()], self.screen, self.font)
+            draw_buttons([(text, data["rect"], data["color"]) for text, data in self.buttons.items()], self.screen, self.font)
             draw_text_centered("Main Game", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
-            action = handle_events(pygame.event.get(), buttons, key_actions)
-            if action == "escape":
+
+            action = handle_events(pygame.event.get(), self.buttons, key_actions)
+            if action == "escape" or action == "Menu":
                 self.show_esc_popup()
                 if self.game_state == GameState.WELCOME:
                     running = False
