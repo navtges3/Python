@@ -1,5 +1,5 @@
 from random import randint
-from items import Item, Armor, Weapon, equipment_dictionary, protection_dictionary
+from items import Item, Armor, Weapon, equipment_dictionary, armor_dictionary
 
 def mighty_swing(myHero) -> int:
         return myHero.level + myHero.equipment.damage
@@ -16,8 +16,10 @@ def backstab(myHero) -> int:
     return damage
 
 class ClassAction:
+    """A class representing a special action or ability that a hero can perform."""
     
     def __init__(self, name:str, description:str, damage_func, cooldown:int=5):
+        """Initialize the class action with a name, description, damage function, and cooldown."""
         self.active = 0
         self.name = name
         self.description = description
@@ -25,9 +27,11 @@ class ClassAction:
         self.cooldown = cooldown
     
     def __str__(self):
+        """Returns the name of the class action."""
         return self.name
     
     def use_action(self, myHero):
+        """Use the class action and return the damage dealt."""
         print(f"{myHero.name} uses {self.name}!")
         damage = self.damage_func(myHero)
         print(f"{myHero.name} does {damage} damage!")
@@ -38,12 +42,15 @@ class_action_dictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerf
                         "Backstab": ClassAction("Backstab", "A sneaky attack!", backstab, 3)}
 
 class Hero:
-    #Base class for all heroes
+    """Base class for all heroes in the game."""
+
     def __init__(self, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, special:ClassAction=class_action_dictionary["Mighty Swing"], gold:int=50):
+        """Initialize the hero with a name, health, equipment, protection, special ability, and gold."""
         self.alive = True
         self.image = "knight_image.jpg"
         self.name = name
         self.health = health
+        self.max_health = health
         self.equipment = equipment
         self.special = special
         self.protection = protection
@@ -55,6 +62,7 @@ class Hero:
 
     #Print the hero's name
     def __str__(self):
+        """Returns the name of the hero."""
         return self.name
     
     def to_dict(self):
@@ -72,10 +80,12 @@ class Hero:
     
     #Get the damage of the hero's special ability
     def use_special(self):
+        """Use the hero's special ability and return the damage dealt."""
         return self.special.use_action(self)
     
     #Take damage from an attacker
     def take_damage(self, damage:int):
+        """Reduces the hero's health by the damage taken."""
 
         if self.protection is not None and self.protection.active > 0:
             if self.protection.dodge > 0:
@@ -107,16 +117,19 @@ class Hero:
 
     #Get the hero's block
     def get_block(self):
+        """Returns the block value of the hero's protection."""
         if self.protection is None:
             return 0
         else:
             return self.protection.block
 
     def add_gold(self, amount):
+        """Add gold to the hero's inventory."""
         self.gold += amount
         print(f"You gained {amount} gold! Total gold: {self.gold}")
 
     def spend_gold(self, amount) -> bool:
+        """Spend gold from the hero's inventory."""
         if self.gold >= amount:
             self.gold -= amount
             print(f"You spent {amount} gold. Remaining gold: {self.gold}")
@@ -126,6 +139,7 @@ class Hero:
             return False
 
     def gain_experience(self, experience:int):
+        """Gain experience points."""
         self.experience += experience
         if self.experience >= (10 * self.level):
             self.experience = 0
@@ -134,7 +148,10 @@ class Hero:
     #Level up the hero
     #Increase health and damage
     def level_up(self):
+        """Level up the hero."""
         self.health += 5
+        if self.health > self.max_health:
+            self.max_health = self.health
         self.level += 1
         print(self.name + " has leveled up!")
         self.print_stats()
@@ -142,6 +159,7 @@ class Hero:
     
     #Print the hero's stats
     def print_stats(self):
+        """Prints the hero's stats."""
         print()
         print(f"{self.name} has {self.health} health.")
         print(f"{self.name} is level {self.level} with {self.experience} experience.")
@@ -158,22 +176,29 @@ class Hero:
         print()
 
 class Rogue(Hero):
+    """A class representing a Rogue hero."""
+
     def __init__(self, name:str):
+        """Initialize the Rogue with random health and a dagger."""
         health = randint(5, 10)
         dagger = equipment_dictionary["Daggers"]
-        leather = protection_dictionary["Leather"]
+        leather = armor_dictionary["Leather Armor"]
         special = class_action_dictionary["Backstab"]
         super().__init__(name, health, dagger, leather, special)
 
 class Fighter(Hero):
+    """A class representing a Fighter hero."""
+
     def __init__(self, name:str):
+        """Initialize the Fighter with random health and a greatsword."""
         health = randint(10, 15)
         sword = equipment_dictionary["Greatsword"]
-        chainmail = protection_dictionary["Chainmail"]
+        chainmail = armor_dictionary["Chainmail"]
         special = class_action_dictionary["Power Attack"]
         super().__init__(name, health, sword, chainmail, special)
 
 def make_hero(hero_name:str, hero_class:str) -> Hero:
+    """Create a hero based on the given name and class."""
     the_hero = None
     if hero_class == "Rogue":
         the_hero = Rogue(hero_name)

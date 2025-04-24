@@ -1,11 +1,12 @@
 from hero import Hero, class_action_dictionary
-from items import equipment_dictionary, protection_dictionary
+from items import equipment_dictionary, armor_dictionary
 import json
 import os
 import sys
 
 
 def resource_path(relative_path: str) -> str:
+    """Get the absolute path to the resource, works for dev and PyInstaller."""
     try:
         base_path = sys._MEIPASS
     except Exception:
@@ -35,7 +36,7 @@ def load_game() -> Hero:
                 name=hero_data["name"],
                 health=hero_data["health"],
                 equipment=equipment_dictionary[hero_data["equipment"]],
-                protection=protection_dictionary[hero_data["protection"]],
+                protection=armor_dictionary[hero_data["protection"]],
                 special=class_action_dictionary[hero_data["special"]],
                 gold=hero_data["gold"]
             )

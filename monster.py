@@ -2,9 +2,13 @@ import random
 
 #Base class for all monsters
 class Monster:
+    """A base class for all monsters in the game."""
+
     def __init__(self, name:str, health:int, damage:int, image:str="goblin_image.jpg"):
+        """Initialize the monster with a name, health, damage, and an image."""
         self.name = name
         self.health = health
+        self.start_health = health
         self.alive = True
         self.damage = damage
         self.experience = (health + damage) // 2
@@ -13,12 +17,15 @@ class Monster:
         self.print_stats()
         
     def __str__(self):
+        """Returns the name of the monster."""
         return self.name
 
     def get_damage(self) -> int:
+        """Returns the damage of the monster."""
         return self.damage
     
     def take_damage(self, damage:int):
+        """Reduces the monster's health by the damage taken."""
         self.health = self.health - damage
         if self.health <= 0:
             self.health = 0
@@ -26,41 +33,52 @@ class Monster:
         print(f"{self.name} has {self.health} health remaining.")
 
     def print_stats(self):
+        """Prints the monster's stats."""
         print(f"{self.name} has {self.health} health and {self.damage} damage and {self.experience} experience.")
 
 class Goblin(Monster):
+    """A class representing a Goblin monster."""
     healthLow = 5
     healthHigh = 10
     damageLow = 1
     damageHigh = 3
+
     def __init__(self, name:str="Goblin"):
+        """Initialize the Goblin with random health and damage."""
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
         super().__init__(name, health, damage, image="goblin_image.jpg")
 
 class Orc(Monster):
+    """A class representing an Orc monster."""
     healthLow = 10
     healthHigh = 17
     damageLow = 2
     damageHigh = 5
     experience = 2
+
     def __init__(self, name:str="Orc"):
+        """Initialize the Orc with random health and damage."""
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
         super().__init__(name, health, damage, image="orc_image.jpg")
 
 class Ogre(Monster):
+    """A class representing an Ogre monster."""
     healthLow = 17
     healthHigh = 25
     damageLow = 4
     damageHigh = 8
     experience = 3
+
     def __init__(self, name:str="Ogre"):
+        """Initialize the Ogre with random health and damage."""
         health = random.randrange(self.healthLow, self.healthHigh)
         damage = random.randrange(self.damageLow, self.damageHigh)
         super().__init__(name, health, damage, image="ogre_image.jpg")
 
 def get_monster(level:int) -> Monster:
+    """Returns a monster based on the level."""
     if level < 3:
         return Goblin()
     elif level < 6:
