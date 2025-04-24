@@ -42,6 +42,8 @@ class Armor(Item):
         """Prints the armor's stats."""
         print(f"{self.name} Block: {self.block} Dodge: {self.dodge}")
 
+health_potion = Item("Health Potion", "Restores 10 health points", 5)
+
 equipment_dictionary = { 
     "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
     "Rapier": Weapon("Rapier", "A slender, piercing sword that allows for swift, elegant combat", 5), 
@@ -52,7 +54,7 @@ equipment_dictionary = {
     "Warhammer": Weapon("Warhammer", "A brutal, heavy weapon that crushes armor and bones with raw force", 5), 
     "Battleaxe": Weapon("Battleaxe", "A hefty axe, ideal for chopping through foes with powerful, sweeping strikes", 7), 
     "Halberd": Weapon("Halberd", "A polearm with a sharp axe blade and a spear tip, providing reach and versatility", 9),
-    "Flaming Greataxe": Weapon("Flaming Greataxe", "A mystical whip that ensnares foes and delivers vicious strikes", 11),
+    "Flaming Greataxe": Weapon("Flaming Greataxe", "A massive, fiery axe that burns enemies with each devastating strike", 11),
     "Longbow": Weapon("Longbow", "A classic ranged weapon, perfect for precise, long-distance attacks", 6),
     "Scythe": Weapon("Scythe", "A reaper's tool turned weapon, delivering wide, arcing strikes with grim efficiency", 4),
     "Twin Chakrams": Weapon("Twin Chakrams", "Razor-sharp, circular blades that return when thrown, combining elegance with lethality", 8),
