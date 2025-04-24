@@ -546,8 +546,8 @@ class Game:
         equipment_name = random.choice(list(equipment_dictionary.keys()))
         protection_name = random.choice(list(armor_dictionary.keys()))
 
-        self.buttons[GameState.SHOP]["Equipment Card"]["Cost"] = equipment_dictionary[equipment_name].value
-        self.buttons[GameState.SHOP]["Protection Card"]["Cost"] = armor_dictionary[protection_name].value
+        self.buttons[GameState.SHOP]["Equipment Card"]["cost"] = equipment_dictionary[equipment_name].value
+        self.buttons[GameState.SHOP]["Protection Card"]["cost"] = armor_dictionary[protection_name].value
         
         while self.running:
             if card_selected is not None and self.hero.gold >= self.buttons[GameState.SHOP][card_selected]["cost"]:
