@@ -97,7 +97,7 @@ def draw_hero(hero:Hero, surface, font,) -> None:
     pygame.draw.rect(surface, BLUE, hero_border, width=5, border_radius=10)
 
     # Portrait
-    hero_image = pygame.image.load(fileIO.resource_path(f"sprites\{hero.image}"))
+    hero_image = pygame.image.load(fileIO.resource_path(f"sprites\\{hero.image}")).convert()
     hero_image = pygame.transform.scale(hero_image, (100, 100))
     surface.blit(hero_image, (hero_border.x + 10, hero_border.y + 10))
 
@@ -133,7 +133,7 @@ def draw_hero(hero:Hero, surface, font,) -> None:
         draw_multiple_lines(protection_text, font, BLACK, surface, protection_border.x + 5, protection_border.y + 5)
 
 def draw_screen_actions(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]], surface, font) -> None:
-
+    """Draw the actions available"""
     screen_action_border = pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
     pygame.draw.rect(surface, GREEN, screen_action_border, width=5, border_radius=10)
 
@@ -141,16 +141,22 @@ def draw_screen_actions(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int
 
 def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
     """Draw the monster's information on the screen."""
-    monster_text = f"Monster: {monster.name}\nHealth: {monster.health}\nDamage: {monster.damage}"  
+    monster_text = f"{monster.name}\nStrength: {monster.damage}"  
     # Border 
     monster_border = pygame.Rect(x, y, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 10)
     pygame.draw.rect(surface, RED, monster_border, width=5, border_radius=10)
     # Image
-    monster_image = pygame.image.load(fileIO.resource_path(f"sprites\{monster.image}"))
+    monster_image = pygame.image.load(fileIO.resource_path(f"sprites\\{monster.image}")).convert()
     monster_image = pygame.transform.scale(monster_image, (100, 100))
     surface.blit(monster_image, (monster_border.x + 10, monster_border.y + 10))
-
-    draw_multiple_lines(monster_text, font, BLACK, surface, monster_border.x + 15, monster_border.y + monster_image.get_height() + 15)
+    
+    health_bar_width = 90
+    health_bar_height = 10
+    health_bar_x = monster_border.x + 15
+    health_bar_y = monster_border.y + monster_image.get_height() + 15
+    health_percentage = monster.health / monster.start_health
+    draw_health_bar(surface, health_bar_x, health_bar_y, health_bar_width, health_bar_height, health_percentage)
+    draw_multiple_lines(monster_text, font, BLACK, surface, monster_border.x + monster_image.get_width() + 10, monster_border.y + 10)
 
 def draw_item_card(item, surface, font, item_border:pygame.Rect, border_color=LIGHT_GRAY) -> None:
     """Draw an item card on the screen."""

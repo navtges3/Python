@@ -1,5 +1,3 @@
-from hero import Hero
-from monster import Monster, get_monster
 from constants import GameState
 from game import Game
 

@@ -8,6 +8,7 @@ class Monster:
         """Initialize the monster with a name, health, damage, and an image."""
         self.name = name
         self.health = health
+        self.start_health = health
         self.alive = True
         self.damage = damage
         self.experience = (health + damage) // 2
