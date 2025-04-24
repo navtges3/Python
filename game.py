@@ -251,6 +251,7 @@ class Game:
         self.game_state = GameState.WELCOME
         self.hero = None
         self.monster = None
+        self.running = False
 
         pygame.init()
         # Initialize the mixer for music
@@ -371,7 +372,6 @@ class Game:
         """Welcome screen with options to start a new game or load an existing game."""
         self.running = True
         self.hero = fileIO.load_game()
-        self.game_state = self.game_state
 
         if self.hero is None:
             if self.buttons[GameState.WELCOME].get("Load Game") is not None:
@@ -598,7 +598,7 @@ class Game:
                         while equipment_name == self.hero.equipment.name:
                             equipment_name = random.choice(list(equipment_dictionary.keys()))
                     elif self.buttons[GameState.SHOP]["Protection Card"]["color"] == LIGHT_GREEN:
-                        self.hero.add_gold(-self.buttons[GameState.SHOP]["Protection Card"]["cost"])
+                        self.hero.spend_gold(self.buttons[GameState.SHOP]["Protection Card"]["cost"])
                         self.hero.protection = armor_dictionary[protection_name]
                         while protection_name == self.hero.protection.name:
                             protection_name = random.choice(list(armor_dictionary.keys()))
