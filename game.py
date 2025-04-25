@@ -97,7 +97,7 @@ def draw_hero(hero:Hero, surface, font,) -> None:
     pygame.draw.rect(surface, BLUE, hero_border, width=5, border_radius=10)
 
     # Portrait
-    hero_image = pygame.image.load(fileIO.resource_path(f"sprites\\{hero.image}")).convert()
+    hero_image = pygame.image.load(fileIO.resource_path(f"images\\{hero.image}")).convert()
     hero_image = pygame.transform.scale(hero_image, (100, 100))
     surface.blit(hero_image, (hero_border.x + 10, hero_border.y + 10))
 
@@ -146,7 +146,7 @@ def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
     monster_border = pygame.Rect(x, y, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 10)
     pygame.draw.rect(surface, RED, monster_border, width=5, border_radius=10)
     # Image
-    monster_image = pygame.image.load(fileIO.resource_path(f"sprites\\{monster.image}")).convert()
+    monster_image = pygame.image.load(fileIO.resource_path(f"images\\{monster.image}")).convert()
     monster_image = pygame.transform.scale(monster_image, (100, 100))
     surface.blit(monster_image, (monster_border.x + 10, monster_border.y + 10))
     
