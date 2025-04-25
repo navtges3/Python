@@ -129,7 +129,7 @@ def draw_hero(hero:Hero, surface, font,) -> None:
     if hero.protection is not None:
         protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 + 5, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
         pygame.draw.rect(surface, LIGHT_BLUE, protection_border, width=2, border_radius=10)
-        protection_text = f"{hero.protection.name}\nDamage: {hero.protection.block}\nDodge: {hero.protection.dodge}"
+        protection_text = f"{hero.protection.name}\nBlock: {hero.protection.block}\nDodge: {hero.protection.dodge}"
         draw_multiple_lines(protection_text, font, BLACK, surface, protection_border.x + 5, protection_border.y + 5)
 
 def draw_screen_actions(buttons:list[tuple[str, pygame.Rect, tuple[int, int, int]]], surface, font) -> None:
