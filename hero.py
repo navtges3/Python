@@ -76,10 +76,23 @@ class Hero:
             "level": self.level,
             "experience": self.experience,
             "gold": self.gold,
-            "special": str(self.special),  # Convert special to a string
-            "equipment": str(self.equipment),  # Convert equipment to a string
-            "protection": str(self.protection),  # Convert protection to a string
+            "special": str(self.special),
+            "equipment": str(self.equipment),
+            "protection": str(self.protection),
+            "potion_bag": self.potion_bag,
         }
+    
+    def from_dict(self, data):
+        """Load the hero object from a dictionary."""
+        self.name = data["name"]
+        self.health = data["health"]
+        self.level = data["level"]
+        self.experience = data["experience"]
+        self.gold = data["gold"]
+        self.special = class_action_dictionary[data["special"]]
+        self.equipment = equipment_dictionary[data["equipment"]]
+        self.protection = armor_dictionary[data["protection"]]
+        self.potion_bag = data["potion_bag"]
     
     def add_potion(self, potion_name:str, amount:int):
         """Add a potion to the hero's inventory."""
