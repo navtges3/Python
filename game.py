@@ -585,19 +585,17 @@ class Game:
                         self.buttons[GameState.SHOP][card_selected]["color"] = LIGHT_GRAY
                     card_selected = "Protection Card"
                     self.buttons[GameState.SHOP][card_selected]["color"] = LIGHT_GREEN
-                elif action == "Purchase":
+                elif action == "Purchase" and card_selected is not None and self.hero.gold >= self.buttons[GameState.SHOP][card_selected]["cost"]:
                     print("Purchase selected")
-                    if self.buttons[GameState.SHOP]["Health Potion"]["color"] == LIGHT_GREEN:
-                        self.hero.add_gold(-self.buttons[GameState.SHOP]["Health Potion"]["cost"])
-                        self.hero.health += 10
-                        if self.hero.health > self.hero.max_health:
-                            self.hero.health = self.hero.max_health
-                    elif self.buttons[GameState.SHOP]["Equipment Card"]["color"] == LIGHT_GREEN:
-                        self.hero.add_gold(-self.buttons[GameState.SHOP]["Equipment Card"]["cost"])
+                    if card_selected == "Health Potion":
+                        self.hero.spend_gold(self.buttons[GameState.SHOP]["Health Potion"]["cost"])
+                        self.hero.add_potion("Health Potion", 1)
+                    elif card_selected == "Equipment Card":
+                        self.hero.spend_gold(self.buttons[GameState.SHOP]["Equipment Card"]["cost"])
                         self.hero.equipment = equipment_dictionary[equipment_name]
                         while equipment_name == self.hero.equipment.name:
                             equipment_name = random.choice(list(equipment_dictionary.keys()))
-                    elif self.buttons[GameState.SHOP]["Protection Card"]["color"] == LIGHT_GREEN:
+                    elif card_selected == "Protection Card":
                         self.hero.spend_gold(self.buttons[GameState.SHOP]["Protection Card"]["cost"])
                         self.hero.protection = armor_dictionary[protection_name]
                         while protection_name == self.hero.protection.name:
