@@ -2,7 +2,7 @@
 import random
 from hero import Hero, make_hero
 from monster import Monster, get_monster
-from items import equipment_dictionary, armor_dictionary, health_potion, Weapon, Armor
+from items import equipment_dictionary, armor_dictionary, potion_dictionary, Weapon, Armor
 from constants import GameState
 import fileIO
 import pygame
@@ -227,7 +227,7 @@ class Game:
         GameState.SHOP : {
             "Purchase": {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 250, 50), "color": LIGHT_GRAY},
             "Leave": {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 250, 50), "color": LIGHT_RED},
-            "Health Potion": {"rect": pygame.Rect(SCREEN_WIDTH // 8, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": 0},
+            "Potion Card": {"rect": pygame.Rect(SCREEN_WIDTH // 8, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": 0},
             "Equipment Card": {"rect": pygame.Rect(SCREEN_WIDTH // 32 * 13, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": 0},
             "Protection Card": {"rect": pygame.Rect(SCREEN_WIDTH // 16 * 11, 25, SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), "color": LIGHT_GRAY, "cost": 0},
         },
@@ -536,14 +536,22 @@ class Game:
         """Shop screen where the hero can buy items."""
         card_selected = None
         self.running = True
+        potion_name = random.choice(list(potion_dictionary.keys()))
         equipment_name = random.choice(list(equipment_dictionary.keys()))
         protection_name = random.choice(list(armor_dictionary.keys()))
-
-        self.buttons[GameState.SHOP]["Equipment Card"]["cost"] = equipment_dictionary[equipment_name].value
-        self.buttons[GameState.SHOP]["Protection Card"]["cost"] = armor_dictionary[protection_name].value
         
         while self.running:
-            if card_selected is not None and self.hero.gold >= self.buttons[GameState.SHOP][card_selected]["cost"]:
+            if card_selected is not None:
+                if card_selected == "Potion Card":
+                    card_price = potion_dictionary[potion_name].value
+                elif card_selected == "Equipment Card":
+                    card_price = equipment_dictionary[equipment_name].value
+                elif card_selected == "Protection Card":
+                    card_price = armor_dictionary[protection_name].value
+                else:
+                    card_price = 0
+
+            if card_selected is not None and self.hero.gold >= card_price:
                 self.buttons[GameState.SHOP]["Purchase"]["color"] = LIGHT_GREEN
             else:
                 self.buttons[GameState.SHOP]["Purchase"]["color"] = LIGHT_GRAY
@@ -554,17 +562,17 @@ class Game:
             draw_buttons([(text, data["rect"], data["color"]) for text, data in list(self.buttons[GameState.SHOP].items())[:2]], self.screen, self.font)
             draw_buttons([(text, data["rect"], data["color"]) for text, data in self.buttons[GameState.MAIN_GAME].items()], self.screen, self.font)
 
-            draw_item_card(health_potion, self.screen, self.font, self.buttons[GameState.SHOP]["Health Potion"]["rect"], self.buttons[GameState.SHOP]["Health Potion"]["color"])
+            draw_item_card(potion_dictionary[potion_name], self.screen, self.font, self.buttons[GameState.SHOP]["Potion Card"]["rect"], self.buttons[GameState.SHOP]["Potion Card"]["color"])
             draw_item_card(equipment_dictionary[equipment_name], self.screen, self.font, self.buttons[GameState.SHOP]["Equipment Card"]["rect"], self.buttons[GameState.SHOP]["Equipment Card"]["color"])
             draw_item_card(armor_dictionary[protection_name], self.screen, self.font, self.buttons[GameState.SHOP]["Protection Card"]["rect"], self.buttons[GameState.SHOP]["Protection Card"]["color"])
 
             action = self.events()
             if action is not None:
-                if action == "Health Potion":
+                if action == "Potion Card":
                     print("Health Potion selected")
                     if card_selected is not None:
                         self.buttons[GameState.SHOP][card_selected]["color"] = LIGHT_GRAY
-                    card_selected = "Health Potion"
+                    card_selected = "Potion Card"
                     self.buttons[GameState.SHOP][card_selected]["color"] = LIGHT_GREEN
                 elif action == "Equipment Card":
                     print("Equipment Card selected")
@@ -578,18 +586,19 @@ class Game:
                         self.buttons[GameState.SHOP][card_selected]["color"] = LIGHT_GRAY
                     card_selected = "Protection Card"
                     self.buttons[GameState.SHOP][card_selected]["color"] = LIGHT_GREEN
-                elif action == "Purchase" and card_selected is not None and self.hero.gold >= self.buttons[GameState.SHOP][card_selected]["cost"]:
+                elif action == "Purchase" and self.buttons[GameState.SHOP]["Purchase"]["color"] == LIGHT_GREEN:
                     print("Purchase selected")
-                    if card_selected == "Health Potion":
-                        self.hero.spend_gold(self.buttons[GameState.SHOP]["Health Potion"]["cost"])
-                        self.hero.add_potion("Health Potion", 1)
+                    if card_selected == "Potion Card":
+                        self.hero.spend_gold(potion_dictionary[potion_name].value)
+                        self.hero.add_potion(potion_name, 1)
+                        potion_name = random.choice(list(potion_dictionary.keys()))
                     elif card_selected == "Equipment Card":
-                        self.hero.spend_gold(self.buttons[GameState.SHOP]["Equipment Card"]["cost"])
+                        self.hero.spend_gold(equipment_dictionary[equipment_name].value)
                         self.hero.equipment = equipment_dictionary[equipment_name]
                         while equipment_name == self.hero.equipment.name:
                             equipment_name = random.choice(list(equipment_dictionary.keys()))
                     elif card_selected == "Protection Card":
-                        self.hero.spend_gold(self.buttons[GameState.SHOP]["Protection Card"]["cost"])
+                        self.hero.spend_gold(armor_dictionary[protection_name].value)
                         self.hero.protection = armor_dictionary[protection_name]
                         while protection_name == self.hero.protection.name:
                             protection_name = random.choice(list(armor_dictionary.keys()))

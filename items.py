@@ -42,7 +42,11 @@ class Armor(Item):
         """Prints the armor's stats."""
         print(f"{self.name} Block: {self.block} Dodge: {self.dodge}")
 
-health_potion = Item("Health Potion", "Restores 10 health points", 5)
+potion_dictionary = {
+    "Health Potion": Item("Health Potion", "Restores 10 health points", 10),
+    "Damage Potion": Item("Damage Potion", "Increases damage by 5 for one turn", 10),
+    "Block Potion": Item("Block Potion", "Increases block by 5 for one turn", 10),
+}
 
 equipment_dictionary = { 
     "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
