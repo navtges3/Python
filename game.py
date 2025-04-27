@@ -466,7 +466,7 @@ class Game:
 
         self.buttons[GameState.BATTLE].update({
             self.hero.equipment.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20, 200, 50), "color": LIGHT_RED},
-            self.hero.special.name: {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": LIGHT_GRAY},
+            "Use Potion": {"rect" : pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75, 200, 50), "color": LIGHT_GRAY},
             self.hero.protection.name: {"rect": pygame.Rect(SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130, 200, 50), "color": LIGHT_GRAY},
             
         })
@@ -477,12 +477,12 @@ class Game:
             draw_monster(self.monster, self.screen, self.font, 0, 0)
 
             protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.active == 0 else LIGHT_GRAY
-            special_button_color = LIGHT_GREEN if self.hero.special is not None and self.hero.special.active == 0 else LIGHT_GRAY
+            potion_button_color = LIGHT_GREEN if self.hero.potion_bag["Health Potion"] > 0 else LIGHT_GRAY
 
             if protection_button_color != self.buttons[GameState.BATTLE][self.hero.protection.name]["color"]:
                 self.buttons[GameState.BATTLE][self.hero.protection.name]["color"] = protection_button_color
-            if special_button_color != self.buttons[GameState.BATTLE][self.hero.special.name]["color"]:
-                self.buttons[GameState.BATTLE][self.hero.special.name]["color"] = special_button_color
+            if potion_button_color != self.buttons[GameState.BATTLE]["Use Potion"]["color"]:
+                self.buttons[GameState.BATTLE]["Use Potion"]["color"] = potion_button_color
 
             lines = 0
             for i, log_entry in enumerate(battle_log[-5:]):
@@ -500,14 +500,11 @@ class Game:
                     if self.monster.alive:
                         self.hero.take_damage(self.monster.damage)
                         battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
-                elif action == self.hero.special.name:
-                    print("special attack selected")
-                    damage = self.hero.use_special()
-                    self.monster.take_damage(damage)
-                    battle_log.append(f"{self.hero.name} uses {self.hero.special.name} on {self.monster.name} for {damage} damage.")
-                    if self.monster.alive:
-                        self.hero.take_damage(self.monster.damage)
-                        battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
+                elif action == "Use Potion":
+                    print("use potion selected")
+                    if self.hero.health < self.hero.max_health and self.hero.potion_bag["Health Potion"] > 0:
+                        self.hero.use_potion("Health Potion")
+                        battle_log.append(f"{self.hero.name} uses a health potion.")
                 elif action == self.hero.protection.name:
                     print("Use Protection selected")
                     if self.hero.protection is not None and self.hero.protection.active == 0:
@@ -536,7 +533,7 @@ class Game:
             self.update()
 
         self.buttons[GameState.BATTLE].pop(self.hero.equipment.name)
-        self.buttons[GameState.BATTLE].pop(self.hero.special.name)
+        self.buttons[GameState.BATTLE].pop("Use Potion")
         self.buttons[GameState.BATTLE].pop(self.hero.protection.name)
 
     def shop_screen(self) -> None:
