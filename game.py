@@ -113,12 +113,8 @@ def draw_hero(hero:Hero, surface, font,) -> None:
     hero_text = f"{hero.name}\nLevel: {hero.level}\nExp: {hero.experience}\nGold: {hero.gold}"
     draw_multiple_lines(hero_text, font, BLACK, surface, hero_border.x + hero_image.get_width() + 10, hero_border.y + 10)
 
-    # Hero Special
-    if hero.special is not None:
-        special_border = pygame.Rect(hero_border.x + hero_border.width // 2 + 5, hero_border.y + 10, hero_border.width // 2 - 15, hero_border.height - 130)
-        pygame.draw.rect(surface, LIGHT_GREEN, special_border, width=2, border_radius=10)
-        special_text = f"{hero.special.name}\nDamage: {hero.special.damage_func(hero)}\nCooldown: {hero.special.cooldown}"
-        draw_multiple_lines(special_text, font, BLACK, surface, special_border.x + 5, special_border.y + 5)
+    potion_text = f"Potion Bag:\n -Health Potion: {hero.potion_bag['Health Potion']}\n -Damage Potion: {hero.potion_bag['Damage Potion']}\n -Block Potion: {hero.potion_bag['Block Potion']}"
+    draw_multiple_lines(potion_text, font, BLACK, surface, hero_border.x + hero_border.width // 2 + 10, hero_border.y + 10)
 
     # Draw the hero's weapon and protection
     if hero.equipment is not None:

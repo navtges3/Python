@@ -1,5 +1,4 @@
-from hero import Hero, class_action_dictionary
-from items import equipment_dictionary, armor_dictionary
+from hero import Hero
 import json
 import os
 import sys

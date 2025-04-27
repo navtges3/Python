@@ -1,58 +1,17 @@
 from random import randint
 from items import Item, Armor, Weapon, equipment_dictionary, armor_dictionary
 
-def mighty_swing(myHero) -> int:
-        return myHero.level + myHero.equipment.damage
-    
-def power_attack(myHero) -> int:
-    damage = myHero.equipment.damage + randint(myHero.level, (myHero.level * 2))
-    return damage
-
-def backstab(myHero) -> int:
-    if myHero.level == 1:
-        damage = randint(myHero.level, (myHero.level + 1))
-    else:
-        damage = randint(myHero.level, (myHero.level * myHero.level))
-    return damage
-
-class ClassAction:
-    """A class representing a special action or ability that a hero can perform."""
-    
-    def __init__(self, name:str, description:str, damage_func, cooldown:int=5):
-        """Initialize the class action with a name, description, damage function, and cooldown."""
-        self.active = 0
-        self.name = name
-        self.description = description
-        self.damage_func = damage_func
-        self.cooldown = cooldown
-    
-    def __str__(self):
-        """Returns the name of the class action."""
-        return self.name
-    
-    def use_action(self, myHero):
-        """Use the class action and return the damage dealt."""
-        print(f"{myHero.name} uses {self.name}!")
-        damage = self.damage_func(myHero)
-        print(f"{myHero.name} does {damage} damage!")
-        return damage
-    
-class_action_dictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerful swing!", mighty_swing),
-                        "Power Attack": ClassAction("Power Attack", "A strong attack!", power_attack, 5),
-                        "Backstab": ClassAction("Backstab", "A sneaky attack!", backstab, 3)}
-
 class Hero:
     """Base class for all heroes in the game."""
 
-    def __init__(self, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, special:ClassAction=class_action_dictionary["Mighty Swing"], gold:int=50):
-        """Initialize the hero with a name, health, equipment, protection, special ability, and gold."""
+    def __init__(self, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50):
+        """Initialize the hero with a name, health, equipment, protection, and gold."""
         self.alive = True
         self.image = "knight_image.jpg"
         self.name = name
         self.health = health
         self.max_health = health
         self.equipment = equipment
-        self.special = special
         self.protection = protection
         self.level = 1
         self.experience = 0
@@ -76,7 +35,6 @@ class Hero:
             "level": self.level,
             "experience": self.experience,
             "gold": self.gold,
-            "special": str(self.special),
             "equipment": str(self.equipment),
             "protection": str(self.protection),
             "potion_bag": self.potion_bag,
@@ -89,7 +47,6 @@ class Hero:
         self.level = data["level"]
         self.experience = data["experience"]
         self.gold = data["gold"]
-        self.special = class_action_dictionary[data["special"]]
         self.equipment = equipment_dictionary[data["equipment"]]
         self.protection = armor_dictionary[data["protection"]]
         self.potion_bag = data["potion_bag"]
@@ -119,16 +76,9 @@ class Hero:
             self.potion_bag[potion_name] -= 1
         else:
             print(f"You don't have any {potion_name}(s) left!")
-
-    #Get the damage of the hero's special ability
-    def use_special(self):
-        """Use the hero's special ability and return the damage dealt."""
-        return self.special.use_action(self)
     
-    #Take damage from an attacker
     def take_damage(self, damage:int):
         """Reduces the hero's health by the damage taken."""
-
         if self.protection is not None and self.protection.active > 0:
             if self.protection.dodge > 0:
                 dodge_roll = randint(1, 100)
@@ -144,11 +94,6 @@ class Hero:
             if self.protection.active <= 0:
                 print(f"{self.name}'s {self.protection.name} has expired!")
         
-        if self.special is not None and self.special.active > 0:
-            self.special.active -= 1
-            if self.special.active <= 0:
-                print(f"{self.name}'s {self.special.name} is ready to use!")
-        
         self.health = self.health - damage
         if self.health <= 0:
             self.health = 0
@@ -157,7 +102,6 @@ class Hero:
         else:
             print(f"{self.name} has taken {damage} damage!")
 
-    #Get the hero's block
     def get_block(self):
         """Returns the block value of the hero's protection."""
         if self.protection is None:
@@ -187,8 +131,6 @@ class Hero:
             self.experience = 0
             self.level_up()
 
-    #Level up the hero
-    #Increase health and damage
     def level_up(self):
         """Level up the hero."""
         self.health += 5
@@ -199,7 +141,6 @@ class Hero:
         self.print_stats()
         print()
     
-    #Print the hero's stats
     def print_stats(self):
         """Prints the hero's stats."""
         print()
@@ -225,8 +166,7 @@ class Rogue(Hero):
         health = randint(5, 10)
         dagger = equipment_dictionary["Daggers"]
         leather = armor_dictionary["Leather Armor"]
-        special = class_action_dictionary["Backstab"]
-        super().__init__(name, health, dagger, leather, special)
+        super().__init__(name, health, dagger, leather)
 
 class Fighter(Hero):
     """A class representing a Fighter hero."""
@@ -236,8 +176,7 @@ class Fighter(Hero):
         health = randint(10, 15)
         sword = equipment_dictionary["Greatsword"]
         chainmail = armor_dictionary["Chainmail"]
-        special = class_action_dictionary["Power Attack"]
-        super().__init__(name, health, sword, chainmail, special)
+        super().__init__(name, health, sword, chainmail)
 
 def make_hero(hero_name:str, hero_class:str) -> Hero:
     """Create a hero based on the given name and class."""
