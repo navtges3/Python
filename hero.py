@@ -57,8 +57,11 @@ class Hero:
         self.level = 1
         self.experience = 0
         self.gold = gold
-        
-        
+        self.potion_bag = {
+            "Health Potion": 2,
+            "Damage Potion": 1,
+            "Block Potion": 1,
+        }
 
     #Print the hero's name
     def __str__(self):
@@ -78,6 +81,32 @@ class Hero:
             "protection": str(self.protection),  # Convert protection to a string
         }
     
+    def add_potion(self, potion_name:str, amount:int):
+        """Add a potion to the hero's inventory."""
+        if potion_name in self.potion_bag:
+            self.potion_bag[potion_name] += amount
+        else:
+            self.potion_bag[potion_name] = amount
+        print(f"{amount} {potion_name}(s) added to your inventory!")
+
+    def use_potion(self, potion_name:str):
+        """Use a potion from the hero's inventory."""
+        if potion_name in self.potion_bag and self.potion_bag[potion_name] > 0:
+            if potion_name == "Health Potion":
+                self.health += 5
+                if self.health > self.max_health:
+                    self.health = self.max_health
+                print(f"{self.name} used a Health Potion! Health is now {self.health}.")
+            elif potion_name == "Damage Potion":
+                damage = 2
+                print(f"{self.name} used a Damage Potion! Damage increased by {damage}.")
+            elif potion_name == "Block Potion":
+                block = 2
+                print(f"{self.name} used a Block Potion! Block increased by {block}.")
+            self.potion_bag[potion_name] -= 1
+        else:
+            print(f"You don't have any {potion_name}(s) left!")
+
     #Get the damage of the hero's special ability
     def use_special(self):
         """Use the hero's special ability and return the damage dealt."""
