@@ -367,31 +367,6 @@ class Game:
                 self.running = False
                 popup_running = False
             self.update()
-    
-    def keep_fighting_popup(self) -> None:
-        """Show the popup after defeating a monster."""
-        popup_running = True
-        popup_x = (SCREEN_WIDTH - POPUP_WIDTH) // 2
-        popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
-        
-        buttons = {
-            "Continue Fighting": Button("Continue Fighting", (popup_x + 50, popup_y + 50), (300, 50), self.font, BLACK, GREEN, LIGHT_GREEN),
-            "Retreat": Button("Retreat", (popup_x + 50, popup_y + 120), (300, 50), self.font, BLACK, RED, LIGHT_RED),
-        }
-
-        while popup_running:
-            draw_popup("Monster Defeated!", buttons, self.screen, self.font)
-            action = self.events(buttons)
-            if action == "Continue Fighting":
-                popup_running = False
-                self.game_state = GameState.BATTLE
-            elif action == "Retreat":
-                self.game_state = GameState.MAIN_GAME
-                popup_running = False
-            elif action == "quit":
-                self.game_state = GameState.EXIT
-                popup_running = False
-            self.update()
 
     def welcome_screen(self) -> None:
         """Welcome screen with options to start a new game or load an existing game."""
