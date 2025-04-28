@@ -1,6 +1,6 @@
 from enum import Enum
 
-class GameState(Enum):
+class Game_State(Enum):
     WELCOME = 1
     NEW_GAME = 2
     MAIN_GAME = 3
@@ -9,7 +9,7 @@ class GameState(Enum):
     GAME_OVER = 6
     EXIT = 7
 
-class PlayerAction(Enum):
+class Battle_Action(Enum):
     HOME = 0
     ATTACK = 1
     DEFEND = 2
