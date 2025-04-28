@@ -243,16 +243,20 @@ class Game:
         },
         GameState.BATTLE : {
             PlayerAction.HOME:{
-            "Attack":       Button("Attack", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, RED, LIGHT_RED),
-            "Use Potion":   Button("Use Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-            "Defend":    Button("Defend", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
-            "Flee":         Button("Flee", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, YELLOW, LIGHT_YELLOW),
+                "Attack":       Button("Attack", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Use Potion":   Button("Use Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
+                "Defend":    Button("Defend", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
+                "Flee":         Button("Flee", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, YELLOW, LIGHT_YELLOW),
             },
             PlayerAction.USE_ITEM:{
-            "Health Potion": Button("Health Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-            "Damage Potion": Button("Damage Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
-            "Block Potion":  Button("Block Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, BLUE, LIGHT_BLUE),
-            "Back":         Button("Back", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Health Potion": Button("Health Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
+                "Damage Potion": Button("Damage Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Block Potion":  Button("Block Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, BLUE, LIGHT_BLUE),
+                "Back":         Button("Back", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, RED, LIGHT_RED),
+            },
+            PlayerAction.MONSTER_DEFEATED:{
+                "Continue Fighting": Button("Continue Fighting", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
+                "Retreat":         Button("Retreat", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
             },
         },
         GameState.SHOP : {
@@ -562,18 +566,22 @@ class Game:
                 elif action == "Back":
                     print("Back selected")
                     battle_state = PlayerAction.HOME
+                elif action == "Continue Fighting":
+                    print("Continue Fighting selected")
+                    self.monster = get_monster(self.hero.level)
+                    battle_state = PlayerAction.HOME
+                elif action == "Retreat":
+                    print("Retreat selected")
+                    self.game_state = GameState.MAIN_GAME
+                    self.running = False
     
-            if self.hero.alive and not self.monster.alive:
+            if self.hero.alive and not self.monster.alive and battle_state != PlayerAction.MONSTER_DEFEATED:
                 print("Monster defeated!")
                 battle_log.append(f"{self.monster.name} has been defeated!")
                 battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
                 self.hero.gain_experience(self.monster.experience)
                 self.hero.add_gold(10)
-                self.keep_fighting_popup()
-                if self.game_state == GameState.BATTLE:
-                    self.monster = get_monster(self.hero.level)
-                elif self.game_state == GameState.MAIN_GAME:
-                    self.running = False
+                battle_state = PlayerAction.MONSTER_DEFEATED
             elif not self.hero.alive:
                 print("Hero defeated!")
                 self.game_state = GameState.GAME_OVER

@@ -15,3 +15,4 @@ class PlayerAction(Enum):
     DEFEND = 2
     USE_ITEM = 3
     RUN_AWAY = 4
+    MONSTER_DEFEATED = 5
