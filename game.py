@@ -534,9 +534,9 @@ class Game:
                 if action == "Attack":
                     print("weapon attack selected")
                     self.monster.take_damage(self.hero.equipment.damage + self.hero.potion_damage)
+                    battle_log.append(f"{self.hero.name} attacks {self.monster.name} with {self.hero.equipment.name} for {self.hero.equipment.damage + self.hero.potion_damage} damage.")
                     if self.hero.potion_damage > 0:
                         self.hero.potion_damage = 0
-                    battle_log.append(f"{self.hero.name} attacks {self.monster.name} with {self.hero.equipment.name} for {self.hero.equipment.damage} damage.")
                     if self.monster.alive:
                         self.hero.take_damage(self.monster.damage)
                         battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
