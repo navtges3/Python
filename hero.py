@@ -73,11 +73,11 @@ class Hero:
                     self.health = self.max_health
                 print(f"{self.name} used a Health Potion! Health is now {self.health}.")
             elif potion_name == "Damage Potion":
-                damage = 2
-                print(f"{self.name} used a Damage Potion! Damage increased by {damage}.")
+                self.potion_damage = 3
+                print(f"{self.name} used a Damage Potion! Damage increased by {self.potion_damage}.")
             elif potion_name == "Block Potion":
-                block = 2
-                print(f"{self.name} used a Block Potion! Block increased by {block}.")
+                self.potion_block = 2
+                print(f"{self.name} used a Block Potion! Block increased by {self.potion_block}.")
             self.potion_bag[potion_name] -= 1
         else:
             print(f"You don't have any {potion_name}(s) left!")
