@@ -3,7 +3,7 @@ import random
 from hero import Hero, make_hero
 from monster import Monster, get_monster
 from items import *
-from constants import GameState
+from constants import *
 import fileIO
 import pygame
 import math
@@ -242,10 +242,18 @@ class Game:
             "Shop":         Button("Shop", (SCREEN_WIDTH // 4 * 3, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, BLACK, YELLOW, LIGHT_YELLOW),
         },
         GameState.BATTLE : {
+            PlayerAction.HOME:{
             "Attack":       Button("Attack", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, RED, LIGHT_RED),
-            "Use Potion":   Button("Use Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
+            "Use Potion":   Button("Use Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
             "Defend":    Button("Defend", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
             "Flee":         Button("Flee", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, YELLOW, LIGHT_YELLOW),
+            },
+            PlayerAction.USE_ITEM:{
+            "Health Potion": Button("Health Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
+            "Damage Potion": Button("Damage Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
+            "Block Potion":  Button("Block Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, BLUE, LIGHT_BLUE),
+            "Back":         Button("Back", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, RED, LIGHT_RED),
+            },
         },
         GameState.SHOP : {
             "Purchase":     Button("Purchase", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (250, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
@@ -470,6 +478,7 @@ class Game:
         """Battle screen where the hero fights a monster."""
         self.running = True
         battle_log = []
+        battle_state = PlayerAction.HOME
 
         if self.monster is None or not self.monster.alive:
             self.monster = get_monster(self.hero.level)
@@ -479,24 +488,44 @@ class Game:
             draw_hero(self.hero, self.screen, self.font)
             draw_monster(self.monster, self.screen, self.font, 0, 0)
 
-            protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.active == 0 else LIGHT_GRAY
-            potion_button_color = LIGHT_GREEN if self.hero.potion_bag["Health Potion"] > 0 else LIGHT_GRAY
-
-            if protection_button_color != self.buttons[GameState.BATTLE]["Defend"].button_color:
-                self.buttons[GameState.BATTLE]["Defend"].button_color = protection_button_color
-            if potion_button_color != self.buttons[GameState.BATTLE]["Use Potion"].button_color:
-                self.buttons[GameState.BATTLE]["Use Potion"].button_color = potion_button_color
+            if battle_state == PlayerAction.HOME:
+                protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.active == 0 else LIGHT_GRAY
+                if protection_button_color != self.buttons[GameState.BATTLE][battle_state]["Defend"].button_color:
+                    self.buttons[GameState.BATTLE][battle_state]["Defend"].button_color = protection_button_color
+            elif battle_state == PlayerAction.USE_ITEM:
+                for button in self.buttons[GameState.BATTLE][battle_state].values():
+                    if button.text == "Health Potion":
+                        if self.hero.potion_bag["Health Potion"] > 0:
+                            button.button_color = GREEN
+                            button.hover_color = LIGHT_GREEN
+                        else:
+                            button.button_color = LIGHT_GRAY
+                            button.hover_color = LIGHT_GRAY
+                    elif button.text == "Damage Potion":
+                        if self.hero.potion_bag["Damage Potion"] > 0:
+                            button.button_color = RED
+                            button.hover_color = LIGHT_RED
+                        else:
+                            button.button_color = LIGHT_GRAY
+                            button.hover_color = LIGHT_GRAY
+                    elif button.text == "Block Potion":
+                        if self.hero.potion_bag["Block Potion"] > 0:
+                            button.button_color = BLUE
+                            button.hover_color = LIGHT_BLUE
+                        else:
+                            button.button_color = LIGHT_GRAY
+                            button.hover_color = LIGHT_GRAY
 
             lines = 0
             for i, log_entry in enumerate(battle_log[-5:]):
                 lines += draw_wrapped_text(log_entry, self.font, BLACK, self.screen, SCREEN_WIDTH // 2 + 15, 15 + (i + lines) * self.font.get_linesize(), SCREEN_WIDTH // 2 - 30)
-
-            for button in self.buttons[GameState.BATTLE].values():
+            
+            for button in self.buttons[GameState.BATTLE][battle_state].values():
                 button.draw(self.screen)
             for button in self.buttons[GameState.MAIN_GAME].values():
                 button.draw(self.screen)
 
-            action = self.events()
+            action = self.events(self.buttons[GameState.BATTLE][battle_state])
             if action is not None:
                 if action == "Attack":
                     print("weapon attack selected")
@@ -507,9 +536,8 @@ class Game:
                         battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
                 elif action == "Use Potion":
                     print("use potion selected")
-                    if self.hero.health < self.hero.max_health and self.hero.potion_bag["Health Potion"] > 0:
-                        self.hero.use_potion("Health Potion")
-                        battle_log.append(f"{self.hero.name} uses a health potion.")
+                    if self.hero.has_potions():
+                        battle_state = PlayerAction.USE_ITEM                            
                 elif action == "Defend":
                     print("Use Protection selected")
                     if self.hero.protection is not None and self.hero.protection.active == 0:
@@ -519,6 +547,21 @@ class Game:
                     print("Flee selected")
                     self.game_state = GameState.MAIN_GAME
                     self.running = False
+                elif action == "Health Potion" and self.hero.potion_bag["Health Potion"] > 0:
+                    print("Health Potion selected")
+                    self.hero.use_potion("Health Potion")
+                    battle_log.append(f"{self.hero.name} uses Health Potion.")
+                elif action == "Damage Potion" and self.hero.potion_bag["Damage Potion"] > 0:
+                    print("Damage Potion selected")
+                    self.hero.use_potion("Damage Potion")
+                    battle_log.append(f"{self.hero.name} uses Damage Potion.")
+                elif action == "Block Potion" and self.hero.potion_bag["Block Potion"] > 0:
+                    print("Block Potion selected")
+                    self.hero.use_potion("Block Potion")
+                    battle_log.append(f"{self.hero.name} uses Block Potion.")
+                elif action == "Back":
+                    print("Back selected")
+                    battle_state = PlayerAction.HOME
     
             if self.hero.alive and not self.monster.alive:
                 print("Monster defeated!")

@@ -21,6 +21,8 @@ class Hero:
             "Damage Potion": 1,
             "Block Potion": 1,
         }
+        self.potion_damage = 0
+        self.potion_block = 0
 
     #Print the hero's name
     def __str__(self):
@@ -51,6 +53,9 @@ class Hero:
         self.protection = armor_dictionary[data["protection"]]
         self.potion_bag = data["potion_bag"]
     
+    def has_potions(self) -> bool:
+        return any(amount > 0 for amount in self.potion_bag.values())
+    
     def add_potion(self, potion_name:str, amount:int):
         """Add a potion to the hero's inventory."""
         if potion_name in self.potion_bag:
@@ -79,6 +84,11 @@ class Hero:
     
     def take_damage(self, damage:int):
         """Reduces the hero's health by the damage taken."""
+        if self.potion_block > 0:
+            damage = damage - self.potion_block
+            if damage < 0:
+                damage = 0
+            self.potion_block = 0
         if self.protection is not None and self.protection.active > 0:
             if self.protection.dodge > 0:
                 dodge_roll = randint(1, 100)
