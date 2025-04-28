@@ -74,7 +74,7 @@ def draw_item(item:Item, button:Button, surface, border_color) -> None:
     elif isinstance(item, Armor):
         draw_text(f"Block: {item.block}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 40)
         draw_text(f"Dodge: {item.dodge}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 70)
-        draw_text(f"Cooldown: {item.cooldown}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
+        draw_text(f"Cooldown: {item.durration}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
 
     draw_text(f"Cost: {item.value}G", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 130)
 
@@ -489,7 +489,7 @@ class Game:
             draw_monster(self.monster, self.screen, self.font, 0, 0)
 
             if battle_state == PlayerAction.HOME:
-                protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.active == 0 else LIGHT_GRAY
+                protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.is_available() else LIGHT_GRAY
                 if protection_button_color != self.buttons[GameState.BATTLE][battle_state]["Defend"].button_color:
                     self.buttons[GameState.BATTLE][battle_state]["Defend"].button_color = protection_button_color
             elif battle_state == PlayerAction.USE_ITEM:
@@ -540,9 +540,9 @@ class Game:
                         battle_state = PlayerAction.USE_ITEM                            
                 elif action == "Defend":
                     print("Use Protection selected")
-                    if self.hero.protection is not None and self.hero.protection.active == 0:
-                        self.hero.protection.active = self.hero.protection.cooldown
-                        battle_log.append(f"{self.hero.name} uses {self.hero.protection.name} for {self.hero.protection.cooldown} turns.")
+                    if self.hero.protection is not None and self.hero.protection.is_available():
+                        self.hero.protection.use()
+                        battle_log.append(f"{self.hero.name} uses {self.hero.protection.name} for {self.hero.protection.durration} turns.")
                 elif action == "Flee":
                     print("Flee selected")
                     self.game_state = GameState.MAIN_GAME

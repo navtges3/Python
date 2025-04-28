@@ -89,7 +89,7 @@ class Hero:
             if damage < 0:
                 damage = 0
             self.potion_block = 0
-        if self.protection is not None and self.protection.active > 0:
+        if self.protection is not None and self.protection.armor_counter > 0:
             if self.protection.dodge > 0:
                 dodge_roll = randint(1, 100)
                 if dodge_roll <= self.protection.dodge:
@@ -100,8 +100,8 @@ class Hero:
                 if damage < 0:
                     damage = 0
                 print(f"{self.name} blocked {self.protection.block} damage!")
-            self.protection.active -= 1
-            if self.protection.active <= 0:
+            self.protection.armor_counter -= 1
+            if self.protection.armor_counter <= 0:
                 print(f"{self.name}'s {self.protection.name} has expired!")
         
         self.health = self.health - damage

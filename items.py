@@ -30,14 +30,30 @@ class Weapon(Item):
     
 class Armor(Item):
     """A class representing an armor item."""
-    def __init__(self, name:str, description:str, block:int, dodge:int, cooldown:int, value:int=10):
+    def __init__(self, name:str, description:str, block:int, dodge:int, durration:int, value:int=10):
         """Initialize the armor with a name, description, block, dodge, and cooldown."""
         self.block = block
         self.dodge = dodge
-        self.cooldown = cooldown
-        self.active = 0
-        super().__init__(name, description, value)        
+        self.durration = durration
+        self.armor_counter = 0
+        super().__init__(name, description, value)
 
+    def update(self):
+        self.armor_counter -= 1
+
+    def use(self):
+        """Use the armor, activating its effects."""
+        if self.is_available():
+            self.armor_counter = self.durration * 2
+
+    def is_active(self) -> bool:
+        """Check if the armor is currently active."""
+        return self.armor_counter > self.durration
+    
+    def is_available(self) -> bool:
+        """Check if the armor is on cooldown."""
+        return self.armor_counter <= 0
+    
     def print_stats(self):
         """Prints the armor's stats."""
         print(f"{self.name} Block: {self.block} Dodge: {self.dodge}")
