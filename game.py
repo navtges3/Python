@@ -119,6 +119,10 @@ def draw_multiple_lines(text:str, font:pygame.font, color:tuple, surface, x:int,
 
 def draw_health_bar(surface, x:int, y:int, width:int, height:int, health_percentage:float) -> None:
     """Draw a health bar on the screen."""
+    if health_percentage < 0:
+        health_percentage = 0
+    elif health_percentage > 1:
+        health_percentage = 1
     health_bar_rect = pygame.Rect(x, y, width, height)
     pygame.draw.rect(surface, RED, health_bar_rect)
     health_fill_rect = pygame.Rect(x, y, width * health_percentage, height)
