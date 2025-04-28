@@ -386,9 +386,15 @@ class Game:
             self.screen.fill(WHITE)
 
             draw_text_centered("Welcome to Village Defense!", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            if self.hero is not None:
+                self.buttons[GameState.WELCOME]["Load Game"].button_color = BLUE
+                self.buttons[GameState.WELCOME]["Load Game"].hover_color = LIGHT_BLUE
+            else:
+                self.buttons[GameState.WELCOME]["Load Game"].button_color = LIGHT_GRAY
+                self.buttons[GameState.WELCOME]["Load Game"].hover_color = LIGHT_GRAY
+
             for button in self.buttons[GameState.WELCOME].values():
                 button.draw(self.screen)
-
             action = self.events()
             if action == "quit":
                 self.game_state = GameState.EXIT
@@ -397,7 +403,7 @@ class Game:
                 print("New Game selected")
                 self.game_state = GameState.NEW_GAME
                 self.running = False
-            elif action == "Load Game":
+            elif action == "Load Game" and self.hero is not None:
                 print("Load Game selected")
                 self.game_state = GameState.MAIN_GAME
                 self.running = False
