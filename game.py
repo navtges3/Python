@@ -533,7 +533,9 @@ class Game:
             if action is not None:
                 if action == "Attack":
                     print("weapon attack selected")
-                    self.monster.take_damage(self.hero.equipment.damage)
+                    self.monster.take_damage(self.hero.equipment.damage + self.hero.potion_damage)
+                    if self.hero.potion_damage > 0:
+                        self.hero.potion_damage = 0
                     battle_log.append(f"{self.hero.name} attacks {self.monster.name} with {self.hero.equipment.name} for {self.hero.equipment.damage} damage.")
                     if self.monster.alive:
                         self.hero.take_damage(self.monster.damage)
@@ -547,6 +549,9 @@ class Game:
                     if self.hero.protection is not None and self.hero.protection.is_available():
                         self.hero.protection.use()
                         battle_log.append(f"{self.hero.name} uses {self.hero.protection.name} for {self.hero.protection.durration} turns.")
+                    if self.monster.alive:
+                        self.hero.take_damage(self.monster.damage)
+                        battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
                 elif action == "Flee":
                     print("Flee selected")
                     self.game_state = GameState.MAIN_GAME
