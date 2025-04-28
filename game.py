@@ -31,6 +31,38 @@ LIGHT_YELLOW = (255, 255, 224)
 LIGHT_GREEN = (144, 238, 144)
 GOLD = (255, 215, 0)
 
+class Button:
+    def __init__(self, text, pos, size, font, text_color, button_color, hover_color):
+        self.text = text
+        self.pos = pos
+        self.size = size
+        self.font = font
+        self.text_color = text_color
+        self.button_color = button_color
+        self.hover_color = hover_color
+
+        self.rect = pygame.Rect(pos, size)
+        self.surface = self.font.render(self.text, True, self.text_color)
+
+    def draw(self, screen):
+        # Change color on hover
+        mouse_pos = pygame.mouse.get_pos()
+        if self.rect.collidepoint(mouse_pos):
+            pygame.draw.rect(screen, self.hover_color, self.rect)
+        else:
+            pygame.draw.rect(screen, self.button_color, self.rect)
+
+        # Center text on button
+        text_rect = self.surface.get_rect(center=self.rect.center)
+        screen.blit(self.surface, text_rect)
+
+    def is_clicked(self, event):
+        # Check if button is clicked
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
+
 def draw_text(text:str, font:pygame.font, color:tuple, surface, x:int, y:int) -> None:
     """Draw text on the screen at the specified position."""
     textobj = font.render(text, True, color)
