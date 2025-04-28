@@ -1,5 +1,4 @@
-from hero import Hero, class_action_dictionary
-from items import equipment_dictionary, armor_dictionary
+from hero import Hero
 import json
 import os
 import sys
@@ -30,19 +29,8 @@ def load_game() -> Hero:
         with open("savefile.json", "r") as savefile:
             # Load the hero data from the JSON file
             data = json.load(savefile)
-            hero_data = data["hero"]
-            # Recreate the hero object from the saved data
-            hero = Hero(
-                name=hero_data["name"],
-                health=hero_data["health"],
-                equipment=equipment_dictionary[hero_data["equipment"]],
-                protection=armor_dictionary[hero_data["protection"]],
-                special=class_action_dictionary[hero_data["special"]],
-                gold=hero_data["gold"]
-            )
-            hero.level = hero_data["level"]
-            hero.experience = hero_data["experience"]
-            print("Game loaded successfully!")
+            hero = Hero()
+            hero.from_dict(data["hero"])
             return hero
     except FileNotFoundError:
         print("No save file found. Starting a new game.")

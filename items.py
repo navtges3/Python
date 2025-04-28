@@ -30,21 +30,41 @@ class Weapon(Item):
     
 class Armor(Item):
     """A class representing an armor item."""
-    def __init__(self, name:str, description:str, block:int, dodge:int, cooldown:int, value:int=10):
+    def __init__(self, name:str, description:str, block:int, dodge:int, duration:int, value:int=10):
         """Initialize the armor with a name, description, block, dodge, and cooldown."""
         self.block = block
         self.dodge = dodge
-        self.cooldown = cooldown
-        self.active = 0
-        super().__init__(name, description, value)        
+        self.duration = duration
+        self.armor_counter = 0
+        super().__init__(name, description, value)
 
+    def update(self):
+        self.armor_counter -= 1
+
+    def use(self):
+        """Use the armor, activating its effects."""
+        if self.is_available():
+            self.armor_counter = self.duration * 2
+
+    def is_active(self) -> bool:
+        """Check if the armor is currently active."""
+        return self.armor_counter > self.duration
+    
+    def is_available(self) -> bool:
+        """Check if the armor is on cooldown."""
+        return self.armor_counter <= 0
+    
     def print_stats(self):
         """Prints the armor's stats."""
         print(f"{self.name} Block: {self.block} Dodge: {self.dodge}")
 
-health_potion = Item("Health Potion", "Restores 10 health points", 5)
+potion_dictionary = {
+    "Health Potion": Item("Health Potion", "Restores 10 health points", 10),
+    "Damage Potion": Item("Damage Potion", "Increases damage by 5 for one turn", 10),
+    "Block Potion": Item("Block Potion", "Increases block by 5 for one turn", 10),
+}
 
-equipment_dictionary = { 
+weapon_dictionary = { 
     "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
     "Rapier": Weapon("Rapier", "A slender, piercing sword that allows for swift, elegant combat", 5), 
     "Throwing Knives": Weapon("Throwing Knives", "Silent, deadly, and ideal for surprise attacks from a distance", 7), 

@@ -1,64 +1,28 @@
 from random import randint
-from items import Item, Armor, Weapon, equipment_dictionary, armor_dictionary
-
-def mighty_swing(myHero) -> int:
-        return myHero.level + myHero.equipment.damage
-    
-def power_attack(myHero) -> int:
-    damage = myHero.equipment.damage + randint(myHero.level, (myHero.level * 2))
-    return damage
-
-def backstab(myHero) -> int:
-    if myHero.level == 1:
-        damage = randint(myHero.level, (myHero.level + 1))
-    else:
-        damage = randint(myHero.level, (myHero.level * myHero.level))
-    return damage
-
-class ClassAction:
-    """A class representing a special action or ability that a hero can perform."""
-    
-    def __init__(self, name:str, description:str, damage_func, cooldown:int=5):
-        """Initialize the class action with a name, description, damage function, and cooldown."""
-        self.active = 0
-        self.name = name
-        self.description = description
-        self.damage_func = damage_func
-        self.cooldown = cooldown
-    
-    def __str__(self):
-        """Returns the name of the class action."""
-        return self.name
-    
-    def use_action(self, myHero):
-        """Use the class action and return the damage dealt."""
-        print(f"{myHero.name} uses {self.name}!")
-        damage = self.damage_func(myHero)
-        print(f"{myHero.name} does {damage} damage!")
-        return damage
-    
-class_action_dictionary = {"Mighty Swing": ClassAction("Mighty Swing", "A powerful swing!", mighty_swing),
-                        "Power Attack": ClassAction("Power Attack", "A strong attack!", power_attack, 5),
-                        "Backstab": ClassAction("Backstab", "A sneaky attack!", backstab, 3)}
+from items import Item, Armor, Weapon, weapon_dictionary, armor_dictionary
 
 class Hero:
     """Base class for all heroes in the game."""
 
-    def __init__(self, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, special:ClassAction=class_action_dictionary["Mighty Swing"], gold:int=50):
-        """Initialize the hero with a name, health, equipment, protection, special ability, and gold."""
+    def __init__(self, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50):
+        """Initialize the hero with a name, health, equipment, protection, and gold."""
         self.alive = True
         self.image = "knight_image.jpg"
         self.name = name
         self.health = health
         self.max_health = health
         self.equipment = equipment
-        self.special = special
         self.protection = protection
         self.level = 1
         self.experience = 0
         self.gold = gold
-        
-        
+        self.potion_bag = {
+            "Health Potion": 2,
+            "Damage Potion": 1,
+            "Block Potion": 1,
+        }
+        self.potion_damage = 0
+        self.potion_block = 0
 
     #Print the hero's name
     def __str__(self):
@@ -73,21 +37,59 @@ class Hero:
             "level": self.level,
             "experience": self.experience,
             "gold": self.gold,
-            "special": str(self.special),  # Convert special to a string
-            "equipment": str(self.equipment),  # Convert equipment to a string
-            "protection": str(self.protection),  # Convert protection to a string
+            "equipment": str(self.equipment),
+            "protection": str(self.protection),
+            "potion_bag": self.potion_bag,
         }
     
-    #Get the damage of the hero's special ability
-    def use_special(self):
-        """Use the hero's special ability and return the damage dealt."""
-        return self.special.use_action(self)
+    def from_dict(self, data):
+        """Load the hero object from a dictionary."""
+        self.name = data["name"]
+        self.health = data["health"]
+        self.level = data["level"]
+        self.experience = data["experience"]
+        self.gold = data["gold"]
+        self.equipment = weapon_dictionary[data["equipment"]]
+        self.protection = armor_dictionary[data["protection"]]
+        self.potion_bag = data["potion_bag"]
     
-    #Take damage from an attacker
+    def has_potions(self) -> bool:
+        return any(amount > 0 for amount in self.potion_bag.values())
+    
+    def add_potion(self, potion_name:str, amount:int):
+        """Add a potion to the hero's inventory."""
+        if potion_name in self.potion_bag:
+            self.potion_bag[potion_name] += amount
+        else:
+            self.potion_bag[potion_name] = amount
+        print(f"{amount} {potion_name}(s) added to your inventory!")
+
+    def use_potion(self, potion_name:str):
+        """Use a potion from the hero's inventory."""
+        if potion_name in self.potion_bag and self.potion_bag[potion_name] > 0:
+            if potion_name == "Health Potion":
+                self.health += 5
+                if self.health > self.max_health:
+                    self.health = self.max_health
+                print(f"{self.name} used a Health Potion! Health is now {self.health}.")
+            elif potion_name == "Damage Potion":
+                self.potion_damage = 3
+                print(f"{self.name} used a Damage Potion! Damage increased by {self.potion_damage}.")
+            elif potion_name == "Block Potion":
+                self.potion_block = 2
+                print(f"{self.name} used a Block Potion! Block increased by {self.potion_block}.")
+            self.potion_bag[potion_name] -= 1
+        else:
+            print(f"You don't have any {potion_name}(s) left!")
+    
     def take_damage(self, damage:int):
         """Reduces the hero's health by the damage taken."""
-
-        if self.protection is not None and self.protection.active > 0:
+        if self.potion_block > 0:
+            damage = damage - self.potion_block
+            if damage < 0:
+                damage = 0
+            self.potion_block = 0
+        if self.protection is not None and self.protection.armor_counter > 0:
             if self.protection.dodge > 0:
                 dodge_roll = randint(1, 100)
                 if dodge_roll <= self.protection.dodge:
@@ -98,14 +100,9 @@ class Hero:
                 if damage < 0:
                     damage = 0
                 print(f"{self.name} blocked {self.protection.block} damage!")
-            self.protection.active -= 1
-            if self.protection.active <= 0:
+            self.protection.armor_counter -= 1
+            if self.protection.armor_counter <= 0:
                 print(f"{self.name}'s {self.protection.name} has expired!")
-        
-        if self.special is not None and self.special.active > 0:
-            self.special.active -= 1
-            if self.special.active <= 0:
-                print(f"{self.name}'s {self.special.name} is ready to use!")
         
         self.health = self.health - damage
         if self.health <= 0:
@@ -115,7 +112,6 @@ class Hero:
         else:
             print(f"{self.name} has taken {damage} damage!")
 
-    #Get the hero's block
     def get_block(self):
         """Returns the block value of the hero's protection."""
         if self.protection is None:
@@ -145,8 +141,6 @@ class Hero:
             self.experience = 0
             self.level_up()
 
-    #Level up the hero
-    #Increase health and damage
     def level_up(self):
         """Level up the hero."""
         self.health += 5
@@ -157,7 +151,6 @@ class Hero:
         self.print_stats()
         print()
     
-    #Print the hero's stats
     def print_stats(self):
         """Prints the hero's stats."""
         print()
@@ -181,10 +174,9 @@ class Rogue(Hero):
     def __init__(self, name:str):
         """Initialize the Rogue with random health and a dagger."""
         health = randint(5, 10)
-        dagger = equipment_dictionary["Daggers"]
+        dagger = weapon_dictionary["Daggers"]
         leather = armor_dictionary["Leather Armor"]
-        special = class_action_dictionary["Backstab"]
-        super().__init__(name, health, dagger, leather, special)
+        super().__init__(name, health, dagger, leather)
 
 class Fighter(Hero):
     """A class representing a Fighter hero."""
@@ -192,10 +184,9 @@ class Fighter(Hero):
     def __init__(self, name:str):
         """Initialize the Fighter with random health and a greatsword."""
         health = randint(10, 15)
-        sword = equipment_dictionary["Greatsword"]
+        sword = weapon_dictionary["Greatsword"]
         chainmail = armor_dictionary["Chainmail"]
-        special = class_action_dictionary["Power Attack"]
-        super().__init__(name, health, sword, chainmail, special)
+        super().__init__(name, health, sword, chainmail)
 
 def make_hero(hero_name:str, hero_class:str) -> Hero:
     """Create a hero based on the given name and class."""
