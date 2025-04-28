@@ -74,7 +74,7 @@ def draw_item(item:Item, button:Button, surface, border_color) -> None:
     elif isinstance(item, Armor):
         draw_text(f"Block: {item.block}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 40)
         draw_text(f"Dodge: {item.dodge}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 70)
-        draw_text(f"Cooldown: {item.durration}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
+        draw_text(f"Cooldown: {item.duration}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
 
     draw_text(f"Cost: {item.value}G", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 130)
 
@@ -523,7 +523,7 @@ class Game:
                     print("Use Protection selected")
                     if self.hero.protection is not None and self.hero.protection.is_available():
                         self.hero.protection.use()
-                        battle_log.append(f"{self.hero.name} uses {self.hero.protection.name} for {self.hero.protection.durration} turns.")
+                        battle_log.append(f"{self.hero.name} uses {self.hero.protection.name} for {self.hero.protection.duration} turns.")
                     if self.monster.alive:
                         self.hero.take_damage(self.monster.damage)
                         battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
