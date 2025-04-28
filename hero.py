@@ -1,5 +1,5 @@
 from random import randint
-from items import Item, Armor, Weapon, equipment_dictionary, armor_dictionary
+from items import Item, Armor, Weapon, weapon_dictionary, armor_dictionary
 
 class Hero:
     """Base class for all heroes in the game."""
@@ -47,7 +47,7 @@ class Hero:
         self.level = data["level"]
         self.experience = data["experience"]
         self.gold = data["gold"]
-        self.equipment = equipment_dictionary[data["equipment"]]
+        self.equipment = weapon_dictionary[data["equipment"]]
         self.protection = armor_dictionary[data["protection"]]
         self.potion_bag = data["potion_bag"]
     
@@ -164,7 +164,7 @@ class Rogue(Hero):
     def __init__(self, name:str):
         """Initialize the Rogue with random health and a dagger."""
         health = randint(5, 10)
-        dagger = equipment_dictionary["Daggers"]
+        dagger = weapon_dictionary["Daggers"]
         leather = armor_dictionary["Leather Armor"]
         super().__init__(name, health, dagger, leather)
 
@@ -174,7 +174,7 @@ class Fighter(Hero):
     def __init__(self, name:str):
         """Initialize the Fighter with random health and a greatsword."""
         health = randint(10, 15)
-        sword = equipment_dictionary["Greatsword"]
+        sword = weapon_dictionary["Greatsword"]
         chainmail = armor_dictionary["Chainmail"]
         super().__init__(name, health, sword, chainmail)
 

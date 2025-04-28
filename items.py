@@ -48,7 +48,7 @@ potion_dictionary = {
     "Block Potion": Item("Block Potion", "Increases block by 5 for one turn", 10),
 }
 
-equipment_dictionary = { 
+weapon_dictionary = { 
     "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
     "Rapier": Weapon("Rapier", "A slender, piercing sword that allows for swift, elegant combat", 5), 
     "Throwing Knives": Weapon("Throwing Knives", "Silent, deadly, and ideal for surprise attacks from a distance", 7), 

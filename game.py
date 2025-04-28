@@ -2,7 +2,7 @@
 import random
 from hero import Hero, make_hero
 from monster import Monster, get_monster
-from items import equipment_dictionary, armor_dictionary, potion_dictionary, Weapon, Armor
+from items import *
 from constants import GameState
 import fileIO
 import pygame
@@ -44,18 +44,19 @@ class Button:
         self.rect = pygame.Rect(pos, size,)
         self.surface = self.font.render(self.text, True, self.text_color)
 
-    def draw(self, screen):
+    def draw(self, screen, draw_text=True, border_color=BLACK) -> None:
         # Change color on hover
         mouse_pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(mouse_pos):
             pygame.draw.rect(screen, self.hover_color, self.rect, border_radius=5)
         else:
             pygame.draw.rect(screen, self.button_color, self.rect, border_radius=5)
-        pygame.draw.rect(screen, BLACK, self.rect, width=2, border_radius=5)
+        pygame.draw.rect(screen, border_color, self.rect, width=2, border_radius=5)
 
         # Center text on button
-        text_rect = self.surface.get_rect(center=self.rect.center)
-        screen.blit(self.surface, text_rect)
+        if draw_text:
+            text_rect = self.surface.get_rect(center=self.rect.center)
+            screen.blit(self.surface, text_rect)
 
     def is_clicked(self, event):
         # Check if button is clicked
@@ -63,6 +64,19 @@ class Button:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
+
+def draw_item(item:Item, button:Button, surface, border_color) -> None:
+    """Draw an item on the screen."""
+    button.draw(surface, False, border_color)
+    draw_text(item.name, button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 10)
+    if isinstance(item, Weapon):
+        draw_text(f"Damage: {item.damage}", button.font, button.text_color,surface, button.pos[0] + 10, button.pos[1] + 40)
+    elif isinstance(item, Armor):
+        draw_text(f"Block: {item.block}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 40)
+        draw_text(f"Dodge: {item.dodge}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 70)
+        draw_text(f"Cooldown: {item.cooldown}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
+
+    draw_text(f"Cost: {item.value}G", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 130)
 
 def draw_text(text:str, font:pygame.font, color:tuple, surface, x:int, y:int) -> None:
     """Draw text on the screen at the specified position."""
@@ -167,23 +181,6 @@ def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
     health_percentage = monster.health / monster.start_health
     draw_health_bar(surface, health_bar_x, health_bar_y, health_bar_width, health_bar_height, health_percentage)
     draw_multiple_lines(monster_text, font, BLACK, surface, monster_border.x + monster_image.get_width() + 10, monster_border.y + 10)
-
-def draw_item_card(item, surface, font, item_border:pygame.Rect, border_color=LIGHT_GRAY) -> None:
-    """Draw an item card on the screen."""
-    item_text = f"{item.name}"
-    if isinstance(item, Weapon):
-        item_text += f"\nDamage: {item.damage}"
-    elif isinstance(item, Armor):
-        item_text += f"\nBlock: {item.block}\nDodge: {item.dodge}\nCooldown: {item.cooldown}"
-
-    # Border
-    pygame.draw.rect(surface, border_color, item_border, width=5, border_radius=10)
-    
-    # Cost
-    cost_rect = pygame.Rect(item_border.x + item_border.width // 2 - 25, item_border.y + item_border.height - 30, 50, 25)
-    pygame.draw.rect(surface, GOLD, cost_rect, border_top_left_radius=25, border_top_right_radius=25, border_bottom_left_radius=2, border_bottom_right_radius=2)
-    draw_text_centered(f"{item.value}G", font, BLACK, surface, cost_rect.x + cost_rect.width // 2, cost_rect.y + cost_rect.height // 2 + 5)
-    draw_multiple_lines(item_text, font, BLACK, surface, item_border.x + 15, item_border.y + 15)
 
 def draw_popup(title:str, buttons:dict[str, callable], surface, font) -> None:
     """Draw a popup window with a title and buttons."""
@@ -301,7 +298,7 @@ class Game:
                         return event.unicode
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if buttons is not None:
-                    for button_name, button in buttons.items():
+                    for button_name, button in self.buttons[GameState.MAIN_GAME].items():
                         if button.is_clicked(event):
                             if button_name == "Menu":
                                 self.show_esc_popup()
@@ -313,6 +310,8 @@ class Game:
                             elif button_name == "Shop" and self.game_state != GameState.SHOP:
                                 self.game_state = GameState.SHOP
                                 self.running = False
+                    for button_name, button in buttons.items():
+                        if button.is_clicked(event):
                             return button_name
         return None
 
@@ -533,71 +532,83 @@ class Game:
         card_selected = None
         self.running = True
         potion_name = random.choice(list(potion_dictionary.keys()))
-        equipment_name = random.choice(list(equipment_dictionary.keys()))
-        protection_name = random.choice(list(armor_dictionary.keys()))
+        weapon_name = random.choice(list(weapon_dictionary.keys()))
+        armor_name = random.choice(list(armor_dictionary.keys()))
+
+        purchase_button_colors = (GRAY, LIGHT_GRAY)
+        card_price = 0
         
         while self.running:
             if card_selected is not None:
                 if card_selected == "Potion Card":
                     card_price = potion_dictionary[potion_name].value
-                elif card_selected == "Equipment Card":
-                    card_price = equipment_dictionary[equipment_name].value
-                elif card_selected == "Protection Card":
-                    card_price = armor_dictionary[protection_name].value
+                elif card_selected == "Weapon Card":
+                    card_price = weapon_dictionary[weapon_name].value
+                elif card_selected == "Armor Card":
+                    card_price = armor_dictionary[armor_name].value
                 else:
                     card_price = 0
-
-            if card_selected is not None and self.hero.gold >= card_price:
-                self.buttons[GameState.SHOP]["Purchase"].button_color = GREEN
-                self.buttons[GameState.SHOP]["Purchase"].hover_color = LIGHT_GREEN
+            if card_selected is None:
+                purchase_button_colors = (GRAY, LIGHT_GRAY)
             else:
-                self.buttons[GameState.SHOP]["Purchase"].button_color = GRAY
-                self.buttons[GameState.SHOP]["Purchase"].hover_color = LIGHT_GRAY
+                purchase_button_colors = (GREEN, LIGHT_GREEN) if self.hero.gold >= card_price else (GRAY, LIGHT_GRAY)
+            if purchase_button_colors != (self.buttons[GameState.SHOP]["Purchase"].button_color, self.buttons[GameState.SHOP]["Purchase"].hover_color):
+                self.buttons[GameState.SHOP]["Purchase"].button_color = purchase_button_colors[0]
+                self.buttons[GameState.SHOP]["Purchase"].hover_color = purchase_button_colors[1]
 
             self.screen.fill(WHITE)
             draw_hero(self.hero, self.screen, self.font)
 
-            for buttons in self.buttons[GameState.SHOP].values():
+            for buttons in list(self.buttons[GameState.SHOP].values())[:2]:
                 buttons.draw(self.screen)
             for buttons in self.buttons[GameState.MAIN_GAME].values():
                 buttons.draw(self.screen)
+
+            potion_border = LIGHT_GREEN if card_selected == "Potion Card" else BLACK
+            weapon_border = LIGHT_GREEN if card_selected == "Weapon Card" else BLACK
+            armor_border = LIGHT_GREEN if card_selected == "Armor Card" else BLACK
+
+            draw_item(potion_dictionary[potion_name], self.buttons[GameState.SHOP]["Potion Card"], self.screen, potion_border)
+            draw_item(weapon_dictionary[weapon_name], self.buttons[GameState.SHOP]["Weapon Card"], self.screen, weapon_border)
+            draw_item(armor_dictionary[armor_name], self.buttons[GameState.SHOP]["Armor Card"], self.screen, armor_border)
 
             action = self.events()
             if action is not None:
                 if action == "Potion Card":
                     print("Health Potion selected")
-                    if card_selected is not None:
-                        self.buttons[GameState.SHOP][card_selected].button_color = LIGHT_GRAY
-                    card_selected = "Potion Card"
-                    self.buttons[GameState.SHOP][card_selected].button_color = LIGHT_GREEN
-                elif action == "Equipment Card":
-                    print("Equipment Card selected")
-                    if card_selected is not None:
-                        self.buttons[GameState.SHOP][card_selected].button_color = LIGHT_GRAY
-                    card_selected = "Equipment Card"
-                    self.buttons[GameState.SHOP][card_selected].button_color = LIGHT_GREEN
-                elif action == "Protection Card":
-                    print("Protection Card selected")
-                    if card_selected is not None:
-                        self.buttons[GameState.SHOP][card_selected].button_color = LIGHT_GRAY
-                    card_selected = "Protection Card"
-                    self.buttons[GameState.SHOP][card_selected].button_color = LIGHT_GREEN
-                elif action == "Purchase" and self.buttons[GameState.SHOP]["Purchase"].button_color == LIGHT_GREEN:
-                    print("Purchase selected")
                     if card_selected == "Potion Card":
-                        self.hero.spend_gold(potion_dictionary[potion_name].value)
-                        self.hero.add_potion(potion_name, 1)
-                        potion_name = random.choice(list(potion_dictionary.keys()))
-                    elif card_selected == "Equipment Card":
-                        self.hero.spend_gold(equipment_dictionary[equipment_name].value)
-                        self.hero.equipment = equipment_dictionary[equipment_name]
-                        while equipment_name == self.hero.equipment.name:
-                            equipment_name = random.choice(list(equipment_dictionary.keys()))
-                    elif card_selected == "Protection Card":
-                        self.hero.spend_gold(armor_dictionary[protection_name].value)
-                        self.hero.protection = armor_dictionary[protection_name]
-                        while protection_name == self.hero.protection.name:
-                            protection_name = random.choice(list(armor_dictionary.keys()))
+                        card_selected = None
+                    else:
+                        card_selected = "Potion Card"
+                elif action == "Weapon Card":
+                    print("Weapon Card selected")
+                    if card_selected == "Weapon Card":
+                        card_selected = None
+                    else:
+                        card_selected = "Weapon Card"
+                elif action == "Armor Card":
+                    print("Armor Card selected")
+                    if card_selected == "Armor Card":
+                        card_selected = None
+                    else:
+                        card_selected = "Armor Card"
+                elif action == "Purchase" and card_selected is not None:
+                    print("Purchase selected")
+                    if self.hero.gold >= card_price:
+                        if card_selected == "Potion Card":
+                            self.hero.spend_gold(potion_dictionary[potion_name].value)
+                            self.hero.add_potion(potion_name, 1)
+                            potion_name = random.choice(list(potion_dictionary.keys()))
+                        elif card_selected == "Weapon Card":
+                            self.hero.spend_gold(weapon_dictionary[weapon_name].value)
+                            self.hero.equipment = weapon_dictionary[weapon_name]
+                            while weapon_name == self.hero.equipment.name:
+                                weapon_name = random.choice(list(weapon_dictionary.keys()))
+                        elif card_selected == "Armor Card":
+                            self.hero.spend_gold(armor_dictionary[armor_name].value)
+                            self.hero.protection = armor_dictionary[armor_name]
+                            while armor_name == self.hero.protection.name:
+                                armor_name = random.choice(list(armor_dictionary.keys()))
                 elif action == "Leave":
                     print("Back to Main selected")
                     self.game_state = GameState.MAIN_GAME
