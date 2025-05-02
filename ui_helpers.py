@@ -88,8 +88,9 @@ def draw_multiple_lines(text:str, font:pygame.font, color:tuple, surface, x:int,
     for i, line in enumerate(lines):
         draw_text(line, font, color, surface, x, y + i * 30)
 
-def draw_health_bar(surface, x:int, y:int, width:int, height:int, health_percentage:float) -> None:
+def draw_health_bar(surface, font:pygame.font, x:int, y:int, width:int, height:int, health_low:int, health_high:int) -> None:
     """Draw a health bar on the screen."""
+    health_percentage = health_low / health_high if health_high > 0 else 0
     if health_percentage < 0:
         health_percentage = 0
     elif health_percentage > 1:
@@ -98,6 +99,7 @@ def draw_health_bar(surface, x:int, y:int, width:int, height:int, health_percent
     pygame.draw.rect(surface, Colors.RED, health_bar_rect)
     health_fill_rect = pygame.Rect(x, y, width * health_percentage, height)
     pygame.draw.rect(surface, Colors.GREEN, health_fill_rect)
+    draw_text_centered(f"{health_low}/{health_high}", font, Colors.BLACK, surface, x + width // 2, y + height // 2 + 2)
 
 def draw_popup(title:str, buttons:dict[str, callable], surface, font) -> None:
     """Draw a popup window with a title and buttons."""

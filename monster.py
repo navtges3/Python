@@ -37,22 +37,21 @@ class Monster:
         print(f"{self.name} has {self.health} health remaining.")
 
     def draw(self, surface, font, x:int, y:int) -> None:
-        monster_text = f"{self.name}\nStrength: {self.damage}"  
         # Border 
         monster_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
         pygame.draw.rect(surface, Colors.RED, monster_border, width=5, border_radius=10)
         # Image
+
+        draw_text(self.name, font, Colors.BLACK, surface, monster_border.x + 20, monster_border.y + 10)
         monster_image = pygame.image.load(fileIO.resource_path(f"images\\{self.image}")).convert()
         monster_image = pygame.transform.scale(monster_image, (100, 100))
-        surface.blit(monster_image, (monster_border.x + 10, monster_border.y + 10))
+        surface.blit(monster_image, (monster_border.x + 10, monster_border.y + font.get_linesize() + 10))
         
         health_bar_width = 90
-        health_bar_height = 10
+        health_bar_height = font.get_linesize() + 4
         health_bar_x = monster_border.x + 15
-        health_bar_y = monster_border.y + monster_image.get_height() + 15
-        health_percentage = self.health / self.start_health
-        draw_health_bar(surface, health_bar_x, health_bar_y, health_bar_width, health_bar_height, health_percentage)
-        draw_multiple_lines(monster_text, font, Colors.BLACK, surface, monster_border.x + monster_image.get_width() + 10, monster_border.y + 10)
+        health_bar_y = monster_border.y + monster_image.get_height() + font.get_linesize() + 15
+        draw_health_bar(surface, font, health_bar_x, health_bar_y, health_bar_width, health_bar_height, self.health, self.start_health)
 
     def print_stats(self):
         """Prints the monster's stats."""
