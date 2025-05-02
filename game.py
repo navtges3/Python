@@ -1,7 +1,7 @@
 
 import random
-from hero import Hero, make_hero
-from monster import Monster, get_monster
+from hero import make_hero
+from monster import get_monster
 from items import *
 from constants import *
 from ui_helpers import *
@@ -40,15 +40,10 @@ class Game:
             "Exit Game":    Button("Exit Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
         Game_State.NEW_GAME : {
-            "Name": {
-                "Fighter":      Button("Fighter", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 30), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-                "Rogue":        Button("Rogue", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-                "Back":         Button("Back", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 170), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-                "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 16 * 9, Game_Constants.SCREEN_HEIGHT - 70), (250, 50), font, Colors.BLACK, Colors.GRAY, Colors.LIGHT_GRAY),
-            },
-            "Equipment": {
-
-            }
+            "Fighter":      Button("Fighter", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 30), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Rogue":        Button("Rogue", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+            "Back":         Button("Back", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 170), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 16 * 9, Game_Constants.SCREEN_HEIGHT - 70), (250, 50), font, Colors.BLACK, Colors.GRAY, Colors.LIGHT_GRAY),
         },
         Game_State.MAIN_GAME : {
             "Menu":         Button("Menu", (0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
@@ -255,7 +250,9 @@ class Game:
                 elif action == "Create Hero" or action == "enter":
                     print("Create Hero selected")
                     if hero_name and hero_class:
-                        self.hero = make_hero(hero_name, hero_class)
+                        hero_image = pygame.image.load(fileIO.resource_path(f"images\\knight_image.jpg")).convert()
+                        hero_image = pygame.transform.scale(hero_image, (100, 100))
+                        self.hero = make_hero(hero_name, hero_class, hero_image)
                         self.monster = get_monster(self.hero.level)
                         self.game_state = Game_State.MAIN_GAME
                         self.running = False
@@ -284,8 +281,8 @@ class Game:
 
         while self.running:
             self.screen.fill(Colors.WHITE)
-            draw_hero(self.hero, self.screen, self.font, 0,  25)
-            draw_monster(self.monster, self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2, 25)
+            self.hero.draw(self.screen, self.font, 0,  25)
+            #draw_monster(self.monster, self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2, 25)
             pygame.draw.rect(self.screen, Colors.BLACK, button_border, width=5, border_radius=10)
             pygame.draw.rect(self.screen, Colors.BLACK, log_border, width=5, border_radius=10)
 
@@ -419,7 +416,7 @@ class Game:
                 self.buttons[Game_State.SHOP]["Purchase"].hover_color = purchase_button_colors[1]
 
             self.screen.fill(Colors.WHITE)
-            draw_hero(self.hero, self.screen, self.font)
+            self.hero.draw(self.screen, self.font, 0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12)
 
             for buttons in list(self.buttons[Game_State.SHOP].values())[:2]:
                 buttons.draw(self.screen)
@@ -484,7 +481,7 @@ class Game:
         self.running = True
         while self.running:
             self.screen.fill(Colors.WHITE)
-            draw_hero(self.hero, self.screen, self.font)
+            self.hero.draw(self.screen, self.font, 0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12)            
             for button in self.buttons[Game_State.MAIN_GAME].values():
                 button.draw(self.screen)
             draw_text_centered("Main Game", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)

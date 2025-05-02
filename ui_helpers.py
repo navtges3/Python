@@ -1,8 +1,5 @@
 from constants import *
-import fileIO
 from items import *
-from monster import Monster
-from hero import Hero
 import pygame
 
 class Button:
@@ -101,64 +98,6 @@ def draw_health_bar(surface, x:int, y:int, width:int, height:int, health_percent
     pygame.draw.rect(surface, Colors.RED, health_bar_rect)
     health_fill_rect = pygame.Rect(x, y, width * health_percentage, height)
     pygame.draw.rect(surface, Colors.GREEN, health_fill_rect)
-
-def draw_hero(hero:Hero, surface, font, x:int=0, y:int=Game_Constants.SCREEN_HEIGHT // 2) -> None:
-    """Draw the hero's information on the surface."""
-
-    # Border
-    hero_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
-    pygame.draw.rect(surface, Colors.BLUE, hero_border, width=5, border_radius=10)
-
-    # Portrait
-    hero_image = pygame.image.load(fileIO.resource_path(f"images\\{hero.image}")).convert()
-    hero_image = pygame.transform.scale(hero_image, (100, 100))
-    surface.blit(hero_image, (hero_border.x + 10, hero_border.y + 10))
-
-    # Health Bar
-    health_bar_width = 90
-    health_bar_height = 10
-    health_bar_x = hero_border.x + 15
-    health_bar_y = hero_border.y + hero_image.get_height() + 15
-    health_percentage = hero.health / hero.max_health
-    draw_health_bar(surface, health_bar_x, health_bar_y, health_bar_width, health_bar_height, health_percentage)
-
-    # Hero Stats
-    hero_text = f"{hero.name}\nLevel: {hero.level}\nExp: {hero.experience}\nGold: {hero.gold}"
-    draw_multiple_lines(hero_text, font, Colors.BLACK, surface, hero_border.x + hero_image.get_width() + 10, hero_border.y + 10)
-
-    potion_text = f"Potion Bag:\n -Health Potion: {hero.potion_bag['Health Potion']}\n -Damage Potion: {hero.potion_bag['Damage Potion']}\n -Block Potion: {hero.potion_bag['Block Potion']}"
-    draw_multiple_lines(potion_text, font, Colors.BLACK, surface, hero_border.x + hero_border.width // 2 + 10, hero_border.y + 10)
-
-    # Draw the hero's weapon and protection
-    if hero.equipment is not None:
-        equipment_border = pygame.Rect(hero_border.x + 10, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
-        pygame.draw.rect(surface, Colors.LIGHT_RED, equipment_border, width=2, border_radius=10)
-        equipment_text = f"{hero.equipment.name}\nDamage {hero.equipment.damage}"
-        draw_multiple_lines(equipment_text, font, Colors.BLACK, surface, equipment_border.x + 5, equipment_border.y + 5)
-    if hero.protection is not None:
-        protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 + 5, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
-        pygame.draw.rect(surface, Colors.LIGHT_BLUE, protection_border, width=2, border_radius=10)
-        protection_text = f"{hero.protection.name}\nBlock: {hero.protection.block}\nDodge: {hero.protection.dodge}"
-        draw_multiple_lines(protection_text, font, Colors.BLACK, surface, protection_border.x + 5, protection_border.y + 5)
-
-def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
-    """Draw the monster's information on the screen."""
-    monster_text = f"{monster.name}\nStrength: {monster.damage}"  
-    # Border 
-    monster_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
-    pygame.draw.rect(surface, Colors.RED, monster_border, width=5, border_radius=10)
-    # Image
-    monster_image = pygame.image.load(fileIO.resource_path(f"images\\{monster.image}")).convert()
-    monster_image = pygame.transform.scale(monster_image, (100, 100))
-    surface.blit(monster_image, (monster_border.x + 10, monster_border.y + 10))
-    
-    health_bar_width = 90
-    health_bar_height = 10
-    health_bar_x = monster_border.x + 15
-    health_bar_y = monster_border.y + monster_image.get_height() + 15
-    health_percentage = monster.health / monster.start_health
-    draw_health_bar(surface, health_bar_x, health_bar_y, health_bar_width, health_bar_height, health_percentage)
-    draw_multiple_lines(monster_text, font, Colors.BLACK, surface, monster_border.x + monster_image.get_width() + 10, monster_border.y + 10)
 
 def draw_popup(title:str, buttons:dict[str, callable], surface, font) -> None:
     """Draw a popup window with a title and buttons."""
