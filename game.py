@@ -16,21 +16,6 @@ POPUP_HEIGHT = 200
 
 FPS = 60
 
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-GRAY = (200, 200, 200)
-BLUE = (0, 0, 255)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-YELLOW = (255, 255, 0)
-LIGHT_GRAY = (211, 211, 211)
-LIGHT_BLUE = (173, 216, 230)
-LIGHT_RED = (255, 182, 193)
-LIGHT_YELLOW = (255, 255, 224)
-LIGHT_GREEN = (144, 238, 144)
-GOLD = (255, 215, 0)
-
 class Button:
     def __init__(self, text, pos, size, font:pygame.font, text_color, button_color, hover_color):
         self.text = text
@@ -44,7 +29,7 @@ class Button:
         self.rect = pygame.Rect(pos, size,)
         self.surface = self.font.render(self.text, True, self.text_color)
 
-    def draw(self, screen, draw_text=True, border_color=BLACK) -> None:
+    def draw(self, screen, draw_text=True, border_color=Colors.BLACK) -> None:
         # Change color on hover
         mouse_pos = pygame.mouse.get_pos()
         if self.rect.collidepoint(mouse_pos):
@@ -124,16 +109,16 @@ def draw_health_bar(surface, x:int, y:int, width:int, height:int, health_percent
     elif health_percentage > 1:
         health_percentage = 1
     health_bar_rect = pygame.Rect(x, y, width, height)
-    pygame.draw.rect(surface, RED, health_bar_rect)
+    pygame.draw.rect(surface, Colors.RED, health_bar_rect)
     health_fill_rect = pygame.Rect(x, y, width * health_percentage, height)
-    pygame.draw.rect(surface, GREEN, health_fill_rect)
+    pygame.draw.rect(surface, Colors.GREEN, health_fill_rect)
 
 def draw_hero(hero:Hero, surface, font, x:int=0, y:int=SCREEN_HEIGHT // 2) -> None:
     """Draw the hero's information on the surface."""
 
     # Border
     hero_border = pygame.Rect(x, y, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
-    pygame.draw.rect(surface, BLUE, hero_border, width=5, border_radius=10)
+    pygame.draw.rect(surface, Colors.BLUE, hero_border, width=5, border_radius=10)
 
     # Portrait
     hero_image = pygame.image.load(fileIO.resource_path(f"images\\{hero.image}")).convert()
@@ -150,29 +135,29 @@ def draw_hero(hero:Hero, surface, font, x:int=0, y:int=SCREEN_HEIGHT // 2) -> No
 
     # Hero Stats
     hero_text = f"{hero.name}\nLevel: {hero.level}\nExp: {hero.experience}\nGold: {hero.gold}"
-    draw_multiple_lines(hero_text, font, BLACK, surface, hero_border.x + hero_image.get_width() + 10, hero_border.y + 10)
+    draw_multiple_lines(hero_text, font, Colors.BLACK, surface, hero_border.x + hero_image.get_width() + 10, hero_border.y + 10)
 
     potion_text = f"Potion Bag:\n -Health Potion: {hero.potion_bag['Health Potion']}\n -Damage Potion: {hero.potion_bag['Damage Potion']}\n -Block Potion: {hero.potion_bag['Block Potion']}"
-    draw_multiple_lines(potion_text, font, BLACK, surface, hero_border.x + hero_border.width // 2 + 10, hero_border.y + 10)
+    draw_multiple_lines(potion_text, font, Colors.BLACK, surface, hero_border.x + hero_border.width // 2 + 10, hero_border.y + 10)
 
     # Draw the hero's weapon and protection
     if hero.equipment is not None:
         equipment_border = pygame.Rect(hero_border.x + 10, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
-        pygame.draw.rect(surface, LIGHT_RED, equipment_border, width=2, border_radius=10)
+        pygame.draw.rect(surface, Colors.LIGHT_RED, equipment_border, width=2, border_radius=10)
         equipment_text = f"{hero.equipment.name}\nDamage {hero.equipment.damage}"
-        draw_multiple_lines(equipment_text, font, BLACK, surface, equipment_border.x + 5, equipment_border.y + 5)
+        draw_multiple_lines(equipment_text, font, Colors.BLACK, surface, equipment_border.x + 5, equipment_border.y + 5)
     if hero.protection is not None:
         protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 + 5, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
-        pygame.draw.rect(surface, LIGHT_BLUE, protection_border, width=2, border_radius=10)
+        pygame.draw.rect(surface, Colors.LIGHT_BLUE, protection_border, width=2, border_radius=10)
         protection_text = f"{hero.protection.name}\nBlock: {hero.protection.block}\nDodge: {hero.protection.dodge}"
-        draw_multiple_lines(protection_text, font, BLACK, surface, protection_border.x + 5, protection_border.y + 5)
+        draw_multiple_lines(protection_text, font, Colors.BLACK, surface, protection_border.x + 5, protection_border.y + 5)
 
 def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
     """Draw the monster's information on the screen."""
     monster_text = f"{monster.name}\nStrength: {monster.damage}"  
     # Border 
     monster_border = pygame.Rect(x, y, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 10)
-    pygame.draw.rect(surface, RED, monster_border, width=5, border_radius=10)
+    pygame.draw.rect(surface, Colors.RED, monster_border, width=5, border_radius=10)
     # Image
     monster_image = pygame.image.load(fileIO.resource_path(f"images\\{monster.image}")).convert()
     monster_image = pygame.transform.scale(monster_image, (100, 100))
@@ -184,7 +169,7 @@ def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
     health_bar_y = monster_border.y + monster_image.get_height() + 15
     health_percentage = monster.health / monster.start_health
     draw_health_bar(surface, health_bar_x, health_bar_y, health_bar_width, health_bar_height, health_percentage)
-    draw_multiple_lines(monster_text, font, BLACK, surface, monster_border.x + monster_image.get_width() + 10, monster_border.y + 10)
+    draw_multiple_lines(monster_text, font, Colors.BLACK, surface, monster_border.x + monster_image.get_width() + 10, monster_border.y + 10)
 
 def draw_popup(title:str, buttons:dict[str, callable], surface, font) -> None:
     """Draw a popup window with a title and buttons."""
@@ -192,9 +177,9 @@ def draw_popup(title:str, buttons:dict[str, callable], surface, font) -> None:
     popup_y = (SCREEN_HEIGHT - POPUP_HEIGHT) // 2
     popup_rect = pygame.Rect(popup_x, popup_y, POPUP_WIDTH, POPUP_HEIGHT)
 
-    pygame.draw.rect(surface, WHITE, popup_rect, border_radius=10)
-    pygame.draw.rect(surface, BLACK, popup_rect, width=5, border_radius=10)
-    draw_text_centered(title, font, BLACK, surface, SCREEN_WIDTH // 2, popup_y + 20)
+    pygame.draw.rect(surface, Colors.WHITE, popup_rect, border_radius=10)
+    pygame.draw.rect(surface, Colors.BLACK, popup_rect, width=5, border_radius=10)
+    draw_text_centered(title, font, Colors.BLACK, surface, SCREEN_WIDTH // 2, popup_y + 20)
 
     for button in buttons.values():
         button.draw(surface)
@@ -225,46 +210,46 @@ class Game:
     
     buttons = {
         Game_State.WELCOME : {
-            "New Game":     Button("New Game", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-            "Load Game":    Button("Load Game", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 40), (200, 50), font, BLACK, BLUE, LIGHT_BLUE),
-            "Exit Game":    Button("Exit Game", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100), (200, 50), font, BLACK, RED, LIGHT_RED),
+            "New Game":     Button("New Game", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 - 20), (200, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+            "Load Game":    Button("Load Game", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 40), (200, 50), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
+            "Exit Game":    Button("Exit Game", (SCREEN_WIDTH // 2 - 100, SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
         Game_State.NEW_GAME : {
-            "Fighter":      Button("Fighter", (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30), (200, 50), font, BLACK, RED, LIGHT_RED),
-            "Rogue":        Button("Rogue", (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-            "Back":         Button("Back", (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170), (200, 50), font, BLACK, RED, LIGHT_RED),
-            "Create Hero":  Button("Create Hero", (SCREEN_WIDTH // 16 * 9, SCREEN_HEIGHT - 70), (250, 50), font, BLACK, GRAY, LIGHT_GRAY),
+            "Fighter":      Button("Fighter", (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 30), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Rogue":        Button("Rogue", (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+            "Back":         Button("Back", (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 + 170), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Create Hero":  Button("Create Hero", (SCREEN_WIDTH // 16 * 9, SCREEN_HEIGHT - 70), (250, 50), font, Colors.BLACK, Colors.GRAY, Colors.LIGHT_GRAY),
         },
         Game_State.MAIN_GAME : {
-            "Menu":         Button("Menu", (0, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, BLACK, RED, LIGHT_RED),
-            "Inventory":    Button("Inventory", (SCREEN_WIDTH // 4, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, BLACK, BLUE, LIGHT_BLUE),
-            "Battle":       Button("Battle", (SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, BLACK, RED, LIGHT_RED),
-            "Shop":         Button("Shop", (SCREEN_WIDTH // 4 * 3, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, BLACK, YELLOW, LIGHT_YELLOW),
+            "Menu":         Button("Menu", (0, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Inventory":    Button("Inventory", (SCREEN_WIDTH // 4, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
+            "Battle":       Button("Battle", (SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Shop":         Button("Shop", (SCREEN_WIDTH // 4 * 3, SCREEN_HEIGHT - SCREEN_HEIGHT // 12), (SCREEN_WIDTH // 4, SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.YELLOW, Colors.LIGHT_YELLOW),
         },
         Game_State.BATTLE : {
             Battle_Action.HOME:{
-                "Attack":       Button("Attack", (15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, RED, LIGHT_RED),
-                "Use Potion":   Button("Use Potion", (15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-                "Defend":       Button("Defend", (15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
-                "Flee":         Button("Flee", (15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, YELLOW, LIGHT_YELLOW),
+                "Attack":       Button("Attack",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+                "Use Potion":   Button("Use Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+                "Defend":       Button("Defend",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 2), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY),
+                "Flee":         Button("Flee",          (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 3), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.YELLOW, Colors.LIGHT_YELLOW),
             },
             Battle_Action.USE_ITEM:{
-                "Health Potion": Button("Health Potion", (15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-                "Damage Potion": Button("Damage Potion", (15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
-                "Block Potion":  Button("Block Potion", (15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, BLUE, LIGHT_BLUE),
-                "Back":          Button("Back", (15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Health Potion": Button("Health Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+                "Damage Potion": Button("Damage Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+                "Block Potion":  Button("Block Potion",     (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 2), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
+                "Back":          Button("Back",             (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 3), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
             },
             Battle_Action.MONSTER_DEFEATED:{
-                "Continue Fighting": Button("Continue Fighting", (15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-                "Retreat":         Button("Retreat", (15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Continue Fighting":    Button("Continue Fighting", (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+                "Retreat":              Button("Retreat",           (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
             },
         },
         Game_State.SHOP : {
-            "Purchase":     Button("Purchase", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (250, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
-            "Leave":        Button("Leave", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (250, 50), font, BLACK, RED, LIGHT_RED),
-            "Potion Card":  Button("Potion Card", (SCREEN_WIDTH // 8, 25), (SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), font, BLACK, LIGHT_GRAY, GRAY),
-            "Weapon Card":  Button("Weapon Card", (SCREEN_WIDTH // 32 * 13, 25), (SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), font, BLACK, LIGHT_RED, RED),
-            "Armor Card":   Button("Armor Card", (SCREEN_WIDTH // 16 * 11, 25), (SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), font, BLACK, LIGHT_BLUE, BLUE),
+            "Purchase":     Button("Purchase", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (250, 50), font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY),
+            "Leave":        Button("Leave", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (250, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Potion Card":  Button("Potion Card", (SCREEN_WIDTH // 8, 25), (SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.GRAY),
+            "Weapon Card":  Button("Weapon Card", (SCREEN_WIDTH // 32 * 13, 25), (SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.LIGHT_RED, Colors.RED),
+            "Armor Card":   Button("Armor Card", (SCREEN_WIDTH // 16 * 11, 25), (SCREEN_WIDTH // 16 * 3, SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.LIGHT_BLUE, Colors.BLUE),
         },
         Game_State.GAME_OVER : {},
         Game_State.EXIT : {},
@@ -314,18 +299,19 @@ class Game:
                         return event.unicode
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if buttons is not None:
-                    for button_name, button in self.buttons[Game_State.MAIN_GAME].items():
-                        if button.is_clicked(event):
-                            if button_name == "Menu":
-                                self.show_esc_popup()
-                            elif button_name == "Inventory":
-                                pass
-                            elif button_name == "Battle" and self.game_state != Game_State.BATTLE:
-                                self.game_state = Game_State.BATTLE
-                                self.running = False
-                            elif button_name == "Shop" and self.game_state != Game_State.SHOP:
-                                self.game_state = Game_State.SHOP
-                                self.running = False
+                    if self.game_state != Game_State.BATTLE:
+                        for button_name, button in self.buttons[Game_State.MAIN_GAME].items():
+                            if button.is_clicked(event):
+                                if button_name == "Menu":
+                                    self.show_esc_popup()
+                                elif button_name == "Inventory":
+                                    pass
+                                elif button_name == "Battle" and self.game_state != Game_State.BATTLE:
+                                    self.game_state = Game_State.BATTLE
+                                    self.running = False
+                                elif button_name == "Shop" and self.game_state != Game_State.SHOP:
+                                    self.game_state = Game_State.SHOP
+                                    self.running = False
                     for button_name, button in buttons.items():
                         if button.is_clicked(event):
                             return button_name
@@ -347,8 +333,8 @@ class Game:
         exit_text = "Exit Game" if self.game_state == Game_State.NEW_GAME else "Save and Exit"
 
         buttons = {
-            "Resume": Button("Resume", (popup_x + 50, popup_y + 50), (300, 50), self.font, BLACK, GREEN, LIGHT_GREEN),
-            exit_text: Button(exit_text, (popup_x + 50, popup_y + 120), (300, 50), self.font, BLACK, RED, LIGHT_RED),
+            "Resume": Button("Resume", (popup_x + 50, popup_y + 50), (300, 50), self.font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+            exit_text: Button(exit_text, (popup_x + 50, popup_y + 120), (300, 50), self.font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         }
 
         while popup_running:
@@ -374,15 +360,15 @@ class Game:
         self.hero = fileIO.load_game()
             
         while self.running:
-            self.screen.fill(WHITE)
+            self.screen.fill(Colors.WHITE)
 
-            draw_text_centered("Welcome to Village Defense!", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered("Welcome to Village Defense!", self.font, Colors.BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
             if self.hero is not None:
-                self.buttons[Game_State.WELCOME]["Load Game"].button_color = BLUE
-                self.buttons[Game_State.WELCOME]["Load Game"].hover_color = LIGHT_BLUE
+                self.buttons[Game_State.WELCOME]["Load Game"].button_color = Colors.BLUE
+                self.buttons[Game_State.WELCOME]["Load Game"].hover_color = Colors.LIGHT_BLUE
             else:
-                self.buttons[Game_State.WELCOME]["Load Game"].button_color = LIGHT_GRAY
-                self.buttons[Game_State.WELCOME]["Load Game"].hover_color = LIGHT_GRAY
+                self.buttons[Game_State.WELCOME]["Load Game"].button_color = Colors.LIGHT_GRAY
+                self.buttons[Game_State.WELCOME]["Load Game"].hover_color = Colors.LIGHT_GRAY
 
             for button in self.buttons[Game_State.WELCOME].values():
                 button.draw(self.screen)
@@ -411,15 +397,15 @@ class Game:
         self.running = True
 
         while self.running:
-            self.screen.fill(WHITE)
-            create_button_color = GREEN if hero_name and hero_class else LIGHT_GRAY
-            create_hover_color = LIGHT_GREEN if hero_name and hero_class else LIGHT_GRAY
+            self.screen.fill(Colors.WHITE)
+            create_button_color = Colors.GREEN if hero_name and hero_class else Colors.LIGHT_GRAY
+            create_hover_color = Colors.LIGHT_GREEN if hero_name and hero_class else Colors.LIGHT_GRAY
             if create_button_color != self.buttons[Game_State.NEW_GAME]["Create Hero"].button_color:
                 self.buttons[Game_State.NEW_GAME]["Create Hero"].button_color = create_button_color
                 self.buttons[Game_State.NEW_GAME]["Create Hero"].hover_color = create_hover_color
             
-            draw_text(f"Hero Name: {hero_name}", self.font, BLACK, self.screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 100)
-            draw_text(f"Choose your class: {hero_class}", self.font, BLACK, self.screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
+            draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 100)
+            draw_text(f"Choose your class: {hero_class}", self.font, Colors.BLACK, self.screen, SCREEN_WIDTH // 4, SCREEN_HEIGHT // 2 - 30)
 
             for button in self.buttons[Game_State.NEW_GAME].values():
                 button.draw(self.screen)
@@ -462,46 +448,50 @@ class Game:
         if self.monster is None or not self.monster.alive:
             self.monster = get_monster(self.hero.level)
         
+        button_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_X, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_Y, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_HEIGHT)
+        battle_log_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_LOG_BORDER_X, Game_Constants.BATTLE_SCREEN_LOG_BORDER_Y, Game_Constants.BATTLE_SCREEN_LOG_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_LOG_BORDER_HEIGHT)
+
         while self.running:
-            self.screen.fill(WHITE)
+            self.screen.fill(Colors.WHITE)
             draw_hero(self.hero, self.screen, self.font, 0, 0)
             draw_monster(self.monster, self.screen, self.font, SCREEN_WIDTH // 2, 0)
+            pygame.draw.rect(self.screen, Colors.BLACK, button_border, width=2, border_radius=10)
+            pygame.draw.rect(self.screen, Colors.BLACK, battle_log_border, width=2, border_radius=10)
+
 
             lines = 0
-            for i, log_entry in enumerate(battle_log[-5:]):
-                lines += draw_wrapped_text(log_entry, self.font, BLACK, self.screen, 230, SCREEN_HEIGHT // 2 + 15 + (i + lines) * self.font.get_linesize(), SCREEN_WIDTH // 2 - 30)
+            for i, log_entry in enumerate(battle_log[-15:]):
+                lines += draw_wrapped_text(log_entry, self.font, Colors.BLACK, self.screen, Game_Constants.BATTLE_SCREEN_LOG_X, Game_Constants.BATTLE_SCREEN_LOG_Y + (i + lines) * self.font.get_linesize(), Game_Constants.BATTLE_SCREEN_LOG_WIDTH)
 
             if battle_state == Battle_Action.HOME:
-                protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.is_available() else LIGHT_GRAY
+                protection_button_color = Colors.LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.is_available() else Colors.LIGHT_GRAY
                 if protection_button_color != self.buttons[Game_State.BATTLE][battle_state]["Defend"].button_color:
                     self.buttons[Game_State.BATTLE][battle_state]["Defend"].button_color = protection_button_color
             elif battle_state == Battle_Action.USE_ITEM:
                 for button in self.buttons[Game_State.BATTLE][battle_state].values():
                     if button.text == "Health Potion":
                         if self.hero.potion_bag["Health Potion"] > 0:
-                            button.button_color = GREEN
-                            button.hover_color = LIGHT_GREEN
+                            button.button_color = Colors.GREEN
+                            button.hover_color = Colors.LIGHT_GREEN
                         else:
-                            button.button_color = LIGHT_GRAY
-                            button.hover_color = LIGHT_GRAY
+                            button.button_color = Colors.LIGHT_GRAY
+                            button.hover_color = Colors.LIGHT_GRAY
                     elif button.text == "Damage Potion":
                         if self.hero.potion_bag["Damage Potion"] > 0:
-                            button.button_color = RED
-                            button.hover_color = LIGHT_RED
+                            button.button_color = Colors.RED
+                            button.hover_color = Colors.LIGHT_RED
                         else:
-                            button.button_color = LIGHT_GRAY
-                            button.hover_color = LIGHT_GRAY
+                            button.button_color = Colors.LIGHT_GRAY
+                            button.hover_color = Colors.LIGHT_GRAY
                     elif button.text == "Block Potion":
                         if self.hero.potion_bag["Block Potion"] > 0:
-                            button.button_color = BLUE
-                            button.hover_color = LIGHT_BLUE
+                            button.button_color = Colors.BLUE
+                            button.hover_color = Colors.LIGHT_BLUE
                         else:
-                            button.button_color = LIGHT_GRAY
-                            button.hover_color = LIGHT_GRAY
+                            button.button_color = Colors.LIGHT_GRAY
+                            button.hover_color = Colors.LIGHT_GRAY
             
             for button in self.buttons[Game_State.BATTLE][battle_state].values():
-                button.draw(self.screen)
-            for button in self.buttons[Game_State.MAIN_GAME].values():
                 button.draw(self.screen)
 
             action = self.events(self.buttons[Game_State.BATTLE][battle_state])
@@ -576,7 +566,7 @@ class Game:
         weapon_name = random.choice(list(weapon_dictionary.keys()))
         armor_name = random.choice(list(armor_dictionary.keys()))
 
-        purchase_button_colors = (GRAY, LIGHT_GRAY)
+        purchase_button_colors = (Colors.GRAY, Colors.LIGHT_GRAY)
         card_price = 0
         
         while self.running:
@@ -590,14 +580,14 @@ class Game:
                 else:
                     card_price = 0
             if card_selected is None:
-                purchase_button_colors = (GRAY, LIGHT_GRAY)
+                purchase_button_colors = (Colors.GRAY, Colors.LIGHT_GRAY)
             else:
-                purchase_button_colors = (GREEN, LIGHT_GREEN) if self.hero.gold >= card_price else (GRAY, LIGHT_GRAY)
+                purchase_button_colors = (Colors.GREEN, Colors.LIGHT_GREEN) if self.hero.gold >= card_price else (Colors.GRAY, Colors.LIGHT_GRAY)
             if purchase_button_colors != (self.buttons[Game_State.SHOP]["Purchase"].button_color, self.buttons[Game_State.SHOP]["Purchase"].hover_color):
                 self.buttons[Game_State.SHOP]["Purchase"].button_color = purchase_button_colors[0]
                 self.buttons[Game_State.SHOP]["Purchase"].hover_color = purchase_button_colors[1]
 
-            self.screen.fill(WHITE)
+            self.screen.fill(Colors.WHITE)
             draw_hero(self.hero, self.screen, self.font)
 
             for buttons in list(self.buttons[Game_State.SHOP].values())[:2]:
@@ -605,9 +595,9 @@ class Game:
             for buttons in self.buttons[Game_State.MAIN_GAME].values():
                 buttons.draw(self.screen)
 
-            potion_border = LIGHT_GREEN if card_selected == "Potion Card" else BLACK
-            weapon_border = LIGHT_GREEN if card_selected == "Weapon Card" else BLACK
-            armor_border = LIGHT_GREEN if card_selected == "Armor Card" else BLACK
+            potion_border = Colors.LIGHT_GREEN if card_selected == "Potion Card" else Colors.BLACK
+            weapon_border = Colors.LIGHT_GREEN if card_selected == "Weapon Card" else Colors.BLACK
+            armor_border = Colors.LIGHT_GREEN if card_selected == "Armor Card" else Colors.BLACK
 
             draw_item(potion_dictionary[potion_name], self.buttons[Game_State.SHOP]["Potion Card"], self.screen, potion_border)
             draw_item(weapon_dictionary[weapon_name], self.buttons[Game_State.SHOP]["Weapon Card"], self.screen, weapon_border)
@@ -656,17 +646,17 @@ class Game:
                     self.running = False
             self.update()
         if card_selected is not None:
-            self.buttons[Game_State.SHOP][card_selected].button_color = LIGHT_GRAY
+            self.buttons[Game_State.SHOP][card_selected].button_color = Colors.LIGHT_GRAY
 
     def main_game(self) -> None:
         """Main game screen."""
         self.running = True
         while self.running:
-            self.screen.fill(WHITE)
+            self.screen.fill(Colors.WHITE)
             draw_hero(self.hero, self.screen, self.font)
             for button in self.buttons[Game_State.MAIN_GAME].values():
                 button.draw(self.screen)
-            draw_text_centered("Main Game", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered("Main Game", self.font, Colors.BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
 
             self.events()
             
@@ -676,10 +666,10 @@ class Game:
         """Game over screen."""
         self.running = True
         while self.running:
-            self.screen.fill(WHITE)
-            draw_text_centered(f"{self.hero.name} has been slain!", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
-            draw_text_centered("Game Over", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
-            draw_text_centered("Press ESC to return to the main menu", self.font, BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)
+            self.screen.fill(Colors.WHITE)
+            draw_text_centered(f"{self.hero.name} has been slain!", self.font, Colors.BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered("Game Over", self.font, Colors.BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
+            draw_text_centered("Press ESC to return to the main menu", self.font, Colors.BLACK, self.screen, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 20)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
