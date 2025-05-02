@@ -156,7 +156,7 @@ def draw_monster(monster:Monster, surface, font, x:int, y:int) -> None:
     """Draw the monster's information on the screen."""
     monster_text = f"{monster.name}\nStrength: {monster.damage}"  
     # Border 
-    monster_border = pygame.Rect(x, y, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 10)
+    monster_border = pygame.Rect(x, y, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
     pygame.draw.rect(surface, Colors.RED, monster_border, width=5, border_radius=10)
     # Image
     monster_image = pygame.image.load(fileIO.resource_path(f"images\\{monster.image}")).convert()
@@ -426,6 +426,7 @@ class Game:
                     print("Create Hero selected")
                     if hero_name and hero_class:
                         self.hero = make_hero(hero_name, hero_class)
+                        self.monster = get_monster(self.hero.level)
                         self.game_state = Game_State.MAIN_GAME
                         self.running = False
                 elif action == "backspace":
@@ -449,14 +450,14 @@ class Game:
             self.monster = get_monster(self.hero.level)
         
         button_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_X, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_Y, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_HEIGHT)
-        battle_log_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_LOG_BORDER_X, Game_Constants.BATTLE_SCREEN_LOG_BORDER_Y, Game_Constants.BATTLE_SCREEN_LOG_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_LOG_BORDER_HEIGHT)
+        log_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_LOG_BORDER_X, Game_Constants.BATTLE_SCREEN_LOG_BORDER_Y, Game_Constants.BATTLE_SCREEN_LOG_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_LOG_BORDER_HEIGHT)
 
         while self.running:
             self.screen.fill(Colors.WHITE)
-            draw_hero(self.hero, self.screen, self.font, 0, 0)
-            draw_monster(self.monster, self.screen, self.font, SCREEN_WIDTH // 2, 0)
-            pygame.draw.rect(self.screen, Colors.BLACK, button_border, width=2, border_radius=10)
-            pygame.draw.rect(self.screen, Colors.BLACK, battle_log_border, width=2, border_radius=10)
+            draw_hero(self.hero, self.screen, self.font, 0,  25)
+            draw_monster(self.monster, self.screen, self.font, SCREEN_WIDTH // 2, 25)
+            pygame.draw.rect(self.screen, Colors.BLACK, button_border, width=5, border_radius=10)
+            pygame.draw.rect(self.screen, Colors.BLACK, log_border, width=5, border_radius=10)
 
 
             lines = 0
