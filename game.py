@@ -283,7 +283,7 @@ class Game:
             self.screen.fill(Colors.WHITE)
             self.hero.draw(self.screen, self.font, 0,  25)
             self.monster.draw(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2, 25)
-            
+
             pygame.draw.rect(self.screen, Colors.BLACK, button_border, width=5, border_radius=10)
             pygame.draw.rect(self.screen, Colors.BLACK, log_border, width=5, border_radius=10)
 
@@ -482,10 +482,10 @@ class Game:
         self.running = True
         while self.running:
             self.screen.fill(Colors.WHITE)
-            self.hero.draw(self.screen, self.font, 0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12)            
+            self.hero.draw(self.screen, self.font, 0, 25)
             for button in self.buttons[Game_State.MAIN_GAME].values():
                 button.draw(self.screen)
-            draw_text_centered("Main Game", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered("Main Game", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 + 50)
 
             self.events()
             
