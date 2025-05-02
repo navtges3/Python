@@ -282,8 +282,8 @@ class Game:
         while self.running:
             self.screen.fill(Colors.WHITE)
             self.hero.draw(self.screen, self.font, 0,  25)
-            #draw_monster(self.monster, self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2, 25)
             self.monster.draw(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2, 25)
+            
             pygame.draw.rect(self.screen, Colors.BLACK, button_border, width=5, border_radius=10)
             pygame.draw.rect(self.screen, Colors.BLACK, log_border, width=5, border_radius=10)
 
