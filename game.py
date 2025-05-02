@@ -128,11 +128,11 @@ def draw_health_bar(surface, x:int, y:int, width:int, height:int, health_percent
     health_fill_rect = pygame.Rect(x, y, width * health_percentage, height)
     pygame.draw.rect(surface, GREEN, health_fill_rect)
 
-def draw_hero(hero:Hero, surface, font,) -> None:
+def draw_hero(hero:Hero, surface, font, x:int=0, y:int=SCREEN_HEIGHT // 2) -> None:
     """Draw the hero's information on the surface."""
 
     # Border
-    hero_border = pygame.Rect(0, SCREEN_HEIGHT // 2, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
+    hero_border = pygame.Rect(x, y, SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 50)
     pygame.draw.rect(surface, BLUE, hero_border, width=5, border_radius=10)
 
     # Portrait
@@ -243,20 +243,20 @@ class Game:
         },
         Game_State.BATTLE : {
             Battle_Action.HOME:{
-                "Attack":       Button("Attack", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, RED, LIGHT_RED),
-                "Use Potion":   Button("Use Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-                "Defend":    Button("Defend", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
-                "Flee":         Button("Flee", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, YELLOW, LIGHT_YELLOW),
+                "Attack":       Button("Attack", (15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Use Potion":   Button("Use Potion", (15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
+                "Defend":       Button("Defend", (15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, LIGHT_GRAY, LIGHT_GRAY),
+                "Flee":         Button("Flee", (15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, YELLOW, LIGHT_YELLOW),
             },
             Battle_Action.USE_ITEM:{
-                "Health Potion": Button("Health Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-                "Damage Potion": Button("Damage Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
-                "Block Potion":  Button("Block Potion", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, BLUE, LIGHT_BLUE),
-                "Back":         Button("Back", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Health Potion": Button("Health Potion", (15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
+                "Damage Potion": Button("Damage Potion", (15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Block Potion":  Button("Block Potion", (15, SCREEN_HEIGHT // 2 + 130), (200, 50), font, BLACK, BLUE, LIGHT_BLUE),
+                "Back":          Button("Back", (15, SCREEN_HEIGHT // 2 + 185), (200, 50), font, BLACK, RED, LIGHT_RED),
             },
             Battle_Action.MONSTER_DEFEATED:{
-                "Continue Fighting": Button("Continue Fighting", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
-                "Retreat":         Button("Retreat", (SCREEN_WIDTH // 2 + 15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
+                "Continue Fighting": Button("Continue Fighting", (15, SCREEN_HEIGHT // 2 + 20), (200, 50), font, BLACK, GREEN, LIGHT_GREEN),
+                "Retreat":         Button("Retreat", (15, SCREEN_HEIGHT // 2 + 75), (200, 50), font, BLACK, RED, LIGHT_RED),
             },
         },
         Game_State.SHOP : {
@@ -347,8 +347,8 @@ class Game:
         exit_text = "Exit Game" if self.game_state == Game_State.NEW_GAME else "Save and Exit"
 
         buttons = {
-            "Resume": Button("Resume", (popup_x + 50, popup_y + 50), (300, 50), self.font, BLACK, LIGHT_GREEN, GREEN),
-            exit_text: Button(exit_text, (popup_x + 50, popup_y + 120), (300, 50), self.font, BLACK, LIGHT_RED, RED),
+            "Resume": Button("Resume", (popup_x + 50, popup_y + 50), (300, 50), self.font, BLACK, GREEN, LIGHT_GREEN),
+            exit_text: Button(exit_text, (popup_x + 50, popup_y + 120), (300, 50), self.font, BLACK, RED, LIGHT_RED),
         }
 
         while popup_running:
@@ -464,8 +464,12 @@ class Game:
         
         while self.running:
             self.screen.fill(WHITE)
-            draw_hero(self.hero, self.screen, self.font)
-            draw_monster(self.monster, self.screen, self.font, 0, 0)
+            draw_hero(self.hero, self.screen, self.font, 0, 0)
+            draw_monster(self.monster, self.screen, self.font, SCREEN_WIDTH // 2, 0)
+
+            lines = 0
+            for i, log_entry in enumerate(battle_log[-5:]):
+                lines += draw_wrapped_text(log_entry, self.font, BLACK, self.screen, 230, SCREEN_HEIGHT // 2 + 15 + (i + lines) * self.font.get_linesize(), SCREEN_WIDTH // 2 - 30)
 
             if battle_state == Battle_Action.HOME:
                 protection_button_color = LIGHT_BLUE if self.hero.protection is not None and self.hero.protection.is_available() else LIGHT_GRAY
@@ -494,10 +498,6 @@ class Game:
                         else:
                             button.button_color = LIGHT_GRAY
                             button.hover_color = LIGHT_GRAY
-
-            lines = 0
-            for i, log_entry in enumerate(battle_log[-5:]):
-                lines += draw_wrapped_text(log_entry, self.font, BLACK, self.screen, SCREEN_WIDTH // 2 + 15, 15 + (i + lines) * self.font.get_linesize(), SCREEN_WIDTH // 2 - 30)
             
             for button in self.buttons[Game_State.BATTLE][battle_state].values():
                 button.draw(self.screen)
