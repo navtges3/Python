@@ -57,7 +57,6 @@ class Hero:
     def draw(self, surface, font, x:int=0, y:int=0) -> None:
         # Border
         hero_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
-        pygame.draw.rect(surface, Colors.BLUE, hero_border, width=5, border_radius=10)
 
         # Hero Name
         draw_text(self.name, font, Colors.BLACK, surface, hero_border.x + 20, hero_border.y + 10)
@@ -76,21 +75,26 @@ class Hero:
         hero_text = f"Level: {self.level}\nExp: {self.experience}\nGold: {self.gold}"
         draw_multiple_lines(hero_text, font, Colors.BLACK, surface, hero_border.x + self.image.get_width() + 10, hero_border.y + font.get_linesize() + 20)
 
-        potion_text = f"Potion Bag:\n -Health Potion: {self.potion_bag['Health Potion']}\n -Damage Potion: {self.potion_bag['Damage Potion']}\n -Block Potion: {self.potion_bag['Block Potion']}"
-        draw_multiple_lines(potion_text, font, Colors.BLACK, surface, hero_border.x + hero_border.width // 2 + 10, hero_border.y + 10)
-        """
+        potion_text = f"-Health Potion: {self.potion_bag['Health Potion']}\n-Damage Potion: {self.potion_bag['Damage Potion']}\n-Block Potion: {self.potion_bag['Block Potion']}"
+        draw_multiple_lines(potion_text, font, Colors.BLACK, surface, hero_border.x + 10, hero_border.y + font.get_linesize() * 2 + self.image.get_height() + 25)
+
         # Draw the hero's weapon and protection
+        # Weapon
         if self.equipment is not None:
-            equipment_border = pygame.Rect(hero_border.x + 10, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
-            pygame.draw.rect(surface, Colors.LIGHT_RED, equipment_border, width=2, border_radius=10)
-            equipment_text = f"{self.equipment.name}\nDamage {self.equipment.damage}"
-            draw_multiple_lines(equipment_text, font, Colors.BLACK, surface, equipment_border.x + 5, equipment_border.y + 5)
+            equipment_border = pygame.Rect(hero_border.x + hero_border.width // 2, hero_border.y, hero_border.width // 2, hero_border.height // 3)
+            draw_text_centered(self.equipment.name, font, Colors.BLACK, surface, equipment_border.x + equipment_border.width // 2, equipment_border.y + font.get_linesize() // 2 + 10)
+            draw_multiple_lines(f"Damage {self.equipment.damage}", font, Colors.BLACK, surface, equipment_border.x + 10, equipment_border.y + font.get_linesize() + 25)
+            pygame.draw.rect(surface, Colors.LIGHT_RED, equipment_border, width=3, border_radius=10)
+        # Armor
         if self.protection is not None:
-            protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 + 5, hero_border.y + 140, hero_border.width // 2 - 15, hero_border.height - 150)
-            pygame.draw.rect(surface, Colors.LIGHT_BLUE, protection_border, width=2, border_radius=10)
-            protection_text = f"{self.protection.name}\nBlock: {self.protection.block}\nDodge: {self.protection.dodge}"
-            draw_multiple_lines(protection_text, font, Colors.BLACK, surface, protection_border.x + 5, protection_border.y + 5)
-        """
+            protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3, hero_border.width // 2, hero_border.height // 3 * 2)
+            draw_text_centered(self.protection.name, font, Colors.BLACK, surface, protection_border.x + protection_border.width // 2, protection_border.y + font.get_linesize() // 2 + 10)
+            protection_text = f"Block: {self.protection.block}\nDodge: {self.protection.dodge}"
+            draw_multiple_lines(protection_text, font, Colors.BLACK, surface, protection_border.x + 10, protection_border.y + font.get_linesize() + 25)
+            pygame.draw.rect(surface, Colors.LIGHT_BLUE, protection_border, width=3, border_radius=10)
+        
+        pygame.draw.rect(surface, Colors.BLUE, hero_border, width=5, border_radius=10)
+
     def has_potions(self) -> bool:
         return any(amount > 0 for amount in self.potion_bag.values())
     

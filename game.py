@@ -27,6 +27,33 @@ def handle_popup_events(events:list[pygame.event.Event], buttons:dict[str, calla
                         return button_name
     return None
 
+def draw_hero_preview(hero, surface, font, x:int, y:int) -> pygame.Rect:
+    """Draw the hero preview on the screen."""
+    # Border 
+    hero_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20)
+
+    # Weapon
+    if hero.equipment is not None:
+        equipment_border = pygame.Rect(hero_border.x + hero_border.width // 2, hero_border.y + 50, hero_border.width // 2, hero_border.height // 3)
+        draw_text_centered(hero.equipment.name, font, Colors.BLACK, surface, equipment_border.x + equipment_border.width // 2, equipment_border.y + font.get_linesize() // 2 + 10)
+        draw_multiple_lines(f"Damage {hero.equipment.damage}", font, Colors.BLACK, surface, equipment_border.x + 10, equipment_border.y + font.get_linesize() + 25)
+        pygame.draw.rect(surface, Colors.LIGHT_RED, equipment_border, width=3, border_radius=10)
+    # Armor
+    if hero.protection is not None:
+        protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3 + 50, hero_border.width // 2, hero_border.height // 3 * 2 - 50)
+        draw_text_centered(hero.protection.name, font, Colors.BLACK, surface, protection_border.x + protection_border.width // 2, protection_border.y + font.get_linesize() // 2 + 10)
+        protection_text = f"Block: {hero.protection.block}\nDodge: {hero.protection.dodge}"
+        draw_multiple_lines(protection_text, font, Colors.BLACK, surface, protection_border.x + 10, protection_border.y + font.get_linesize() + 25)
+        pygame.draw.rect(surface, Colors.LIGHT_BLUE, protection_border, width=3, border_radius=10)
+
+    # Name
+    draw_text_centered(hero.name, font, Colors.BLACK, surface, hero_border.x + hero_border.width // 2, hero_border.y + font.get_linesize() // 2 + 10)
+
+    # Image
+    surface.blit(hero.image, (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))        
+    pygame.draw.rect(surface, Colors.RED, hero_border, width=5, border_radius=10)
+    return hero_border
+
 
 class Game:
     pygame.init()
@@ -220,6 +247,11 @@ class Game:
         hero_name = ""
         hero_class = ""
         self.running = True
+        hero_image = pygame.image.load(fileIO.resource_path(f"images\\knight_image.jpg")).convert()
+        hero_image = pygame.transform.scale(hero_image, (100, 100))
+        fighter = make_hero("Fighter", "Fighter", hero_image)
+        rogue = make_hero("Rogue", "Rogue", hero_image)
+
 
         while self.running:
             self.screen.fill(Colors.WHITE)
@@ -229,8 +261,10 @@ class Game:
                 self.buttons[Game_State.NEW_GAME]["Create Hero"].button_color = create_button_color
                 self.buttons[Game_State.NEW_GAME]["Create Hero"].hover_color = create_hover_color
             
-            draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 - 100)
-            draw_text(f"Choose your class: {hero_class}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 - 30)
+            draw_hero_preview(fighter, self.screen, self.font, 10, 10)
+            draw_hero_preview(rogue, self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10)
+            draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, 0, Game_Constants.SCREEN_HEIGHT // 4 * 3)
+            #draw_text(f"Choose your class: {hero_class}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 - 30)
 
             for button in self.buttons[Game_State.NEW_GAME].values():
                 button.draw(self.screen)
@@ -250,8 +284,6 @@ class Game:
                 elif action == "Create Hero" or action == "enter":
                     print("Create Hero selected")
                     if hero_name and hero_class:
-                        hero_image = pygame.image.load(fileIO.resource_path(f"images\\knight_image.jpg")).convert()
-                        hero_image = pygame.transform.scale(hero_image, (100, 100))
                         self.hero = make_hero(hero_name, hero_class, hero_image)
                         self.monster = get_monster(self.hero.level)
                         self.game_state = Game_State.MAIN_GAME
