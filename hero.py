@@ -5,7 +5,7 @@ from ui_helpers import *
 class Hero:
     """Base class for all heroes in the game."""
 
-    def __init__(self, image, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50):
+    def __init__(self, image, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE):
         """Initialize the hero with a name, health, equipment, protection, and gold."""
         self.alive = True
         self.image = image
@@ -24,6 +24,7 @@ class Hero:
         }
         self.potion_damage = 0
         self.potion_block = 0
+        self.border_color = border_color
 
     #Print the hero's name
     def __str__(self):
@@ -218,7 +219,7 @@ class Rogue(Hero):
         health = randint(5, 10)
         dagger = weapon_dictionary["Daggers"]
         leather = armor_dictionary["Leather Armor"]
-        super().__init__(image, name, health, dagger, leather)
+        super().__init__(image, name, health, dagger, leather, border_color=Colors.GREEN)
 
 class Fighter(Hero):
     """A class representing a Fighter hero."""
@@ -228,7 +229,7 @@ class Fighter(Hero):
         health = randint(10, 15)
         sword = weapon_dictionary["Greatsword"]
         chainmail = armor_dictionary["Chainmail"]
-        super().__init__(image, name, health, sword, chainmail)
+        super().__init__(image, name, health, sword, chainmail, border_color=Colors.RED)
 
 def make_hero(hero_name:str, hero_class:str, hero_image) -> Hero:
     """Create a hero based on the given name and class."""

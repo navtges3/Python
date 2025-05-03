@@ -27,10 +27,10 @@ def handle_popup_events(events:list[pygame.event.Event], buttons:dict[str, calla
                         return button_name
     return None
 
-def draw_hero_preview(hero, surface, font, x:int, y:int) -> pygame.Rect:
+def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button, selected:bool=False) -> pygame.Rect:
     """Draw the hero preview on the screen."""
     # Border 
-    hero_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20)
+    hero_border = button.rect.copy()
 
     # Weapon
     if hero.equipment is not None:
@@ -50,8 +50,11 @@ def draw_hero_preview(hero, surface, font, x:int, y:int) -> pygame.Rect:
     draw_text_centered(hero.name, font, Colors.BLACK, surface, hero_border.x + hero_border.width // 2, hero_border.y + font.get_linesize() // 2 + 10)
 
     # Image
-    surface.blit(hero.image, (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))        
-    pygame.draw.rect(surface, Colors.RED, hero_border, width=5, border_radius=10)
+    surface.blit(hero.image, (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))
+    if selected:
+        pygame.draw.rect(surface, hero.border_color, hero_border, width=5, border_radius=10)
+    else:
+        pygame.draw.rect(surface, Colors.GRAY, hero_border, width=5, border_radius=10)
     return hero_border
 
 
@@ -67,10 +70,10 @@ class Game:
             "Exit Game":    Button("Exit Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
         Game_State.NEW_GAME : {
-            "Fighter":      Button("Fighter", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 30), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-            "Rogue":        Button("Rogue", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-            "Back":         Button("Back", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 + 170), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-            "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 16 * 9, Game_Constants.SCREEN_HEIGHT - 70), (250, 50), font, Colors.BLACK, Colors.GRAY, Colors.LIGHT_GRAY),
+            "Fighter":      Button("Fighter", (10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
+            "Rogue":        Button("Rogue", (Game_Constants.SCREEN_WIDTH // 2 + 10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
+            "Back":         Button("Back", (Game_Constants.SCREEN_WIDTH // 2 - 210, Game_Constants.SCREEN_HEIGHT // 4 * 3), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 2 + 10, Game_Constants.SCREEN_HEIGHT // 4 * 3), (250, 50), font, Colors.BLACK, Colors.GRAY, Colors.LIGHT_GRAY),
         },
         Game_State.MAIN_GAME : {
             "Menu":         Button("Menu", (0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
@@ -261,12 +264,12 @@ class Game:
                 self.buttons[Game_State.NEW_GAME]["Create Hero"].button_color = create_button_color
                 self.buttons[Game_State.NEW_GAME]["Create Hero"].hover_color = create_hover_color
             
-            draw_hero_preview(fighter, self.screen, self.font, 10, 10)
-            draw_hero_preview(rogue, self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10)
-            draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, 0, Game_Constants.SCREEN_HEIGHT // 4 * 3)
-            #draw_text(f"Choose your class: {hero_class}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 2 - 30)
+            draw_hero_preview(self.screen, self.font, 10, 10, fighter, self.buttons[Game_State.NEW_GAME]["Fighter"], selected=hero_class == "Fighter")
+            draw_hero_preview(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10, rogue, self.buttons[Game_State.NEW_GAME]["Rogue"], selected=hero_class == "Rogue")
+            draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Name: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize())
+            draw_text(f"Hero Class: {hero_class}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Class: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize() * 2.5)
 
-            for button in self.buttons[Game_State.NEW_GAME].values():
+            for button in list(self.buttons[Game_State.NEW_GAME].values())[2:]:
                 button.draw(self.screen)
 
             action = self.events(self.buttons[Game_State.NEW_GAME])
