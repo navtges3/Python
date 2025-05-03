@@ -50,7 +50,7 @@ def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button, selected
     draw_text_centered(hero.name, font, Colors.BLACK, surface, hero_border.x + hero_border.width // 2, hero_border.y + font.get_linesize() // 2 + 10)
 
     # Image
-    surface.blit(hero.image, (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))
+    surface.blit(hero.animation[hero.animation_frame], (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))
     if selected:
         pygame.draw.rect(surface, hero.border_color, hero_border, width=5, border_radius=10)
     else:
@@ -250,10 +250,19 @@ class Game:
         hero_name = ""
         hero_class = ""
         self.running = True
-        hero_image = pygame.image.load(fileIO.resource_path(f"images\\knight_image.jpg")).convert()
-        hero_image = pygame.transform.scale(hero_image, (100, 100))
-        fighter = make_hero("Fighter", "Fighter", hero_image)
-        rogue = make_hero("Rogue", "Rogue", hero_image)
+        # Load idle animation frames
+        idle_frames = [
+            pygame.image.load(fileIO.resource_path("images/knight/knight1.jpg")).convert(),
+            pygame.image.load(fileIO.resource_path("images/knight/knight2.jpg")).convert(),
+            pygame.image.load(fileIO.resource_path("images/knight/knight3.jpg")).convert(),
+            pygame.image.load(fileIO.resource_path("images/knight/knight4.jpg")).convert(),
+            pygame.image.load(fileIO.resource_path("images/knight/knight5.jpg")).convert(),
+        ]
+
+        # Scale the frames to the desired size
+        idle_frames = [pygame.transform.scale(frame, (100, 100)) for frame in idle_frames]
+        fighter = make_hero("Fighter", "Fighter", idle_frames)
+        rogue = make_hero("Rogue", "Rogue", idle_frames)
 
 
         while self.running:
@@ -287,7 +296,7 @@ class Game:
                 elif action == "Create Hero" or action == "enter":
                     print("Create Hero selected")
                     if hero_name and hero_class:
-                        self.hero = make_hero(hero_name, hero_class, hero_image)
+                        self.hero = fighter if hero_class == "Fighter" else rogue
                         self.monster = get_monster(self.hero.level)
                         self.game_state = Game_State.MAIN_GAME
                         self.running = False
