@@ -452,7 +452,7 @@ class Game:
                 self.buttons[Game_State.SHOP]["Purchase"].hover_color = purchase_button_colors[1]
 
             self.screen.fill(Colors.WHITE)
-            self.hero.draw(self.screen, self.font, 0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12)
+            self.hero.draw(self.screen, self.font, 0, Game_Constants.SCREEN_HEIGHT // 2)
 
             for buttons in list(self.buttons[Game_State.SHOP].values())[:2]:
                 buttons.draw(self.screen)
