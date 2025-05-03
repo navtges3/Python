@@ -1,13 +1,14 @@
 from random import randint
 from items import Item, Armor, Weapon, weapon_dictionary, armor_dictionary
+from ui_helpers import *
 
 class Hero:
     """Base class for all heroes in the game."""
 
-    def __init__(self, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50):
+    def __init__(self, image, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE):
         """Initialize the hero with a name, health, equipment, protection, and gold."""
         self.alive = True
-        self.image = "knight_image.jpg"
+        self.image = image
         self.name = name
         self.health = health
         self.max_health = health
@@ -23,6 +24,7 @@ class Hero:
         }
         self.potion_damage = 0
         self.potion_block = 0
+        self.border_color = border_color
 
     #Print the hero's name
     def __str__(self):
@@ -53,6 +55,47 @@ class Hero:
         self.protection = armor_dictionary[data["protection"]]
         self.potion_bag = data["potion_bag"]
     
+    def draw(self, surface, font, x:int=0, y:int=0) -> None:
+        # Border
+        hero_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
+
+        # Hero Name
+        draw_text(self.name, font, Colors.BLACK, surface, hero_border.x + 20, hero_border.y + 10)
+
+        # Portrait
+        surface.blit(self.image, (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))
+
+        # Health Bar
+        health_bar_width = 90
+        health_bar_height = font.get_linesize() + 4
+        health_bar_x = hero_border.x + 15
+        health_bar_y = hero_border.y + font.get_linesize() + self.image.get_height() + 15
+        draw_health_bar(surface, font, health_bar_x, health_bar_y, health_bar_width, health_bar_height, self.health, self.max_health)
+
+        # Hero Stats
+        hero_text = f"Level: {self.level}\nExp: {self.experience}\nGold: {self.gold}"
+        draw_multiple_lines(hero_text, font, Colors.BLACK, surface, hero_border.x + self.image.get_width() + 10, hero_border.y + font.get_linesize() + 20)
+
+        potion_text = f"-Health Potion: {self.potion_bag['Health Potion']}\n-Damage Potion: {self.potion_bag['Damage Potion']}\n-Block Potion: {self.potion_bag['Block Potion']}"
+        draw_multiple_lines(potion_text, font, Colors.BLACK, surface, hero_border.x + 10, hero_border.y + font.get_linesize() * 2 + self.image.get_height() + 25)
+
+        # Draw the hero's weapon and protection
+        # Weapon
+        if self.equipment is not None:
+            equipment_border = pygame.Rect(hero_border.x + hero_border.width // 2, hero_border.y, hero_border.width // 2, hero_border.height // 3)
+            draw_text_centered(self.equipment.name, font, Colors.BLACK, surface, equipment_border.x + equipment_border.width // 2, equipment_border.y + font.get_linesize() // 2 + 10)
+            draw_multiple_lines(f"Damage {self.equipment.damage}", font, Colors.BLACK, surface, equipment_border.x + 10, equipment_border.y + font.get_linesize() + 25)
+            pygame.draw.rect(surface, Colors.LIGHT_RED, equipment_border, width=3, border_radius=10)
+        # Armor
+        if self.protection is not None:
+            protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3, hero_border.width // 2, hero_border.height // 3 * 2)
+            draw_text_centered(self.protection.name, font, Colors.BLACK, surface, protection_border.x + protection_border.width // 2, protection_border.y + font.get_linesize() // 2 + 10)
+            protection_text = f"Block: {self.protection.block}\nDodge: {self.protection.dodge}"
+            draw_multiple_lines(protection_text, font, Colors.BLACK, surface, protection_border.x + 10, protection_border.y + font.get_linesize() + 25)
+            pygame.draw.rect(surface, Colors.LIGHT_BLUE, protection_border, width=3, border_radius=10)
+        
+        pygame.draw.rect(surface, Colors.BLUE, hero_border, width=5, border_radius=10)
+
     def has_potions(self) -> bool:
         return any(amount > 0 for amount in self.potion_bag.values())
     
@@ -171,30 +214,30 @@ class Hero:
 class Rogue(Hero):
     """A class representing a Rogue hero."""
 
-    def __init__(self, name:str):
+    def __init__(self, image, name:str):
         """Initialize the Rogue with random health and a dagger."""
         health = randint(5, 10)
         dagger = weapon_dictionary["Daggers"]
         leather = armor_dictionary["Leather Armor"]
-        super().__init__(name, health, dagger, leather)
+        super().__init__(image, name, health, dagger, leather, border_color=Colors.GREEN)
 
 class Fighter(Hero):
     """A class representing a Fighter hero."""
 
-    def __init__(self, name:str):
+    def __init__(self, image, name:str):
         """Initialize the Fighter with random health and a greatsword."""
         health = randint(10, 15)
         sword = weapon_dictionary["Greatsword"]
         chainmail = armor_dictionary["Chainmail"]
-        super().__init__(name, health, sword, chainmail)
+        super().__init__(image, name, health, sword, chainmail, border_color=Colors.RED)
 
-def make_hero(hero_name:str, hero_class:str) -> Hero:
+def make_hero(hero_name:str, hero_class:str, hero_image) -> Hero:
     """Create a hero based on the given name and class."""
     the_hero = None
     if hero_class == "Rogue":
-        the_hero = Rogue(hero_name)
+        the_hero = Rogue(hero_image, hero_name)
     elif hero_class == "Fighter":
-        the_hero = Fighter(hero_name)
+        the_hero = Fighter(hero_image, hero_name)
     else:
-        the_hero = Hero(hero_name)
+        the_hero = Hero(hero_image, hero_name)
     return the_hero 
