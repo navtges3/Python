@@ -5,7 +5,7 @@ from ui_helpers import *
 class Hero:
     """Base class for all heroes in the game."""
 
-    def __init__(self, animation, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE):
+    def __init__(self, image, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE):
         """Initialize the hero with a name, health, equipment, protection, and gold."""
         self.alive = True
         self.name = name
@@ -24,10 +24,7 @@ class Hero:
         self.potion_damage = 0
         self.potion_block = 0
         self.border_color = border_color
-        self.animation = animation
-        self.animation_frame = 0
-        self.animation_timer = 0
-        self.animation_speed = 2500  # Speed of animation frames
+        self.image = image
 
 
     #Print the hero's name
@@ -66,26 +63,22 @@ class Hero:
         # Hero Name
         draw_text(self.name, font, Colors.BLACK, surface, hero_border.x + 20, hero_border.y + 10)
 
-        # Portrait
-        self.animation_timer += pygame.time.get_ticks() % 1000
-        if self.animation_timer > self.animation_speed:
-            self.animation_timer = 0
-            self.animation_frame = (self.animation_frame + 1) % len(self.animation)
-        surface.blit(self.animation[self.animation_frame], (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))
+        # Hero Image
+        surface.blit(self.image, (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))
 
         # Health Bar
         health_bar_width = 90
         health_bar_height = font.get_linesize() + 4
         health_bar_x = hero_border.x + 15
-        health_bar_y = hero_border.y + font.get_linesize() + self.animation[self.animation_frame].get_height() + 15
+        health_bar_y = hero_border.y + font.get_linesize() + self.image.get_height() + 15
         draw_health_bar(surface, font, health_bar_x, health_bar_y, health_bar_width, health_bar_height, self.health, self.max_health)
 
         # Hero Stats
         hero_text = f"Level: {self.level}\nExp: {self.experience}\nGold: {self.gold}"
-        draw_multiple_lines(hero_text, font, Colors.BLACK, surface, hero_border.x + self.animation[self.animation_frame].get_width() + 10, hero_border.y + font.get_linesize() + 20)
+        draw_multiple_lines(hero_text, font, Colors.BLACK, surface, hero_border.x + self.image.get_width() + 10, hero_border.y + font.get_linesize() + 20)
 
         potion_text = f"-Health Potion: {self.potion_bag['Health Potion']}\n-Damage Potion: {self.potion_bag['Damage Potion']}\n-Block Potion: {self.potion_bag['Block Potion']}"
-        draw_multiple_lines(potion_text, font, Colors.BLACK, surface, hero_border.x + 10, hero_border.y + font.get_linesize() * 2 + self.animation[self.animation_frame].get_height() + 25)
+        draw_multiple_lines(potion_text, font, Colors.BLACK, surface, hero_border.x + 10, hero_border.y + font.get_linesize() * 2 + self.image.get_height() + 25)
 
         # Draw the hero's weapon and protection
         # Weapon

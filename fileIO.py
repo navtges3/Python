@@ -30,18 +30,9 @@ def load_game() -> Hero:
         with open("savefile.json", "r") as savefile:
             # Load the hero data from the JSON file
             data = json.load(savefile)
-        # Load idle animation frames
-            idle_frames = [
-                pygame.image.load(resource_path("images/knight/knight1.jpg")).convert(),
-                pygame.image.load(resource_path("images/knight/knight2.jpg")).convert(),
-                pygame.image.load(resource_path("images/knight/knight3.jpg")).convert(),
-                pygame.image.load(resource_path("images/knight/knight4.jpg")).convert(),
-                pygame.image.load(resource_path("images/knight/knight5.jpg")).convert(),
-            ]
-
-            # Scale the frames to the desired size
-            idle_frames = [pygame.transform.scale(frame, (100, 100)) for frame in idle_frames]
-            hero = Hero(idle_frames)
+            hero_image = pygame.image.load(resource_path("images/knight.jpg")).convert()
+            hero_image = pygame.transform.scale(hero_image, (100, 100))
+            hero = Hero(hero_image)
             hero.from_dict(data["hero"])
             return hero
     except FileNotFoundError:
