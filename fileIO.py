@@ -30,11 +30,19 @@ def load_game() -> Hero:
         with open("savefile.json", "r") as savefile:
             # Load the hero data from the JSON file
             data = json.load(savefile)
-            hero_image = pygame.image.load(resource_path("images/knight.jpg")).convert()
-            hero_image = pygame.transform.scale(hero_image, (100, 100))
-            hero = Hero(hero_image)
-            hero.from_dict(data["hero"])
-            return hero
+            if "hero" not in data:
+                raise ValueError("No hero data found in save file.")
+            else:
+                if data["hero"]["class_name"] == "Knight":
+                    hero_image = pygame.image.load(resource_path("images/knight.png")).convert()
+                elif data["hero"]["class_name"] == "Assassin":
+                    hero_image = pygame.image.load(resource_path("images/assassin.png")).convert()
+                else:
+                    hero_image = pygame.image.load(resource_path("images/knight.png")).convert()
+                hero_image = pygame.transform.scale(hero_image, (100, 100))
+                hero = Hero(hero_image)
+                hero.from_dict(data["hero"])
+                return hero
     except FileNotFoundError:
         print("No save file found. Starting a new game.")
         return None

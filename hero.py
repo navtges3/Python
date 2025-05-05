@@ -5,7 +5,7 @@ from ui_helpers import *
 class Hero:
     """Base class for all heroes in the game."""
 
-    def __init__(self, image, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE):
+    def __init__(self, image, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE, class_name:str="Hero"):
         """Initialize the hero with a name, health, equipment, protection, and gold."""
         self.alive = True
         self.name = name
@@ -25,6 +25,7 @@ class Hero:
         self.potion_block = 0
         self.border_color = border_color
         self.image = image
+        self.class_name = class_name
 
 
     #Print the hero's name
@@ -36,6 +37,8 @@ class Hero:
         """Convert the hero object to a dictionary for saving."""
         return {
             "name": self.name,
+            "class_name": self.class_name,
+            "max_health": self.max_health,
             "health": self.health,
             "level": self.level,
             "experience": self.experience,
@@ -48,6 +51,8 @@ class Hero:
     def from_dict(self, data):
         """Load the hero object from a dictionary."""
         self.name = data["name"]
+        self.class_name = data["class_name"]
+        self.max_health = data["max_health"]
         self.health = data["health"]
         self.level = data["level"]
         self.experience = data["experience"]
@@ -212,33 +217,33 @@ class Hero:
             print(f"{self.name} is not wearing any protection.")
         print()
 
-class Rogue(Hero):
-    """A class representing a Rogue hero."""
+class Assassin(Hero):
+    """A class representing a Assassin hero."""
 
     def __init__(self, image, name:str):
-        """Initialize the Rogue with random health and a dagger."""
+        """Initialize the Assassin with random health and a dagger."""
         health = randint(5, 10)
         dagger = weapon_dictionary["Daggers"]
         leather = armor_dictionary["Leather Armor"]
-        super().__init__(image, name, health, dagger, leather, border_color=Colors.GREEN)
+        super().__init__(image, name, health, dagger, leather, border_color=Colors.GREEN, class_name="Assassin")
 
-class Fighter(Hero):
-    """A class representing a Fighter hero."""
+class Knight(Hero):
+    """A class representing a Knight hero."""
 
     def __init__(self, image, name:str):
-        """Initialize the Fighter with random health and a greatsword."""
+        """Initialize the Knight with random health and a greatsword."""
         health = randint(10, 15)
         sword = weapon_dictionary["Greatsword"]
         chainmail = armor_dictionary["Chainmail"]
-        super().__init__(image, name, health, sword, chainmail, border_color=Colors.RED)
+        super().__init__(image, name, health, sword, chainmail, border_color=Colors.RED, class_name="Knight")
 
-def make_hero(hero_name:str, hero_class:str, animations) -> Hero:
+def make_hero(hero_name:str, hero_class:str, image) -> Hero:
     """Create a hero based on the given name and class."""
     the_hero = None
-    if hero_class == "Rogue":
-        the_hero = Rogue(animations, hero_name)
-    elif hero_class == "Fighter":
-        the_hero = Fighter(animations, hero_name)
+    if hero_class == "Assassin":
+        the_hero = Assassin(image, hero_name)
+    elif hero_class == "Knight":
+        the_hero = Knight(image, hero_name)
     else:
-        the_hero = Hero(animations, hero_name)
+        the_hero = Hero(image, hero_name)
     return the_hero 

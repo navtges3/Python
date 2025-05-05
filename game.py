@@ -70,8 +70,8 @@ class Game:
             "Exit Game":    Button("Exit Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
         Game_State.NEW_GAME : {
-            "Fighter":      Button("Fighter", (10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
-            "Rogue":        Button("Rogue", (Game_Constants.SCREEN_WIDTH // 2 + 10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
+            "Knight":      Button("Knight", (10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
+            "Assassin":        Button("Assassin", (Game_Constants.SCREEN_WIDTH // 2 + 10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
             "Back":         Button("Back", (Game_Constants.SCREEN_WIDTH // 2 - 210, Game_Constants.SCREEN_HEIGHT // 4 * 3), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
             "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 2 + 10, Game_Constants.SCREEN_HEIGHT // 4 * 3), (250, 50), font, Colors.BLACK, Colors.GRAY, Colors.LIGHT_GRAY),
         },
@@ -251,11 +251,14 @@ class Game:
         hero_class = ""
         self.running = True
 
-        hero_image = pygame.image.load(fileIO.resource_path("images/knight.jpg")).convert()
-        hero_image = pygame.transform.scale(hero_image, (100, 100))
+        knight_image = pygame.image.load(fileIO.resource_path("images/knight.png")).convert()
+        knight_image = pygame.transform.scale(knight_image, (100, 100))
 
-        fighter = make_hero("Fighter", "Fighter", hero_image)
-        rogue = make_hero("Rogue", "Rogue", hero_image)
+        assassin_image = pygame.image.load(fileIO.resource_path("images/assassin.png")).convert()
+        assassin_image = pygame.transform.scale(assassin_image, (100, 100))
+
+        knight = make_hero("Knight", "Knight", knight_image)
+        assassin = make_hero("Assassin", "Assassin", assassin_image)
 
 
         while self.running:
@@ -266,8 +269,8 @@ class Game:
                 self.buttons[Game_State.NEW_GAME]["Create Hero"].button_color = create_button_color
                 self.buttons[Game_State.NEW_GAME]["Create Hero"].hover_color = create_hover_color
             
-            draw_hero_preview(self.screen, self.font, 10, 10, fighter, self.buttons[Game_State.NEW_GAME]["Fighter"], selected=hero_class == "Fighter")
-            draw_hero_preview(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10, rogue, self.buttons[Game_State.NEW_GAME]["Rogue"], selected=hero_class == "Rogue")
+            draw_hero_preview(self.screen, self.font, 10, 10, knight, self.buttons[Game_State.NEW_GAME]["Knight"], selected=hero_class == "Knight")
+            draw_hero_preview(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10, assassin, self.buttons[Game_State.NEW_GAME]["Assassin"], selected=hero_class == "Assassin")
             draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Name: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize())
             draw_text(f"Hero Class: {hero_class}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Class: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize() * 2.5)
 
@@ -276,12 +279,12 @@ class Game:
 
             action = self.events(self.buttons[Game_State.NEW_GAME])
             if action is not None:
-                if action == "Fighter":
-                    print("Fighter selected")
-                    hero_class = "Fighter"
-                elif action == "Rogue":
-                    print("Rogue selected")
-                    hero_class = "Rogue"
+                if action == "Knight":
+                    print("Knight selected")
+                    hero_class = "Knight"
+                elif action == "Assassin":
+                    print("Assassin selected")
+                    hero_class = "Assassin"
                 elif action == "Back":
                     print("Back selected")
                     self.game_state = Game_State.WELCOME
@@ -289,7 +292,7 @@ class Game:
                 elif action == "Create Hero" or action == "enter":
                     print("Create Hero selected")
                     if hero_name and hero_class:
-                        self.hero = fighter if hero_class == "Fighter" else rogue
+                        self.hero = knight if hero_class == "Knight" else assassin
                         self.monster = get_monster(self.hero.level)
                         self.game_state = Game_State.MAIN_GAME
                         self.running = False
