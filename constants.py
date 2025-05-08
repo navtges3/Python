@@ -32,6 +32,11 @@ class Colors:
     LIGHT_GREEN = (144, 238, 144)
     GOLD = (255, 215, 0)
 
+class Shop_Constants:
+    POTION_CARD_KEY = "Potion Card"
+    WEAPON_CARD_KEY = "Weapon Card"
+    ARMOR_CARD_KEY = "Armor Card"
+
 class Game_Constants:
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 600

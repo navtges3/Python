@@ -5,14 +5,14 @@ from ui_helpers import *
 class Hero:
     """Base class for all heroes in the game."""
 
-    def __init__(self, image, name:str="Hero", health:int=10, equipment:Weapon=None, protection:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE, class_name:str="Hero"):
-        """Initialize the hero with a name, health, equipment, protection, and gold."""
+    def __init__(self, image, name:str="Hero", health:int=10, weapon:Weapon=None, armor:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE, class_name:str="Hero"):
+        """Initialize the hero with a name, health, weapon, armor, and gold."""
         self.alive = True
         self.name = name
         self.health = health
         self.max_health = health
-        self.equipment = equipment
-        self.protection = protection
+        self.weapon = weapon
+        self.armor = armor
         self.level = 1
         self.experience = 0
         self.gold = gold
@@ -43,8 +43,8 @@ class Hero:
             "level": self.level,
             "experience": self.experience,
             "gold": self.gold,
-            "equipment": str(self.equipment),
-            "protection": str(self.protection),
+            "weapon": str(self.weapon),
+            "armor": str(self.armor),
             "potion_bag": self.potion_bag,
         }
     
@@ -57,8 +57,8 @@ class Hero:
         self.level = data["level"]
         self.experience = data["experience"]
         self.gold = data["gold"]
-        self.equipment = weapon_dictionary[data["equipment"]]
-        self.protection = armor_dictionary[data["protection"]]
+        self.weapon = weapon_dictionary[data["weapon"]]
+        self.armor = armor_dictionary[data["armor"]]
         self.potion_bag = data["potion_bag"]
     
     def draw(self, surface, font, x:int=0, y:int=0) -> None:
@@ -85,22 +85,33 @@ class Hero:
         potion_text = f"-Health Potion: {self.potion_bag['Health Potion']}\n-Damage Potion: {self.potion_bag['Damage Potion']}\n-Block Potion: {self.potion_bag['Block Potion']}"
         draw_multiple_lines(potion_text, font, Colors.BLACK, surface, hero_border.x + 10, hero_border.y + font.get_linesize() * 2 + self.image.get_height() + 25)
 
-        # Draw the hero's weapon and protection
+        # Draw the hero's weapon and armor
         # Weapon
-        if self.equipment is not None:
-            equipment_border = pygame.Rect(hero_border.x + hero_border.width // 2, hero_border.y, hero_border.width // 2, hero_border.height // 3)
-            draw_text_centered(self.equipment.name, font, Colors.BLACK, surface, equipment_border.x + equipment_border.width // 2, equipment_border.y + font.get_linesize() // 2 + 10)
-            draw_multiple_lines(f"Damage {self.equipment.damage}", font, Colors.BLACK, surface, equipment_border.x + 10, equipment_border.y + font.get_linesize() + 25)
-            pygame.draw.rect(surface, Colors.LIGHT_RED, equipment_border, width=3, border_radius=10)
+        if self.weapon is not None:
+            weapon_border = pygame.Rect(hero_border.x + hero_border.width // 2, hero_border.y, hero_border.width // 2, hero_border.height // 3)
+            draw_text_centered(self.weapon.name, font, Colors.BLACK, surface, weapon_border.x + weapon_border.width // 2, weapon_border.y + font.get_linesize() // 2 + 10)
+            draw_multiple_lines(f"Damage {self.weapon.damage}", font, Colors.BLACK, surface, weapon_border.x + 10, weapon_border.y + font.get_linesize() + 25)
+            pygame.draw.rect(surface, Colors.LIGHT_RED, weapon_border, width=3, border_radius=10)
         # Armor
-        if self.protection is not None:
-            protection_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3, hero_border.width // 2, hero_border.height // 3 * 2)
-            draw_text_centered(self.protection.name, font, Colors.BLACK, surface, protection_border.x + protection_border.width // 2, protection_border.y + font.get_linesize() // 2 + 10)
-            protection_text = f"Block: {self.protection.block}\nDodge: {self.protection.dodge}"
-            draw_multiple_lines(protection_text, font, Colors.BLACK, surface, protection_border.x + 10, protection_border.y + font.get_linesize() + 25)
-            pygame.draw.rect(surface, Colors.LIGHT_BLUE, protection_border, width=3, border_radius=10)
+        if self.armor is not None:
+            armor_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3, hero_border.width // 2, hero_border.height // 3 * 2)
+            draw_text_centered(self.armor.name, font, Colors.BLACK, surface, armor_border.x + armor_border.width // 2, armor_border.y + font.get_linesize() // 2 + 10)
+            armor_text = f"Block: {self.armor.block}\nDodge: {self.armor.dodge}"
+            draw_multiple_lines(armor_text, font, Colors.BLACK, surface, armor_border.x + 10, armor_border.y + font.get_linesize() + 25)
+            pygame.draw.rect(surface, Colors.LIGHT_BLUE, armor_border, width=3, border_radius=10)
         
         pygame.draw.rect(surface, Colors.BLUE, hero_border, width=5, border_radius=10)
+
+    def add_item(self, item:Item):
+        """Add an item to the hero's inventory."""
+        if isinstance(item, Weapon):
+            self.weapon = item
+            print(f"{self.name} equipped a {item.name}!")
+        elif isinstance(item, Armor):
+            self.armor = item
+            print(f"{self.name} equipped a {item.name}!")
+        elif isinstance(item, Item):
+            self.add_potion(item.name, 1)
 
     def has_potions(self) -> bool:
         return any(amount > 0 for amount in self.potion_bag.values())
@@ -138,20 +149,20 @@ class Hero:
             if damage < 0:
                 damage = 0
             self.potion_block = 0
-        if self.protection is not None and self.protection.armor_counter > 0:
-            if self.protection.dodge > 0:
+        if self.armor is not None and self.armor.armor_counter > 0:
+            if self.armor.dodge > 0:
                 dodge_roll = randint(1, 100)
-                if dodge_roll <= self.protection.dodge:
+                if dodge_roll <= self.armor.dodge:
                     print(f"{self.name} dodged the attack!")
                     damage = 0
-            if self.protection.block > 0:
-                damage = damage - self.protection.block
+            if self.armor.block > 0:
+                damage = damage - self.armor.block
                 if damage < 0:
                     damage = 0
-                print(f"{self.name} blocked {self.protection.block} damage!")
-            self.protection.armor_counter -= 1
-            if self.protection.armor_counter <= 0:
-                print(f"{self.name}'s {self.protection.name} has expired!")
+                print(f"{self.name} blocked {self.armor.block} damage!")
+            self.armor.armor_counter -= 1
+            if self.armor.armor_counter <= 0:
+                print(f"{self.name}'s {self.armor.name} has expired!")
         
         self.health = self.health - damage
         if self.health <= 0:
@@ -162,11 +173,11 @@ class Hero:
             print(f"{self.name} has taken {damage} damage!")
 
     def get_block(self):
-        """Returns the block value of the hero's protection."""
-        if self.protection is None:
+        """Returns the block value of the hero's armor."""
+        if self.armor is None:
             return 0
         else:
-            return self.protection.block
+            return self.armor.block
 
     def add_gold(self, amount):
         """Add gold to the hero's inventory."""
@@ -206,15 +217,15 @@ class Hero:
         print(f"{self.name} has {self.health} health.")
         print(f"{self.name} is level {self.level} with {self.experience} experience.")
 
-        if self.equipment is not None:
-            print(f"{self.name} is wielding a {self.equipment}.")
+        if self.weapon is not None:
+            print(f"{self.name} is wielding a {self.weapon}.")
         else:
-            print(f"{self.name} is not wielding any equipment.")
+            print(f"{self.name} is not wielding any weapon.")
 
-        if self.protection is not None:
-            print(f"{self.name} is wearing {self.protection}.")
+        if self.armor is not None:
+            print(f"{self.name} is wearing {self.armor}.")
         else:
-            print(f"{self.name} is not wearing any protection.")
+            print(f"{self.name} is not wearing any armor.")
         print()
 
 class Assassin(Hero):
