@@ -415,9 +415,9 @@ class Game:
         """Shop screen where the hero can buy items."""
         card_selected = None
         self.running = True
-        potion_name = random.choice(list(potion_dictionary.keys()))
-        weapon_name = random.choice(list(weapon_dictionary.keys()))
-        armor_name = random.choice(list(armor_dictionary.keys()))
+        potion_name = self.village.shop.potion_key
+        weapon_name = self.village.shop.weapon_key
+        armor_name = self.village.shop.armor_key
 
         purchase_button_colors = (Colors.GRAY, Colors.LIGHT_GRAY)
         card_price = 0

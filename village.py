@@ -1,13 +1,23 @@
 from ui_helpers import *
 from constants import *
+from items import *
+import random
+
+class Shop:
+    def __init__(self):
+        self.potion_key = random.choice(list(potion_dictionary.keys()))
+        self.weapon_key = random.choice(list(weapon_dictionary.keys()))
+        self.armor_key = random.choice(list(armor_dictionary.keys()))
 
 class Village:
     
     def __init__(self, name:int, health:int):
+        """Initialize the village with a name and health."""
         self.name = name
         self.health = health
         self.max_health = health
         self.level = 1
+        self.shop = Shop()
     
     def take_damage(self, damage:int) -> None:
         """Take damage from the village."""
