@@ -5,27 +5,10 @@ from monster import get_monster
 from items import *
 from constants import *
 from ui_helpers import *
+from village import Village
 import fileIO
 import pygame
 import math
-           
-def handle_popup_events(events:list[pygame.event.Event], buttons:dict[str, callable]=None, key_actions:dict[int, str]=None):
-    """Handle events and return the action taken."""
-    for event in events:
-        if event.type == pygame.QUIT:
-            return "quit"
-        elif event.type == pygame.KEYDOWN:
-            if key_actions and event.key in key_actions:
-                return key_actions[event.key]
-            else:
-                if event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
-                    return event.unicode
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            if buttons is not None:
-                for button_name, button_data in buttons.items():
-                    if button_data["rect"].collidepoint(event.pos):
-                        return button_name
-    return None
 
 def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button, selected:bool=False) -> pygame.Rect:
     """Draw the hero preview on the screen."""
@@ -123,6 +106,7 @@ class Game:
         self.hero = None
         self.monster = None
         self.running = False
+        self.village = Village("Village", 1000)
 
         # Initialize the mixer for music
         pygame.mixer.init()
@@ -522,13 +506,17 @@ class Game:
         self.running = True
         while self.running:
             self.screen.fill(Colors.WHITE)
-            self.hero.draw(self.screen, self.font, 0, 25)
+            # Draw the village
+            self.village.draw(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 - 100, 50)
+
+            # Draw the hero
+            self.hero.draw(self.screen, self.font, 50, Game_Constants.SCREEN_HEIGHT // 2)
+
+            # Draw Buttons
             for button in self.buttons[Game_State.MAIN_GAME].values():
                 button.draw(self.screen)
-            draw_text_centered("Main Game", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 + 50)
 
             self.events()
-            
             self.update()
     
     def game_over_screen(self) -> None:
