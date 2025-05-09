@@ -4,11 +4,12 @@ class Game_State(Enum):
     WELCOME = 1
     NEW_GAME = 2
     MAIN_GAME = 3
-    BATTLE = 4
-    SHOP = 5
-    PAUSE = 6
-    GAME_OVER = 7
-    EXIT = 8
+    QUEST = 4
+    BATTLE = 5
+    SHOP = 6
+    PAUSE = 7
+    GAME_OVER = 8
+    EXIT = 9
 
 class Battle_State(Enum):
     HOME = 0

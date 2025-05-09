@@ -16,7 +16,7 @@ class Button:
         self.selected = False
         self.locked = False
 
-        self.rect = pygame.Rect(pos, size,)
+        self.rect = pygame.Rect(pos, size)
         self.surface = self.font.render(self.text, True, self.text_color)
 
     def update_text(self, text:str) -> None:

@@ -106,3 +106,12 @@ def get_monster(level:int) -> Monster:
         return Orc()
     else:
         return Ogre()
+    
+def get_monster(name:str) -> Monster:
+    """Returns a monster based on the name."""
+    if name == "Orc":
+        return Orc()
+    elif name == "Ogre":
+        return Ogre()
+    else:
+        return Goblin()
