@@ -33,7 +33,7 @@ def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygam
 
     # Image
     surface.blit(hero.image, (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))
-    if button.get_selected():
+    if button.is_selected():
         pygame.draw.rect(surface, hero.border_color, hero_border, width=5, border_radius=10)
     else:
         pygame.draw.rect(surface, Colors.GRAY, hero_border, width=5, border_radius=10)
@@ -227,6 +227,11 @@ class Game:
                                 elif button_name == "Start":
                                     self.game_state = Game_State.BATTLE
                                     self.running = False
+                                else:
+                                    if button.is_selected():
+                                        button.deselect()
+                                    else:
+                                        button.select()
                     elif self.game_state == Game_State.BATTLE:
                         """Handle events for the battle screen."""
                         if self.battle_state == Battle_State.HOME:
@@ -472,8 +477,12 @@ class Game:
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
                 self.hero.gain_experience(self.monster.experience)
                 self.hero.add_gold(10)
-                self.battle_state = Battle_State.MONSTER_DEFEATED
                 self.quest.slay_monster(self.monster)
+                if self.quest.is_complete():
+                    self.battle_state = Game_State.GAME_OVER
+                    self.running = False
+                else:
+                    self.battle_state = Battle_State.MONSTER_DEFEATED
             elif not self.hero.alive:
                 print("Hero defeated!")
                 self.game_state = Game_State.GAME_OVER
@@ -505,11 +514,18 @@ class Game:
         self.running = True
 
         while self.running:
+
+            if self.buttons[Game_State.QUEST]["Active Quest"].is_selected():
+                self.buttons[Game_State.QUEST]["Start"].unlock()
+            else:
+                self.buttons[Game_State.QUEST]["Start"].lock()
+
             self.screen.fill(Colors.WHITE)
             self.quest.draw(self.screen, self.font, self.buttons[Game_State.QUEST]["Active Quest"])
             self.buttons[Game_State.QUEST]["Next Quest"].draw(self.screen)
             for button in list(self.buttons[Game_State.QUEST].values())[2:]:
                 button.draw(self.screen)
+                
             self.events()
             self.update()
 

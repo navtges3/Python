@@ -48,7 +48,7 @@ class Button:
         """Deselect the button."""
         self.selected = False
 
-    def get_selected(self) -> bool:
+    def is_selected(self) -> bool:
         """Get the selected state of the button."""
         return self.selected
     
