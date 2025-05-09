@@ -42,6 +42,18 @@ class Shop:
             self.selected_price = armor_dictionary[self.armor_key].value
         self.card_selected_key = card_name
 
+    def can_buy_selected(self, hero:Hero) -> bool:
+        if self.card_selected_key is None:
+            return False
+        else:
+            if self.card_selected_key == Shop_Constants.POTION_CARD_KEY:
+                item = potion_dictionary[self.potion_key]
+            elif self.card_selected_key == Shop_Constants.WEAPON_CARD_KEY:
+                item = weapon_dictionary[self.weapon_key]
+            elif self.card_selected_key == Shop_Constants.ARMOR_CARD_KEY:
+                item = armor_dictionary[self.armor_key]
+            return hero.gold >= item.value
+
     def buy_item(self, hero:Hero) -> None:
         """Buy the selected item from the shop."""
         if self.card_selected_key == Shop_Constants.POTION_CARD_KEY:

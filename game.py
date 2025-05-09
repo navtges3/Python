@@ -10,7 +10,7 @@ import fileIO
 import pygame
 import math
 
-def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button, selected:bool=False) -> pygame.Rect:
+def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygame.Rect:
     """Draw the hero preview on the screen."""
     # Border 
     hero_border = button.rect.copy()
@@ -34,7 +34,7 @@ def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button, selected
 
     # Image
     surface.blit(hero.image, (hero_border.x + 10, hero_border.y + font.get_linesize() + 10))
-    if selected:
+    if button.get_selected():
         pygame.draw.rect(surface, hero.border_color, hero_border, width=5, border_radius=10)
     else:
         pygame.draw.rect(surface, Colors.GRAY, hero_border, width=5, border_radius=10)
@@ -56,7 +56,7 @@ class Game:
             "Knight":       Button("Knight", (10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
             "Assassin":     Button("Assassin", (Game_Constants.SCREEN_WIDTH // 2 + 10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
             "Back":         Button("Back", (Game_Constants.SCREEN_WIDTH // 2 - 210, Game_Constants.SCREEN_HEIGHT // 4 * 3), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-            "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 2 + 10, Game_Constants.SCREEN_HEIGHT // 4 * 3), (250, 50), font, Colors.BLACK, Colors.GRAY, Colors.LIGHT_GRAY),
+            "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 2 + 10, Game_Constants.SCREEN_HEIGHT // 4 * 3), (250, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
         },
         Game_State.MAIN_GAME : {
             "Menu":         Button("Menu", (0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
@@ -68,7 +68,7 @@ class Game:
             Battle_Action.HOME:{
                 "Attack":       Button("Attack",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
                 "Use Potion":   Button("Use Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-                "Defend":       Button("Defend",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 2), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY),
+                "Defend":       Button("Defend",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 2), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
                 "Flee":         Button("Flee",          (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 3), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.YELLOW, Colors.LIGHT_YELLOW),
             },
             Battle_Action.USE_ITEM:{
@@ -83,7 +83,7 @@ class Game:
             },
         },
         Game_State.SHOP : {
-            "Purchase":     Button("Purchase", (Game_Constants.SCREEN_WIDTH // 2 + 15, Game_Constants.SCREEN_HEIGHT // 2 + 20), (250, 50), font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY),
+            "Purchase":     Button("Purchase", (Game_Constants.SCREEN_WIDTH // 2 + 15, Game_Constants.SCREEN_HEIGHT // 2 + 20), (250, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
             "Leave":        Button("Leave", (Game_Constants.SCREEN_WIDTH // 2 + 15, Game_Constants.SCREEN_HEIGHT // 2 + 75), (250, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
         Game_State.PAUSE : {
@@ -180,17 +180,34 @@ class Game:
                         for button_name, button in self.buttons[Game_State.NEW_GAME].items():
                             if button.is_clicked(event):
                                 if button_name == "Knight":
-                                    return button_name
+                                    button.select()
+                                    self.buttons[Game_State.NEW_GAME]["Assassin"].deselect()
                                 elif button_name == "Assassin":
-                                    return button_name
+                                    button.select()
+                                    self.buttons[Game_State.NEW_GAME]["Knight"].deselect()
                                 elif button_name == "Back":
+                                    self.buttons[Game_State.NEW_GAME]["Assassin"].deselect()
+                                    self.buttons[Game_State.NEW_GAME]["Knight"].deselect()
                                     self.game_state = Game_State.WELCOME
                                     self.running = False
                                 elif button_name == "Create Hero":
-                                    if self.hero is not None:
-                                        self.monster = get_monster(self.hero.level)
+                                    if not self.buttons[Game_State.NEW_GAME]["Create Hero"].is_locked():
                                         self.game_state = Game_State.MAIN_GAME
                                         self.running = False
+                    elif self.game_state == Game_State.MAIN_GAME:
+                        """Handle events for the main game screen."""
+                        for button_name, button in self.buttons[Game_State.MAIN_GAME].items():
+                            if button.is_clicked(event):
+                                if button_name == "Menu":
+                                    self.show_esc_popup()
+                                elif button_name == "Inventory":
+                                    pass
+                                elif button_name == "Battle" and self.game_state != Game_State.BATTLE:
+                                    self.game_state = Game_State.BATTLE
+                                    self.running = False
+                                elif button_name == "Shop" and self.game_state != Game_State.SHOP:
+                                    self.game_state = Game_State.SHOP
+                                    self.running = False
                     elif self.game_state == Game_State.BATTLE:
                         """Handle events for the battle screen."""
                         if self.battle_state == Battle_Action.HOME:
@@ -211,12 +228,12 @@ class Game:
                                             self.battle_state = Battle_Action.USE_ITEM
                                     elif button_name == "Defend":
                                         print("Use armor selected")
-                                        if self.hero.armor is not None and self.hero.armor.is_available():
+                                        if self.hero.armor.is_available():
                                             self.hero.armor.use()
                                             self.battle_log.append(f"{self.hero.name} uses {self.hero.armor.name} for {self.hero.armor.duration} turns.")
-                                        if self.monster.alive:
-                                            self.hero.take_damage(self.monster.damage)
-                                            self.battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
+                                            if self.monster.alive:
+                                                self.hero.take_damage(self.monster.damage)
+                                                self.battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
                                     elif button_name == "Flee":
                                         print("Flee selected")
                                         self.battle_log.append(f"{self.hero.name} flees from {self.monster.name}.")
@@ -262,20 +279,6 @@ class Game:
                                 elif button_name == "Leave":
                                     self.game_state = Game_State.MAIN_GAME
                                     self.running = False
-                    if self.game_state != Game_State.BATTLE:
-                        """Handle events for the main game screen."""
-                        for button_name, button in self.buttons[Game_State.MAIN_GAME].items():
-                            if button.is_clicked(event):
-                                if button_name == "Menu":
-                                    self.show_esc_popup()
-                                elif button_name == "Inventory":
-                                    pass
-                                elif button_name == "Battle" and self.game_state != Game_State.BATTLE:
-                                    self.game_state = Game_State.BATTLE
-                                    self.running = False
-                                elif button_name == "Shop" and self.game_state != Game_State.SHOP:
-                                    self.game_state = Game_State.SHOP
-                                    self.running = False
         return None
 
     def update(self) -> None:
@@ -297,22 +300,24 @@ class Game:
             draw_popup("Pause Menu", self.buttons[Game_State.PAUSE], self.screen, self.font)
             self.events()
             self.update()
+        
+        if self.game_state == Game_State.WELCOME and exit_text == "Save and Exit":
+            fileIO.save_game(self.hero)
 
     def welcome_screen(self) -> None:
         """Welcome screen with options to start a new game or load an existing game."""
         self.running = True
         self.hero = fileIO.load_game()
+
+        if self.hero is not None:
+            self.buttons[Game_State.WELCOME]["Load Game"].unlock()
+        else:
+            self.buttons[Game_State.WELCOME]["Load Game"].lock()
             
         while self.running:
             self.screen.fill(Colors.WHITE)
 
             draw_text_centered("Welcome to Village Defense!", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)
-            if self.hero is not None:
-                self.buttons[Game_State.WELCOME]["Load Game"].button_color = Colors.BLUE
-                self.buttons[Game_State.WELCOME]["Load Game"].hover_color = Colors.LIGHT_BLUE
-            else:
-                self.buttons[Game_State.WELCOME]["Load Game"].button_color = Colors.LIGHT_GRAY
-                self.buttons[Game_State.WELCOME]["Load Game"].hover_color = Colors.LIGHT_GRAY
 
             for button in self.buttons[Game_State.WELCOME].values():
                 button.draw(self.screen)
@@ -337,15 +342,22 @@ class Game:
 
 
         while self.running:
-            self.screen.fill(Colors.WHITE)
-            create_button_color = Colors.GREEN if hero_name and hero_class else Colors.LIGHT_GRAY
-            create_hover_color = Colors.LIGHT_GREEN if hero_name and hero_class else Colors.LIGHT_GRAY
-            if create_button_color != self.buttons[Game_State.NEW_GAME]["Create Hero"].button_color:
-                self.buttons[Game_State.NEW_GAME]["Create Hero"].button_color = create_button_color
-                self.buttons[Game_State.NEW_GAME]["Create Hero"].hover_color = create_hover_color
+            if self.buttons[Game_State.NEW_GAME]["Knight"].get_selected():
+                hero_class = "Knight"
+            elif self.buttons[Game_State.NEW_GAME]["Assassin"].get_selected():
+                hero_class = "Assassin"
+            else:
+                hero_class = ""
             
-            draw_hero_preview(self.screen, self.font, 10, 10, knight, self.buttons[Game_State.NEW_GAME]["Knight"], selected=hero_class == "Knight")
-            draw_hero_preview(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10, assassin, self.buttons[Game_State.NEW_GAME]["Assassin"], selected=hero_class == "Assassin")
+            if hero_class and hero_name:
+                self.buttons[Game_State.NEW_GAME]["Create Hero"].unlock()
+            else:
+                self.buttons[Game_State.NEW_GAME]["Create Hero"].lock()
+
+            self.screen.fill(Colors.WHITE)
+            
+            draw_hero_preview(self.screen, self.font, 10, 10, knight, self.buttons[Game_State.NEW_GAME]["Knight"])
+            draw_hero_preview(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10, assassin, self.buttons[Game_State.NEW_GAME]["Assassin"])
 
             draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Name: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize())
             draw_text(f"Hero Class: {hero_class}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Class: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize() * 2.5)
@@ -373,6 +385,7 @@ class Game:
             self.update()
         if self.game_state == Game_State.MAIN_GAME:
             self.hero = knight if hero_class == "Knight" else assassin
+            self.hero.name = hero_name
             self.monster = get_monster(self.hero.level)
 
     def battle_screen(self) -> None:
@@ -399,32 +412,36 @@ class Game:
                 lines += draw_wrapped_text(log_entry, self.font, Colors.BLACK, self.screen, Game_Constants.BATTLE_SCREEN_LOG_X, Game_Constants.BATTLE_SCREEN_LOG_Y + (i + lines) * self.font.get_linesize(), Game_Constants.BATTLE_SCREEN_LOG_WIDTH)
 
             if self.battle_state == Battle_Action.HOME:
-                armor_button_color = Colors.LIGHT_BLUE if self.hero.armor is not None and self.hero.armor.is_available() else Colors.LIGHT_GRAY
-                if armor_button_color != self.buttons[Game_State.BATTLE][self.battle_state]["Defend"].button_color:
-                    self.buttons[Game_State.BATTLE][self.battle_state]["Defend"].button_color = armor_button_color
+                if self.hero.has_potions() and self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Use Potion"].is_locked():
+                    self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Use Potion"].unlock()
+                elif not self.hero.has_potions() and not self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Use Potion"].is_locked():
+                    self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Use Potion"].lock()
+
+                if self.hero.armor.is_available() and self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Defend"].is_locked():
+                    self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Defend"].unlock()
+                    self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Defend"].update_text("Defend")
+                elif not self.hero.armor.is_available() and not self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Defend"].is_locked():
+                    self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Defend"].lock()
+
+                if self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Defend"].is_locked():
+                    self.buttons[Game_State.BATTLE][Battle_Action.HOME]["Defend"].update_text(f"Cooldown: {self.hero.armor.counter} turns")
             elif self.battle_state == Battle_Action.USE_ITEM:
                 for button in self.buttons[Game_State.BATTLE][self.battle_state].values():
                     if button.text == "Health Potion":
-                        if self.hero.potion_bag["Health Potion"] > 0:
-                            button.button_color = Colors.GREEN
-                            button.hover_color = Colors.LIGHT_GREEN
-                        else:
-                            button.button_color = Colors.LIGHT_GRAY
-                            button.hover_color = Colors.LIGHT_GRAY
+                        if self.hero.potion_bag["Health Potion"] > 0 and button.is_locked():
+                            button.unlock()
+                        elif self.hero.potion_bag["Health Potion"] == 0 and not button.is_locked():
+                            button.lock()
                     elif button.text == "Damage Potion":
-                        if self.hero.potion_bag["Damage Potion"] > 0:
-                            button.button_color = Colors.RED
-                            button.hover_color = Colors.LIGHT_RED
-                        else:
-                            button.button_color = Colors.LIGHT_GRAY
-                            button.hover_color = Colors.LIGHT_GRAY
+                        if self.hero.potion_bag["Damage Potion"] > 0 and button.is_locked():
+                            button.unlock()
+                        elif self.hero.potion_bag["Damage Potion"] == 0 and not button.is_locked():
+                            button.lock()
                     elif button.text == "Block Potion":
-                        if self.hero.potion_bag["Block Potion"] > 0:
-                            button.button_color = Colors.BLUE
-                            button.hover_color = Colors.LIGHT_BLUE
-                        else:
-                            button.button_color = Colors.LIGHT_GRAY
-                            button.hover_color = Colors.LIGHT_GRAY
+                        if self.hero.potion_bag["Block Potion"] > 0 and button.is_locked():
+                            button.unlock()
+                        elif self.hero.potion_bag["Block Potion"] == 0 and not button.is_locked():
+                            button.lock()
             
             for button in self.buttons[Game_State.BATTLE][self.battle_state].values():
                 button.draw(self.screen)
@@ -447,25 +464,18 @@ class Game:
     def shop_screen(self) -> None:
         """Shop screen where the hero can buy items."""
         self.running = True
-        purchase_button_colors = (Colors.GRAY, Colors.LIGHT_GRAY)
-        card_price = 0
         
         while self.running:
-            if self.village.shop.card_selected_key is None:
-                purchase_button_colors = (Colors.GRAY, Colors.LIGHT_GRAY)
-            else:
-                purchase_button_colors = (Colors.GREEN, Colors.LIGHT_GREEN) if self.hero.gold >= card_price else (Colors.GRAY, Colors.LIGHT_GRAY)
-            if purchase_button_colors != (self.buttons[Game_State.SHOP]["Purchase"].button_color, self.buttons[Game_State.SHOP]["Purchase"].hover_color):
-                self.buttons[Game_State.SHOP]["Purchase"].button_color = purchase_button_colors[0]
-                self.buttons[Game_State.SHOP]["Purchase"].hover_color = purchase_button_colors[1]
-
+            if self.village.shop.can_buy_selected(self.hero) and self.buttons[Game_State.SHOP]["Purchase"].is_locked():
+                self.buttons[Game_State.SHOP]["Purchase"].unlock()
+            elif not self.village.shop.can_buy_selected(self.hero) and not self.buttons[Game_State.SHOP]["Purchase"].is_locked():
+                self.buttons[Game_State.SHOP]["Purchase"].lock()
+            
             self.screen.fill(Colors.WHITE)
             self.hero.draw(self.screen, self.font, 0, Game_Constants.SCREEN_HEIGHT // 2)
             self.village.shop.draw(self.screen)
 
             for button in self.buttons[Game_State.SHOP].values():
-                button.draw(self.screen)
-            for button in self.buttons[Game_State.MAIN_GAME].values():
                 button.draw(self.screen)
 
             self.events()

@@ -96,7 +96,7 @@ class Hero:
         if self.armor is not None:
             armor_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3, hero_border.width // 2, hero_border.height // 3 * 2)
             draw_text_centered(self.armor.name, font, Colors.BLACK, surface, armor_border.x + armor_border.width // 2, armor_border.y + font.get_linesize() // 2 + 10)
-            armor_text = f"Block: {self.armor.block}\nDodge: {self.armor.dodge}"
+            armor_text = f"Block: {self.armor.block}\nDodge: {self.armor.dodge}\nDuration: {self.armor.duration} turns"
             draw_multiple_lines(armor_text, font, Colors.BLACK, surface, armor_border.x + 10, armor_border.y + font.get_linesize() + 25)
             pygame.draw.rect(surface, Colors.LIGHT_BLUE, armor_border, width=3, border_radius=10)
         
@@ -149,20 +149,18 @@ class Hero:
             if damage < 0:
                 damage = 0
             self.potion_block = 0
-        if self.armor is not None and self.armor.armor_counter > 0:
+
+        if self.armor.is_active():
             if self.armor.dodge > 0:
                 dodge_roll = randint(1, 100)
                 if dodge_roll <= self.armor.dodge:
                     print(f"{self.name} dodged the attack!")
                     damage = 0
-            if self.armor.block > 0:
+            if self.armor.block > 0 and damage > 0:
                 damage = damage - self.armor.block
                 if damage < 0:
                     damage = 0
                 print(f"{self.name} blocked {self.armor.block} damage!")
-            self.armor.armor_counter -= 1
-            if self.armor.armor_counter <= 0:
-                print(f"{self.name}'s {self.armor.name} has expired!")
         
         self.health = self.health - damage
         if self.health <= 0:
@@ -171,6 +169,8 @@ class Hero:
             print(f"{self.name} has died!")
         else:
             print(f"{self.name} has taken {damage} damage!")
+
+        self.armor.update()
 
     def get_block(self):
         """Returns the block value of the hero's armor."""

@@ -11,6 +11,10 @@ class Button:
         self.text_color = text_color
         self.button_color = button_color
         self.hover_color = hover_color
+        self.default_color = button_color
+        self.default_hover_color = hover_color
+        self.selected = False
+        self.locked = False
 
         self.rect = pygame.Rect(pos, size,)
         self.surface = self.font.render(self.text, True, self.text_color)
@@ -20,6 +24,34 @@ class Button:
         self.text = text
         self.surface = self.font.render(self.text, True, self.text_color)
 
+    def lock(self) -> None:
+        """Lock the button."""
+        self.locked = True
+        self.button_color = Colors.GRAY
+        self.hover_color = Colors.LIGHT_GRAY
+
+    def unlock(self) -> None:
+        """Unlock the button."""
+        self.locked = False
+        self.button_color = self.default_color
+        self.hover_color = self.default_hover_color
+
+    def is_locked(self) -> bool:
+        """Check if the button is locked."""
+        return self.locked
+    
+    def select(self) -> None:
+        """Select the button."""
+        self.selected = True
+
+    def deselect(self) -> None:
+        """Deselect the button."""
+        self.selected = False
+
+    def get_selected(self) -> bool:
+        """Get the selected state of the button."""
+        return self.selected
+    
     def draw(self, screen, draw_text=True, border_color=Colors.BLACK) -> None:
         # Change color on hover
         mouse_pos = pygame.mouse.get_pos()
@@ -50,7 +82,7 @@ def draw_item(item:Item, button:Button, surface, border_color) -> None:
     elif isinstance(item, Armor):
         draw_text(f"Block: {item.block}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 40)
         draw_text(f"Dodge: {item.dodge}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 70)
-        draw_text(f"Cooldown: {item.duration}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
+        draw_text(f"Duration: {item.duration}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
 
     draw_text(f"Cost: {item.value}G", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 130)
 
