@@ -9,7 +9,6 @@ class Quest:
         self.description = description
         self.reward = reward
         self.monster_list = monster_list
-        self.monster_index = 0
         self.monsters_slain = {}
         for key in monster_list:
             self.monsters_slain[key] = 0
@@ -30,7 +29,10 @@ class Quest:
             self.monsters_slain[monster.name] += 1
 
     def is_complete(self) -> bool:
-        return self.monster_index >= len(self.monster_list)
+        for key in self.monster_list.keys():
+            if self.monsters_slain[key] < self.monster_list[key]:
+                return False
+        return True
     
     def draw(self, surface, font, button:Button):
         button.draw(surface, False, Colors.GOLD)
