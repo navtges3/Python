@@ -15,6 +15,11 @@ class Button:
         self.rect = pygame.Rect(pos, size,)
         self.surface = self.font.render(self.text, True, self.text_color)
 
+    def update_text(self, text:str) -> None:
+        """Update the button text."""
+        self.text = text
+        self.surface = self.font.render(self.text, True, self.text_color)
+
     def draw(self, screen, draw_text=True, border_color=Colors.BLACK) -> None:
         # Change color on hover
         mouse_pos = pygame.mouse.get_pos()

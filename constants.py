@@ -6,8 +6,9 @@ class Game_State(Enum):
     MAIN_GAME = 3
     BATTLE = 4
     SHOP = 5
-    GAME_OVER = 6
-    EXIT = 7
+    PAUSE = 6
+    GAME_OVER = 7
+    EXIT = 8
 
 class Battle_Action(Enum):
     HOME = 0
