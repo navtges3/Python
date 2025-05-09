@@ -10,13 +10,16 @@ class Game_State(Enum):
     GAME_OVER = 7
     EXIT = 8
 
-class Battle_Action(Enum):
+class Battle_State(Enum):
     HOME = 0
-    ATTACK = 1
-    DEFEND = 2
-    USE_ITEM = 3
-    RUN_AWAY = 4
-    MONSTER_DEFEATED = 5
+    USE_ITEM = 1
+    RUN_AWAY = 2
+    MONSTER_DEFEATED = 3
+
+class Battle_Actions(Enum):
+    ATTACK = 0
+    DEFEND = 1
+    USE_POTION = 2
 
 class Colors:
     WHITE = (255, 255, 255)
