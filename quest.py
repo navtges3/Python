@@ -44,3 +44,27 @@ class Quest:
             output_text += f"{key}: {self.monsters_slain[key]}/{self.monster_list[key]}\n"
 
         draw_multiple_lines(output_text, font, Colors.BLACK, surface, button.pos[0] + button.size[0] // 4 * 3, button.pos[1] + 10)
+
+class QuestButton(Button):
+    def __init__(self, quest: Quest, pos, size, font, text_color, button_color, hover_color):
+        super().__init__("QuestButton", pos, size, font, text_color, button_color, hover_color)
+        self.quest = quest
+
+    def draw(self, surface):
+        border_color = Colors.GOLD if self.selected else Colors.BLACK
+        
+        if self.quest.is_complete():
+            self.button_color = Colors.LIGHT_GREEN
+            self.hover_color = Colors.LIGHT_GREEN
+
+        super().draw(surface, False, border_color)
+
+        # Use self.rect.x and self.rect.y for dynamic positioning
+        draw_text(self.quest.name, self.font, Colors.BLACK, surface, self.rect.x + 10, self.rect.y + 10)
+        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4, self.rect.y + 10, self.rect.width // 2 - 20)
+
+        output_text = ""
+        for key in self.quest.monster_list.keys():
+            output_text += f"{key}: {self.quest.monsters_slain[key]}/{self.quest.monster_list[key]}\n"
+
+        draw_multiple_lines(output_text, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4 * 3, self.rect.y + 10)

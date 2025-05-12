@@ -97,7 +97,7 @@ class ScrollableArea:
         self.text_color = text_color
         self.selected = None
 
-    def add_button(self, text):
+    def add_button(self, text:str=""):
         """Add a button to the scrollable area."""
         button_y = len(self.buttons) * (self.button_height + self.button_spacing)
         button = Button(
@@ -109,6 +109,11 @@ class ScrollableArea:
             self.button_color,
             self.hover_color,
         )
+        self.buttons.append(button)
+    
+    def add_button(self, button:Button):
+        button_y = len(self.buttons) * (self.button_height + self.button_spacing)
+        button.pos = (self.rect.x, self.rect.y + button_y)
         self.buttons.append(button)
 
     def handle_event(self, event):

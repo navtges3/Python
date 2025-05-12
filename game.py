@@ -1,11 +1,11 @@
 
 import random
-from hero import make_hero
+from hero import *
 from items import *
 from constants import *
 from ui_helpers import *
-from village import Village
-from quest import Quest
+from village import *
+from quest import *
 import fileIO
 import pygame
 
@@ -119,8 +119,7 @@ class Game:
             "Goblin" : 3,
             "Orc" : 1,
         }
-        self.active_quest = Quest("Hello World", "For your first quest you must eleminate three goblins and one orc.", monster_list, potion_dictionary["Health Potion"])
-        self.available_quests = []
+        quests = []
         # Initialize the mixer for music
         pygame.mixer.init()
         # Load and play background music
@@ -133,18 +132,28 @@ class Game:
         pygame.display.set_caption("Village Defense")
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
-        monster_list_1 = {
-            "Goblin": 5,
-            "Orc": 2,
-        }
-        self.available_quests.append(Quest(
-            "Goblin Menace",
-            "The village is under attack by a group of goblins. Eliminate 5 goblins and 2 Orcs to secure the area.",
-            monster_list_1,
-            potion_dictionary["Health Potion"]
-        ))
-        for i in range(0, 9):
-            self.buttons[Game_State.QUEST]["Quests"].add_button(f"Quest {i}")
+        # Quest 1
+        quests.append(Quest("Village Under Siege", "Defend the villagers by eliminating four goblins and two ogres.", {"Goblin": 4,"Ogre": 2,}, potion_dictionary["Block Potion"]))
+        # Quest 2
+        quests.append(Quest("Goblin Infestation", "A horde of goblins threatens the farms! Defeat six goblins to secure the land.", {"Goblin": 6,}, potion_dictionary["Health Potion"]))
+        # Quest 3
+        quests.append(Quest("Ogre Troubles", "Ogres have taken control of the mines. Slay three to reclaim the tunnels!", {"Ogre": 3,}, potion_dictionary["Damage Potion"]))
+        # Quest 4
+        quests.append(Quest("Bridge of Peril", "A goblin warband and their ogre leader guard the bridge. Eliminate them and restore safe passage.", {"Goblin": 3,"Ogre": 1,}, potion_dictionary["Block Potion"]))
+        # Quest 5
+        quests.append(Quest("The Forest Menace", "Patrol the woods and eliminate five goblins and their ogre brute.", {"Goblin": 5,"Ogre": 1,}, potion_dictionary["Health Potion"]))
+        # Quest 6
+        quests.append(Quest("Guardian of the Ruins", "The ruins hold secrets, but goblins and ogres stand in your way. Defeat them!", {"Goblin": 2,"Ogre": 2,}, potion_dictionary["Damage Potion"]))
+        # Quest 7
+        quests.append(Quest("Rampaging Goblins", "A large group of goblins terrorizes the countryside. Take down seven!", {"Goblin": 7,}, potion_dictionary["Block Potion"]))
+        # Quest 8
+        quests.append(Quest("Cave Dweller’s Wrath", "Deep in the caves, ogres and goblins lurk. Destroy two goblins and four ogres.", {"Goblin": 2,"Ogre": 4,}, potion_dictionary["Damage Potion"]))
+        # Quest 9
+        quests.append(Quest("Battle at Dawn", "The goblins and ogres are preparing for an assault. Strike first!", {"Goblin": 3,"Ogre": 3,}, potion_dictionary["Block Potion"]))
+        # Quest 10
+        quests.append(Quest("End of the Horde", "Wipe out the remaining goblin forces and their ogre champions.", {"Goblin": 8,"Ogre": 2,}, potion_dictionary["Health Potion"]))
+        for quest in quests:
+            self.buttons[Game_State.QUEST]["Quests"].add_button(QuestButton(quest, (20, 20), (Game_Constants.SCREEN_WIDTH - 40, 100), self.font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY))
         
     def update(self) -> None:
         self.clock.tick(Game_Constants.FPS)
@@ -451,7 +460,7 @@ class Game:
                             return event.unicode
                 elif event.type == pygame.MOUSEWHEEL:
                     if self.game_state == Game_State.QUEST:
-                        self.buttons[Game_State.QUEST]["Available Quests"].handle_event(event)
+                        self.buttons[Game_State.QUEST]["Quests"].handle_event(event)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if self.game_state == Game_State.WELCOME:
                         """Handle events for the welcome screen."""
