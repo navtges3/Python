@@ -58,10 +58,9 @@ class Game:
             "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 2 + 10, Game_Constants.SCREEN_HEIGHT // 4 * 3), (250, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
         },
         Game_State.MAIN_GAME : {
-            "Menu":         Button("Menu", (0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-            "Quest":        Button("Quest", (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
-            "Battle":       Button("Battle", (Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-            "Shop":         Button("Shop", (Game_Constants.SCREEN_WIDTH // 4 * 3, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 4, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.YELLOW, Colors.LIGHT_YELLOW),
+            "Menu":         Button("Menu", (0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Quest":        Button("Quest", (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
+            "Shop":         Button("Shop", (Game_Constants.SCREEN_WIDTH // 3 * 2, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.YELLOW, Colors.LIGHT_YELLOW),
         },
         Game_State.QUEST : {
             "Quests":       ScrollableArea(20, 20, Game_Constants.SCREEN_WIDTH - 40, Game_Constants.SCREEN_HEIGHT - 100, 100, font, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY, Colors.BLACK),
@@ -112,14 +111,11 @@ class Game:
         self.battle_log = []
         self.hero = None
         self.monster = None
+        self.current_quest = None
         self.running = False
         self.popup_running = False
         self.village = Village("Village", 1000, self.font)
-        monster_list = {
-            "Goblin" : 3,
-            "Orc" : 1,
-        }
-        quests = []
+        
         # Initialize the mixer for music
         pygame.mixer.init()
         # Load and play background music
@@ -132,6 +128,7 @@ class Game:
         pygame.display.set_caption("Village Defense")
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
+        quests = []
         # Quest 1
         quests.append(Quest("Village Under Siege", "Defend the villagers by eliminating four goblins and two ogres.", {"Goblin": 4,"Ogre": 2,}, potion_dictionary["Block Potion"]))
         # Quest 2
@@ -215,9 +212,9 @@ class Game:
         assassin = make_hero("Assassin", "Assassin", assassin_image)
 
         while self.running:
-            if self.buttons[Game_State.NEW_GAME]["Knight"].get_selected():
+            if self.buttons[Game_State.NEW_GAME]["Knight"].is_selected():
                 hero_class = "Knight"
-            elif self.buttons[Game_State.NEW_GAME]["Assassin"].get_selected():
+            elif self.buttons[Game_State.NEW_GAME]["Assassin"].is_selected():
                 hero_class = "Assassin"
             else:
                 hero_class = ""
@@ -269,7 +266,7 @@ class Game:
             self.village.draw(self.screen, Game_Constants.SCREEN_WIDTH // 2 - 100, 50)
 
             # Draw the hero
-            self.hero.draw(self.screen, self.font, 50, Game_Constants.SCREEN_HEIGHT // 2)
+            self.hero.draw(self.screen, self.font, 0, Game_Constants.SCREEN_HEIGHT // 2)
 
             # Draw Buttons
             for button in self.buttons[Game_State.MAIN_GAME].values():
@@ -305,7 +302,7 @@ class Game:
         
         while self.running:
 
-            if self.buttons[Game_State.QUEST]["Quests"].selected is not None:
+            if self.buttons[Game_State.QUEST]["Quests"].selected is not None and not self.buttons[Game_State.QUEST]["Quests"].buttons[self.buttons[Game_State.QUEST]["Quests"].selected].quest.is_complete():
                 quest_selected = True
             else:
                 quest_selected = False
@@ -328,9 +325,13 @@ class Game:
         self.running = True
         self.battle_state = Battle_State.HOME
 
+        if self.current_quest != self.buttons[Game_State.QUEST]["Quests"].selected:
+            self.current_quest = self.buttons[Game_State.QUEST]["Quests"].selected
+            self.monster = None
+
         if self.monster is None or not self.monster.alive:
-            self.monster = self.active_quest.get_monster()
-        
+            self.monster = self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.get_monster()
+
         button_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_X, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_Y, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_HEIGHT)
         log_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_LOG_BORDER_X, Game_Constants.BATTLE_SCREEN_LOG_BORDER_Y, Game_Constants.BATTLE_SCREEN_LOG_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_LOG_BORDER_HEIGHT)
 
@@ -389,9 +390,9 @@ class Game:
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
                 self.hero.gain_experience(self.monster.experience)
                 self.hero.add_gold(10)
-                self.active_quest.slay_monster(self.monster)
-                if self.active_quest.is_complete():
-                    self.battle_state = Game_State.GAME_OVER
+                self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.slay_monster(self.monster)
+                if self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.is_complete():
+                    self.game_state = Game_State.QUEST
                     self.running = False
                 else:
                     self.battle_state = Battle_State.MONSTER_DEFEATED
@@ -503,9 +504,7 @@ class Game:
                                 elif button_name == "Quest":
                                     self.game_state = Game_State.QUEST
                                     self.running = False
-                                elif button_name == "Battle" and self.game_state != Game_State.BATTLE:
-                                    pass
-                                elif button_name == "Shop" and self.game_state != Game_State.SHOP:
+                                elif button_name == "Shop":
                                     self.game_state = Game_State.SHOP
                                     self.running = False
                     elif self.game_state == Game_State.QUEST:
@@ -573,7 +572,7 @@ class Game:
                             for button_name, button in self.buttons[Game_State.BATTLE][Battle_State.MONSTER_DEFEATED].items():
                                 if button.is_clicked(event):
                                     if button_name == "Continue Fighting":
-                                        self.monster = self.active_quest.get_monster()
+                                        self.monster = self.buttons[Game_State.QUEST]["Quests"].buttons[self.buttons[Game_State.QUEST]["Quests"].selected].quest.get_monster()
                                         self.battle_state = Battle_State.HOME
                                     elif button_name == "Retreat":
                                         self.game_state = Game_State.MAIN_GAME
