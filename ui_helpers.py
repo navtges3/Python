@@ -24,17 +24,24 @@ class Button:
         self.text = text
         self.surface = self.font.render(self.text, True, self.text_color)
 
+    def update_pos(self, pos) -> None:
+        self.rect = pygame.Rect(pos, self.size)
+
     def lock(self) -> None:
         """Lock the button."""
-        self.locked = True
-        self.button_color = Colors.GRAY
-        self.hover_color = Colors.LIGHT_GRAY
+        if not self.locked:
+            print(f"{self.text} Locked")
+            self.locked = True
+            self.button_color = Colors.GRAY
+            self.hover_color = Colors.LIGHT_GRAY
 
     def unlock(self) -> None:
         """Unlock the button."""
-        self.locked = False
-        self.button_color = self.default_color
-        self.hover_color = self.default_hover_color
+        if self.locked:
+            print(f"{self.text} Unlocked")
+            self.locked = False
+            self.button_color = self.default_color
+            self.hover_color = self.default_hover_color
 
     def is_locked(self) -> bool:
         """Check if the button is locked."""
@@ -42,11 +49,15 @@ class Button:
     
     def select(self) -> None:
         """Select the button."""
-        self.selected = True
+        if not self.selected:
+            print(f"{self.text} selected")
+            self.selected = True
 
     def deselect(self) -> None:
         """Deselect the button."""
-        self.selected = False
+        if self.selected:
+            print(f"{self.text} deselected")
+            self.selected = False
 
     def is_selected(self) -> bool:
         """Get the selected state of the button."""
@@ -72,6 +83,66 @@ class Button:
             if self.rect.collidepoint(event.pos):
                 return True
         return False
+    
+class ScrollableArea:
+    def __init__(self, x, y, width, height, button_height, font, button_color, hover_color, text_color, button_spacing=10):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.scroll_offset = 0
+        self.button_height = button_height
+        self.button_spacing = button_spacing
+        self.buttons = []
+        self.font = font
+        self.button_color = button_color
+        self.hover_color = hover_color
+        self.text_color = text_color
+        self.selected = None
+
+    def add_button(self, text):
+        """Add a button to the scrollable area."""
+        button_y = len(self.buttons) * (self.button_height + self.button_spacing)
+        button = Button(
+            text,
+            (self.rect.x, self.rect.y + button_y),
+            (self.rect.width, self.button_height),
+            self.font,
+            self.text_color,
+            self.button_color,
+            self.hover_color,
+        )
+        self.buttons.append(button)
+
+    def handle_event(self, event):
+        """Handle mouse wheel events for scrolling."""
+        if event.type == pygame.MOUSEWHEEL:
+            self.scroll_offset += event.y * 20  # Adjust scroll speed
+            self.scroll_offset = max(
+                min(self.scroll_offset, 0),
+                -max(0, len(self.buttons) * (self.button_height + self.button_spacing) - self.rect.height),
+            )
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                for button in self.buttons:
+                    if button.is_clicked(event):
+                        if self.selected is None:
+                            self.selected = self.buttons.index(button)
+                            button.select()
+                        elif button.is_selected():
+                            self.selected = None
+                            button.deselect()
+                        else:
+                            self.buttons[self.selected].deselect()
+                            self.selected = self.buttons.index(button)
+                            button.select()
+
+    def draw(self, surface):
+        """Draw the scrollable area and its buttons."""
+        # Create a clipping surface
+        surface.set_clip(self.rect)
+        for button in self.buttons:
+            button.rect.y = self.rect.y + self.buttons.index(button) * (self.button_height + self.button_spacing) + self.scroll_offset
+            if self.rect.colliderect(button.rect):  # Only draw buttons within the scrollable area
+                button.draw(surface)
+        surface.set_clip(None)  # Reset clipping
 
 def draw_item(item:Item, button:Button, surface, border_color) -> None:
     """Draw an item on the screen."""
