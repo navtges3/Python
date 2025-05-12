@@ -4,18 +4,23 @@ class Game_State(Enum):
     WELCOME = 1
     NEW_GAME = 2
     MAIN_GAME = 3
-    BATTLE = 4
-    SHOP = 5
-    GAME_OVER = 6
-    EXIT = 7
+    QUEST = 4
+    BATTLE = 5
+    SHOP = 6
+    PAUSE = 7
+    GAME_OVER = 8
+    EXIT = 9
 
-class Battle_Action(Enum):
+class Battle_State(Enum):
     HOME = 0
-    ATTACK = 1
-    DEFEND = 2
-    USE_ITEM = 3
-    RUN_AWAY = 4
-    MONSTER_DEFEATED = 5
+    USE_ITEM = 1
+    RUN_AWAY = 2
+    MONSTER_DEFEATED = 3
+
+class Battle_Actions(Enum):
+    ATTACK = 0
+    DEFEND = 1
+    USE_POTION = 2
 
 class Colors:
     WHITE = (255, 255, 255)
@@ -31,6 +36,11 @@ class Colors:
     LIGHT_YELLOW = (255, 255, 224)
     LIGHT_GREEN = (144, 238, 144)
     GOLD = (255, 215, 0)
+
+class Shop_Constants:
+    POTION_CARD_KEY = "Potion Card"
+    WEAPON_CARD_KEY = "Weapon Card"
+    ARMOR_CARD_KEY = "Armor Card"
 
 class Game_Constants:
     SCREEN_WIDTH = 800

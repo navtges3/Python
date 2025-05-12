@@ -1,0 +1,70 @@
+from monster import *
+from ui_helpers import *
+import random
+
+class Quest:
+
+    def __init__(self, name:str, description:str, monster_list:dict, reward):
+        self.name = name
+        self.description = description
+        self.reward = reward
+        self.monster_list = monster_list
+        self.monsters_slain = {}
+        for key in monster_list:
+            self.monsters_slain[key] = 0
+
+    def get_monster(self) -> Monster:
+        keys = []
+        for key in self.monster_list.keys():
+            if key in self.monsters_slain.keys():
+                if self.monsters_slain[key] < self.monster_list[key]:
+                    keys.append(key)
+            else:
+                keys.append(key)
+        if len(keys) > 0:
+            return get_monster(random.choice(keys))
+        
+    def slay_monster(self, monster:Monster) -> None:
+        if monster.name in self.monsters_slain.keys():
+            self.monsters_slain[monster.name] += 1
+
+    def is_complete(self) -> bool:
+        for key in self.monster_list.keys():
+            if self.monsters_slain[key] < self.monster_list[key]:
+                return False
+        return True
+    
+    def draw(self, surface, font, button:Button):
+        button.draw(surface, False, Colors.GOLD)
+        draw_text(self.name, font, Colors.BLACK, surface, button.pos[0] + 10, button.pos[1] + 10)
+        draw_wrapped_text(self.description, font, Colors.BLACK, surface, button.pos[0] + button.size[0] // 4, button.pos[1] + 10, button.size[0] // 2 - 20)
+        
+        output_text = ""
+        for key in self.monster_list.keys():
+            output_text += f"{key}: {self.monsters_slain[key]}/{self.monster_list[key]}\n"
+
+        draw_multiple_lines(output_text, font, Colors.BLACK, surface, button.pos[0] + button.size[0] // 4 * 3, button.pos[1] + 10)
+
+class QuestButton(Button):
+    def __init__(self, quest: Quest, pos, size, font, text_color, button_color, hover_color):
+        super().__init__("QuestButton", pos, size, font, text_color, button_color, hover_color)
+        self.quest = quest
+
+    def draw(self, surface):
+        border_color = Colors.GOLD if self.selected else Colors.BLACK
+        
+        if self.quest.is_complete():
+            self.button_color = Colors.LIGHT_GREEN
+            self.hover_color = Colors.LIGHT_GREEN
+
+        super().draw(surface, False, border_color)
+
+        # Use self.rect.x and self.rect.y for dynamic positioning
+        draw_text(self.quest.name, self.font, Colors.BLACK, surface, self.rect.x + 10, self.rect.y + 10)
+        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4, self.rect.y + 10, self.rect.width // 2 - 20)
+
+        output_text = ""
+        for key in self.quest.monster_list.keys():
+            output_text += f"{key}: {self.quest.monsters_slain[key]}/{self.quest.monster_list[key]}\n"
+
+        draw_multiple_lines(output_text, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4 * 3, self.rect.y + 10)

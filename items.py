@@ -35,24 +35,24 @@ class Armor(Item):
         self.block = block
         self.dodge = dodge
         self.duration = duration
-        self.armor_counter = 0
+        self.counter = 0
         super().__init__(name, description, value)
 
     def update(self):
-        self.armor_counter -= 1
+        self.counter -= 1
 
     def use(self):
         """Use the armor, activating its effects."""
         if self.is_available():
-            self.armor_counter = self.duration * 2
+            self.counter = self.duration * 2
 
     def is_active(self) -> bool:
         """Check if the armor is currently active."""
-        return self.armor_counter > self.duration
+        return self.counter >= self.duration
     
     def is_available(self) -> bool:
         """Check if the armor is on cooldown."""
-        return self.armor_counter <= 0
+        return self.counter < 1
     
     def print_stats(self):
         """Prints the armor's stats."""
