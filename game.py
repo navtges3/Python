@@ -128,6 +128,18 @@ class Game:
         pygame.display.set_caption("Village Defense")
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
+        for quest in quest_list:
+            self.buttons[Game_State.QUEST]["Quests"].add_button(
+                QuestButton(
+                    quest,
+                    (20, 20),
+                    (Game_Constants.SCREEN_WIDTH - 40, 100),
+                    self.font,
+                    Colors.BLACK,
+                    Colors.LIGHT_GRAY,
+                    Colors.LIGHT_GRAY
+                ))
+
         
         
     def update(self) -> None:
@@ -176,9 +188,7 @@ class Game:
                 return
             
             if "monster" in save_data:
-                if self.monster is None:
-                    self.monster = get_monster()
-                self.monster.from_dict(save_data["monster"])
+                self.monster = Monster(save_data["monster"])
             else:
                 self.monster = None
 
@@ -325,8 +335,6 @@ class Game:
         if self.game_state == Game_State.MAIN_GAME:
             self.hero = knight if hero_class == "Knight" else assassin
             self.hero.name = hero_name
-            for quest in quest_list:
-                self.buttons[Game_State.QUEST]["Quests"].add_button(QuestButton(quest, (20, 20), (Game_Constants.SCREEN_WIDTH - 40, 100), self.font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY))
 
     def main_game(self) -> None:
         """Main game screen."""
@@ -460,7 +468,7 @@ class Game:
                 self.battle_log.append(f"{self.monster.name} has been defeated!")
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
                 self.hero.gain_experience(self.monster.experience)
-                self.hero.add_gold(10)
+                self.hero.add_gold(self.monster.gold)
                 self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.slay_monster(self.monster)
                 if self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.is_complete():
                     self.draw_quest_complete(self.screen, self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest)
