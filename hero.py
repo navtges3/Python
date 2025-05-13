@@ -43,7 +43,10 @@ class Hero:
             "level": self.level,
             "experience": self.experience,
             "gold": self.gold,
-            "weapon": str(self.weapon),
+            "weapon": {
+                "name": str(self.weapon),
+                "level": self.weapon.level,
+                },
             "armor": str(self.armor),
             "potion_bag": self.potion_bag,
         }
@@ -57,7 +60,7 @@ class Hero:
         self.level = data["level"]
         self.experience = data["experience"]
         self.gold = data["gold"]
-        self.weapon = weapon_dictionary[data["weapon"]]
+        self.weapon = weapon_dictionary[data["weapon"]["level"]][data["weapon"]["name"]]
         self.armor = armor_dictionary[data["armor"]]
         self.potion_bag = data["potion_bag"]
     
@@ -234,7 +237,7 @@ class Assassin(Hero):
     def __init__(self, image, name:str):
         """Initialize the Assassin with random health and a dagger."""
         health = randint(5, 10)
-        dagger = weapon_dictionary["Daggers"]
+        dagger = weapon_dictionary[1]["Iron Knife"]
         leather = armor_dictionary["Leather Armor"]
         super().__init__(image, name, health, dagger, leather, border_color=Colors.GREEN, class_name="Assassin")
 
@@ -244,7 +247,7 @@ class Knight(Hero):
     def __init__(self, image, name:str):
         """Initialize the Knight with random health and a greatsword."""
         health = randint(10, 15)
-        sword = weapon_dictionary["Greatsword"]
+        sword = weapon_dictionary[1]["Rusty Sword"]
         chainmail = armor_dictionary["Chainmail"]
         super().__init__(image, name, health, sword, chainmail, border_color=Colors.RED, class_name="Knight")
 

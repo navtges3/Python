@@ -115,6 +115,24 @@ class ScrollableArea:
         button_y = len(self.buttons) * (self.button_height + self.button_spacing)
         button.pos = (self.rect.x, self.rect.y + button_y)
         self.buttons.append(button)
+        
+    def remove_button(self, button_index: int) -> None:
+        """Remove a button from the scrollable area by index."""
+        if 0 <= button_index < len(self.buttons):
+            # Remove the button
+            self.buttons.pop(button_index)
+            
+            # Reset selected button if needed
+            if self.selected == button_index:
+                self.selected = None
+            elif self.selected and self.selected > button_index:
+                self.selected -= 1
+            
+            # Reposition remaining buttons
+            for i, button in enumerate(self.buttons):
+                button_y = i * (self.button_height + self.button_spacing)
+                button.pos = (self.rect.x, self.rect.y + button_y)
+                button.rect = pygame.Rect(button.pos, button.size)
 
     def handle_event(self, event):
         """Handle mouse wheel events for scrolling."""

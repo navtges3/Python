@@ -68,3 +68,26 @@ class QuestButton(Button):
             output_text += f"{key}: {self.quest.monsters_slain[key]}/{self.quest.monster_list[key]}\n"
 
         draw_multiple_lines(output_text, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4 * 3, self.rect.y + 10)
+
+quest_list = {
+    # Quest 1
+    Quest("Village Under Siege", "Defend the villagers by eliminating four goblins and two orcs.", {"Goblin": 4,"Orc": 2,}, potion_dictionary["Block Potion"]),
+    # Quest 2
+    Quest("Goblin Infestation", "A horde of goblins threatens the farms! Defeat six goblins to secure the land.", {"Goblin": 6,}, potion_dictionary["Health Potion"]),
+    # Quest 3
+    Quest("Ogre Troubles", "Ogres have taken control of the mines. Slay three to reclaim the tunnels!", {"Ogre": 3,}, potion_dictionary["Damage Potion"]),
+    # Quest 4
+    Quest("Bridge of Peril", "A goblin warband and their ogre leader guard the bridge. Eliminate them and restore safe passage.", {"Goblin": 3,"Ogre": 1,}, potion_dictionary["Block Potion"]),
+    # Quest 5
+    Quest("The Forest Menace", "Patrol the woods and eliminate five goblins and their ogre brute.", {"Goblin": 5,"Ogre": 1,}, potion_dictionary["Health Potion"]),
+    # Quest 6
+    Quest("Guardian of the Ruins", "The ruins hold secrets, but goblins and ogres stand in your way. Defeat them!", {"Goblin": 2,"Ogre": 2,}, potion_dictionary["Damage Potion"]),
+    # Quest 7
+    Quest("Rampaging Goblins", "A large group of goblins terrorizes the countryside. Take down seven!", {"Goblin": 7,}, potion_dictionary["Block Potion"]),
+    # Quest 8
+    Quest("Cave Dweller’s Wrath", "Deep in the caves, ogres and goblins lurk. Destroy two goblins and four ogres.", {"Goblin": 2,"Ogre": 4,}, potion_dictionary["Damage Potion"]),
+    # Quest 9
+    Quest("Battle at Dawn", "A mixed force of goblins, ogres, and orcs is preparing for an assault. Strike first!", {"Goblin": 3,"Ogre": 2,"Orc": 2,}, potion_dictionary["Block Potion"]),
+    # Quest 10
+    Quest("End of the Horde", "Wipe out the remaining goblin forces, their ogre champions, and the orc warlord!", {"Goblin": 6,"Ogre": 3,"Orc": 1,}, potion_dictionary["Health Potion"]),
+}

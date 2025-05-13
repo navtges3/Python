@@ -93,7 +93,6 @@ class Game:
             "Resume": Button("Resume", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 50), (300, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
             "Exit": Button("Exit", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 120), (300, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
-        Game_State.GAME_OVER : {},
         Game_State.EXIT : {},
     }
     key_actions = {
@@ -128,29 +127,19 @@ class Game:
         pygame.display.set_caption("Village Defense")
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
-        quests = []
-        # Quest 1
-        quests.append(Quest("Village Under Siege", "Defend the villagers by eliminating four goblins and two ogres.", {"Goblin": 4,"Ogre": 2,}, potion_dictionary["Block Potion"]))
-        # Quest 2
-        quests.append(Quest("Goblin Infestation", "A horde of goblins threatens the farms! Defeat six goblins to secure the land.", {"Goblin": 6,}, potion_dictionary["Health Potion"]))
-        # Quest 3
-        quests.append(Quest("Ogre Troubles", "Ogres have taken control of the mines. Slay three to reclaim the tunnels!", {"Ogre": 3,}, potion_dictionary["Damage Potion"]))
-        # Quest 4
-        quests.append(Quest("Bridge of Peril", "A goblin warband and their ogre leader guard the bridge. Eliminate them and restore safe passage.", {"Goblin": 3,"Ogre": 1,}, potion_dictionary["Block Potion"]))
-        # Quest 5
-        quests.append(Quest("The Forest Menace", "Patrol the woods and eliminate five goblins and their ogre brute.", {"Goblin": 5,"Ogre": 1,}, potion_dictionary["Health Potion"]))
-        # Quest 6
-        quests.append(Quest("Guardian of the Ruins", "The ruins hold secrets, but goblins and ogres stand in your way. Defeat them!", {"Goblin": 2,"Ogre": 2,}, potion_dictionary["Damage Potion"]))
-        # Quest 7
-        quests.append(Quest("Rampaging Goblins", "A large group of goblins terrorizes the countryside. Take down seven!", {"Goblin": 7,}, potion_dictionary["Block Potion"]))
-        # Quest 8
-        quests.append(Quest("Cave Dweller’s Wrath", "Deep in the caves, ogres and goblins lurk. Destroy two goblins and four ogres.", {"Goblin": 2,"Ogre": 4,}, potion_dictionary["Damage Potion"]))
-        # Quest 9
-        quests.append(Quest("Battle at Dawn", "The goblins and ogres are preparing for an assault. Strike first!", {"Goblin": 3,"Ogre": 3,}, potion_dictionary["Block Potion"]))
-        # Quest 10
-        quests.append(Quest("End of the Horde", "Wipe out the remaining goblin forces and their ogre champions.", {"Goblin": 8,"Ogre": 2,}, potion_dictionary["Health Potion"]))
-        for quest in quests:
-            self.buttons[Game_State.QUEST]["Quests"].add_button(QuestButton(quest, (20, 20), (Game_Constants.SCREEN_WIDTH - 40, 100), self.font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY))
+        for quest in quest_list:
+            self.buttons[Game_State.QUEST]["Quests"].add_button(
+                QuestButton(
+                    quest,
+                    (20, 20),
+                    (Game_Constants.SCREEN_WIDTH - 40, 100),
+                    self.font,
+                    Colors.BLACK,
+                    Colors.LIGHT_GRAY,
+                    Colors.LIGHT_GRAY
+                ))
+
+        
         
     def update(self) -> None:
         self.clock.tick(Game_Constants.FPS)
@@ -160,6 +149,66 @@ class Game:
         """Quit the game."""
         pygame.quit()
 
+    def save_game(self) -> None:
+        """Save the player's progress."""
+        save_data = {}
+        if self.hero is not None:
+            save_data.update({"hero": self.hero.to_dict(),})  # Save hero data
+        if self.monster is not None:
+            save_data.update({"monster": self.monster.to_dict(),})
+        save_data.update({
+            "current_quest": self.current_quest,  # Save the currently selected quest
+            "game_state": self.game_state.name,  # Save the current game state
+            "village": {
+                "name": self.village.name,
+                "health": self.village.health,
+            },  # Save village data
+            "quests": [
+                {
+                    "name": quest_button.quest.name,
+                    "monsters_slain": quest_button.quest.monsters_slain,
+                }
+                for quest_button in self.buttons[Game_State.QUEST]["Quests"].buttons
+            ],  # Save quest progress
+        })
+        fileIO.save_game(save_data)
+
+    def load_game(self) -> None:
+        """Load the player's progress from the save file."""
+        save_data = fileIO.load_game()
+        if save_data is not None:
+            # Load hero data
+            if "hero" in save_data:
+                self.hero = Hero(pygame.image.load(fileIO.resource_path(f"images/{save_data['hero']['class_name'].lower()}.png")).convert())
+                self.hero.from_dict(save_data["hero"])
+                self.hero.image = pygame.transform.scale(self.hero.image, (100, 100))
+            else:
+                print("No hero data found in save file.")
+                return
+            
+            if "monster" in save_data:
+                self.monster = Monster(save_data["monster"])
+            else:
+                self.monster = None
+
+            # Load current quest
+            self.current_quest = save_data.get("current_quest", None)
+
+            # Load game state
+            self.game_state = Game_State[save_data.get("game_state", "WELCOME")]
+
+            # Load village data
+            if "village" in save_data:
+                self.village.name = save_data["village"].get("name", "Village")
+                self.village.health = save_data["village"].get("health", 1000)
+
+            # Load quest progress
+            if "quests" in save_data:
+                for quest_data in save_data["quests"]:
+                    for quest_button in self.buttons[Game_State.QUEST]["Quests"].buttons:
+                        if quest_button.quest.name == quest_data["name"]:
+                            quest_button.quest.monsters_slain = quest_data["monsters_slain"]
+        
     def show_esc_popup(self) -> None:
         """Show the escape popup menu."""
         self.popup_running = True
@@ -173,14 +222,42 @@ class Game:
             self.update()
         
         if self.game_state == Game_State.WELCOME and exit_text == "Save and Exit":
-            fileIO.save_game(self.hero)
+            self.save_game()
+
+    def draw_quest_complete(self, surface, quest):
+        """Draw a quest completion popup."""
+        # Create temporary buttons for the popup
+        popup_buttons = {
+            "Claim Reward": Button(
+                f"Claim {quest.reward.name}",
+                ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, 
+                (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 50),
+                (300, 50),
+                self.font,
+                Colors.BLACK,
+                Colors.GREEN,
+                Colors.LIGHT_GREEN
+            )
+        }
+        
+        # Draw the popup
+        draw_popup("Quest Complete!", popup_buttons, surface, self.font)
+        
+        # Handle the button click
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if popup_buttons["Claim Reward"].is_clicked(event):
+                        self.hero.add_item(quest.reward)
+                        running = False
+            self.update()
 
     def welcome_screen(self) -> None:
         """Welcome screen with options to start a new game or load an existing game."""
         self.running = True
-        self.hero = fileIO.load_game()
 
-        if self.hero is not None:
+        if fileIO.save_file_exists():
             self.buttons[Game_State.WELCOME]["Load Game"].unlock()
         else:
             self.buttons[Game_State.WELCOME]["Load Game"].lock()
@@ -278,6 +355,9 @@ class Game:
     def shop_screen(self) -> None:
         """Shop screen where the hero can buy items."""
         self.running = True
+
+        if self.village.shop.weapon_level < self.hero.level:
+            self.village.shop.new_card(self.hero.weapon, self.hero.level)
         
         while self.running:
             if self.village.shop.can_buy_selected(self.hero) and self.buttons[Game_State.SHOP]["Purchase"].is_locked():
@@ -389,27 +469,37 @@ class Game:
                 self.battle_log.append(f"{self.monster.name} has been defeated!")
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
                 self.hero.gain_experience(self.monster.experience)
-                self.hero.add_gold(10)
+                self.hero.add_gold(self.monster.gold)
                 self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.slay_monster(self.monster)
                 if self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.is_complete():
-                    self.game_state = Game_State.QUEST
-                    self.running = False
+                    all_quests_complete = all(
+                        quest_button.quest.is_complete() for quest_button in self.buttons[Game_State.QUEST]["Quests"].buttons)
+                    if all_quests_complete:
+                        self.game_state = Game_State.VICTORY
+                        self.running = False
+                    else:
+                        self.draw_quest_complete(self.screen, self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest)
+                        self.game_state = Game_State.QUEST
+                        self.running = False
                 else:
                     self.battle_state = Battle_State.MONSTER_DEFEATED
             elif not self.hero.alive:
                 print("Hero defeated!")
-                self.game_state = Game_State.GAME_OVER
+                self.game_state = Game_State.DEFEAT
                 self.running = False
             self.update()    
     
-    def game_over_screen(self) -> None:
-        """Game over screen."""
+    def victory_screen(self) -> None:
+        """Victory screen shown when all quests are completed."""
         self.running = True
         while self.running:
             self.screen.fill(Colors.WHITE)
-            draw_text_centered(f"{self.hero.name} has been slain!", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)
-            draw_text_centered("Game Over", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
-            draw_text_centered("Press ESC to return to the main menu", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 + 20)
+            draw_text_centered("Victory!", self.font, Colors.GOLD, self.screen, 
+                Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered(f"{self.hero.name} has saved the village!", self.font, Colors.BLACK, 
+                self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
+            draw_text_centered("Press ESC to return to the main menu", self.font, Colors.BLACK, 
+                self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 + 20)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -419,7 +509,30 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.game_state = Game_State.WELCOME
                         self.running = False
+            self.update()
 
+    def defeat_screen(self) -> None:
+        """Defeat screen shown when hero or village health reaches 0."""
+        self.running = True
+        defeat_reason = "The village has fallen!" if self.village.health <= 0 else f"{self.hero.name} has been slain!"
+        
+        while self.running:
+            self.screen.fill(Colors.WHITE)
+            draw_text_centered(defeat_reason, self.font, Colors.RED, self.screen, 
+                Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered("Game Over", self.font, Colors.BLACK, self.screen, 
+                Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
+            draw_text_centered("Press ESC to return to the main menu", self.font, Colors.BLACK, 
+                self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 + 20)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = Game_State.EXIT
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.game_state = Game_State.WELCOME
+                        self.running = False
             self.update()
 
     def events(self) -> str:
@@ -470,7 +583,8 @@ class Game:
                                 if button_name == "New Game":
                                     self.game_state = Game_State.NEW_GAME
                                     self.running = False
-                                elif button_name == "Load Game" and self.hero is not None:
+                                elif button_name == "Load Game" and not button.is_locked():
+                                    self.load_game()
                                     self.game_state = Game_State.MAIN_GAME
                                     self.running = False
                                 elif button_name == "Exit Game":
