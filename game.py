@@ -128,29 +128,7 @@ class Game:
         pygame.display.set_caption("Village Defense")
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
-        quests = []
-        # Quest 1
-        quests.append(Quest("Village Under Siege", "Defend the villagers by eliminating four goblins and two ogres.", {"Goblin": 4,"Ogre": 2,}, potion_dictionary["Block Potion"]))
-        # Quest 2
-        quests.append(Quest("Goblin Infestation", "A horde of goblins threatens the farms! Defeat six goblins to secure the land.", {"Goblin": 6,}, potion_dictionary["Health Potion"]))
-        # Quest 3
-        quests.append(Quest("Ogre Troubles", "Ogres have taken control of the mines. Slay three to reclaim the tunnels!", {"Ogre": 3,}, potion_dictionary["Damage Potion"]))
-        # Quest 4
-        quests.append(Quest("Bridge of Peril", "A goblin warband and their ogre leader guard the bridge. Eliminate them and restore safe passage.", {"Goblin": 3,"Ogre": 1,}, potion_dictionary["Block Potion"]))
-        # Quest 5
-        quests.append(Quest("The Forest Menace", "Patrol the woods and eliminate five goblins and their ogre brute.", {"Goblin": 5,"Ogre": 1,}, potion_dictionary["Health Potion"]))
-        # Quest 6
-        quests.append(Quest("Guardian of the Ruins", "The ruins hold secrets, but goblins and ogres stand in your way. Defeat them!", {"Goblin": 2,"Ogre": 2,}, potion_dictionary["Damage Potion"]))
-        # Quest 7
-        quests.append(Quest("Rampaging Goblins", "A large group of goblins terrorizes the countryside. Take down seven!", {"Goblin": 7,}, potion_dictionary["Block Potion"]))
-        # Quest 8
-        quests.append(Quest("Cave Dweller’s Wrath", "Deep in the caves, ogres and goblins lurk. Destroy two goblins and four ogres.", {"Goblin": 2,"Ogre": 4,}, potion_dictionary["Damage Potion"]))
-        # Quest 9
-        quests.append(Quest("Battle at Dawn", "The goblins and ogres are preparing for an assault. Strike first!", {"Goblin": 3,"Ogre": 3,}, potion_dictionary["Block Potion"]))
-        # Quest 10
-        quests.append(Quest("End of the Horde", "Wipe out the remaining goblin forces and their ogre champions.", {"Goblin": 8,"Ogre": 2,}, potion_dictionary["Health Potion"]))
-        for quest in quests:
-            self.buttons[Game_State.QUEST]["Quests"].add_button(QuestButton(quest, (20, 20), (Game_Constants.SCREEN_WIDTH - 40, 100), self.font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY))
+        
         
     def update(self) -> None:
         self.clock.tick(Game_Constants.FPS)
@@ -237,6 +215,35 @@ class Game:
         if self.game_state == Game_State.WELCOME and exit_text == "Save and Exit":
             self.save_game()
 
+    def draw_quest_complete(self, surface, quest):
+        """Draw a quest completion popup."""
+        # Create temporary buttons for the popup
+        popup_buttons = {
+            "Claim Reward": Button(
+                f"Claim {quest.reward.name}",
+                ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, 
+                (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 50),
+                (300, 50),
+                self.font,
+                Colors.BLACK,
+                Colors.GREEN,
+                Colors.LIGHT_GREEN
+            )
+        }
+        
+        # Draw the popup
+        draw_popup("Quest Complete!", popup_buttons, surface, self.font)
+        
+        # Handle the button click
+        running = True
+        while running:
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if popup_buttons["Claim Reward"].is_clicked(event):
+                        self.hero.add_item(quest.reward)
+                        running = False
+            self.update()
+
     def welcome_screen(self) -> None:
         """Welcome screen with options to start a new game or load an existing game."""
         self.running = True
@@ -318,6 +325,8 @@ class Game:
         if self.game_state == Game_State.MAIN_GAME:
             self.hero = knight if hero_class == "Knight" else assassin
             self.hero.name = hero_name
+            for quest in quest_list:
+                self.buttons[Game_State.QUEST]["Quests"].add_button(QuestButton(quest, (20, 20), (Game_Constants.SCREEN_WIDTH - 40, 100), self.font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY))
 
     def main_game(self) -> None:
         """Main game screen."""
@@ -454,6 +463,7 @@ class Game:
                 self.hero.add_gold(10)
                 self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.slay_monster(self.monster)
                 if self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.is_complete():
+                    self.draw_quest_complete(self.screen, self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest)
                     self.game_state = Game_State.QUEST
                     self.running = False
                 else:
