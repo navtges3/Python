@@ -19,8 +19,9 @@ class Item:
 
 class Weapon(Item):
     """A class representing a weapon item."""
-    def __init__(self, name:str, description:str, damage:int, value:int=10):
+    def __init__(self, name:str, description:str, damage:int, level:int=1, value:int=10):
         """Initialize the weapon with a name, description, and damage."""
+        self.level = level
         self.damage = damage
         super().__init__(name, description, value)
     
@@ -65,26 +66,46 @@ potion_dictionary = {
 }
 
 weapon_dictionary = { 
-    "Daggers": Weapon("Daggers", "A rogue’s signature: fast, agile, and perfect for quick, lethal strikes", 3),
-    "Rapier": Weapon("Rapier", "A slender, piercing sword that allows for swift, elegant combat", 5), 
-    "Throwing Knives": Weapon("Throwing Knives", "Silent, deadly, and ideal for surprise attacks from a distance", 7), 
-    "Hand Crossbow": Weapon("Hand Crossbow", "A compact ranged weapon, great for assassinations and quick escapes", 9),
-    "Shadow Whip": Weapon("Shadow Whip", "A mystical whip that ensnares foes and delivers vicious strikes", 11),
-    "Greatsword": Weapon("Greatsword", "A massive, two-handed blade that delivers devastating slashes and cleaves through enemies", 3),
-    "Warhammer": Weapon("Warhammer", "A brutal, heavy weapon that crushes armor and bones with raw force", 5), 
-    "Battleaxe": Weapon("Battleaxe", "A hefty axe, ideal for chopping through foes with powerful, sweeping strikes", 7), 
-    "Halberd": Weapon("Halberd", "A polearm with a sharp axe blade and a spear tip, providing reach and versatility", 9),
-    "Flaming Greataxe": Weapon("Flaming Greataxe", "A massive, fiery axe that burns enemies with each devastating strike", 11),
-    "Longbow": Weapon("Longbow", "A classic ranged weapon, perfect for precise, long-distance attacks", 6),
-    "Scythe": Weapon("Scythe", "A reaper's tool turned weapon, delivering wide, arcing strikes with grim efficiency", 4),
-    "Twin Chakrams": Weapon("Twin Chakrams", "Razor-sharp, circular blades that return when thrown, combining elegance with lethality", 8),
-    "Lightning Spear": Weapon("Lightning Spear", "A spear infused with the power of storms, striking enemies with shocking force", 10),
-    "Frostfang": Weapon("Frostfang", "A chilling sword that freezes enemies with each cut, slowing them down", 7),
-    "Venom Dagger": Weapon("Venom Dagger", "A blade laced with deadly poison, ideal for those who prefer subtle kills", 5),
-    "Storm Hammer": Weapon("Storm Hammer", "A thunderous weapon that calls down lightning with every powerful swing", 9),
-    "Crystal Staff": Weapon("Crystal Staff", "A staff radiating mystical energy, amplifying magical attacks and spells", 8),
-    "Bladed Gauntlets": Weapon("Bladed Gauntlets", "Close-combat weapons with sharp edges for brutal, quick strikes", 6),
-    "Infernal Flail": Weapon("Infernal Flail", "A chain weapon engulfed in hellfire, smashing enemies with devastating impact", 10)
+    # Level 1 - Basic Starter Weapons
+    1 : {
+    "Rusty Sword": Weapon("Rusty Sword", "A worn-out blade barely holding together.", damage=8, value=15),
+    "Wooden Club": Weapon("Wooden Club", "A simple club used for self-defense.", damage=10, value=20),
+    "Iron Knife": Weapon("Iron Knife", "A small but reliable blade.", damage=12, value=30),
+    "Apprentice's Bow": Weapon("Apprentice's Bow", "A basic bow meant for beginner archers.", damage=14, value=40),
+    "Stone Axe": Weapon("Stone Axe", "A crude axe made of stone and wood.", damage=16, value=45),
+    },
+    2 : {
+    # Level 2 - Common Warrior's Arsenal
+    "Iron Sword": Weapon("Iron Sword", "A sturdy, reliable blade favored by novice warriors.", damage=15, level=2, value=50),
+    "Steel Axe": Weapon("Steel Axe", "A heavy axe that delivers powerful strikes.", damage=22, level=2, value=85),
+    "Arcane Dagger": Weapon("Arcane Dagger", "A magically infused dagger, swift and lethal.", damage=18, level=2, value=120),
+    "Hunter's Longbow": Weapon("Hunter's Longbow", "A well-crafted bow with improved range.", damage=19, level=2, value=130),
+    "Serrated Mace": Weapon("Serrated Mace", "A spiked mace, excellent at breaking armor.", damage=20, level=2, value=150),
+    },
+    3 : {
+    # Level 3 - Advanced Combat Equipment
+    "Dragonfang Spear": Weapon("Dragonfang Spear", "A spear crafted from the fang of an ancient dragon.", damage=30, level=3, value=200),
+    "Shadow Katana": Weapon("Shadow Katana", "Forged in darkness, strikes swift and silent.", damage=25, level=3, value=150),
+    "Titan Warhammer": Weapon("Titan Warhammer", "A massive hammer capable of shattering armor with ease.", damage=35, level=3, value=300),
+    "Blazing Rapier": Weapon("Blazing Rapier", "A slender sword imbued with fiery magic.", damage=28, level=3, value=250),
+    "Windfury Chakrams": Weapon("Windfury Chakrams", "Pair of throwing blades guided by wind magic.", damage=27, level=3, value=280),
+    },
+    4 : {
+    # Level 4 - Mastercrafted and Legendary Artifacts
+    "Celestial Greatsword": Weapon("Celestial Greatsword", "A divine blade blessed by the stars.", damage=40, level=4, value=500),
+    "Stormforged Halberd": Weapon("Stormforged Halberd", "A mighty halberd crackling with electricity.", damage=38, level=4, value=450),
+    "Voidfang Dagger": Weapon("Voidfang Dagger", "A dagger infused with the abyss's power.", damage=36, level=4, value=400),
+    "Moonlit Bow": Weapon("Moonlit Bow", "A bow blessed by lunar energy, firing enchanted arrows.", damage=39, level=4, value=480),
+    "Frozen Pike": Weapon("Frozen Pike", "A chilling spear capable of slowing enemies.", damage=37, level=4, value=420),
+    },
+    5 : {
+    # Level 5 - Mythical and Legendary Relics
+    "Apocalypse Blade": Weapon("Apocalypse Blade", "A cursed sword overflowing with destructive energy.", damage=50, level=5, value=700),
+    "Fang of the Eternal Beast": Weapon("Fang of the Eternal Beast", "A dagger said to drain the life force of foes.", damage=48, level=5, value=650),
+    "Solarflare Gauntlets": Weapon("Solarflare Gauntlets", "Gauntlets capable of channeling blinding solar energy.", damage=47, level=5, value=600),
+    "Worldbreaker Hammer": Weapon("Worldbreaker Hammer", "A colossal hammer said to shake the earth itself.", damage=52, level=5, value=750),
+    "Godslayer Spear": Weapon("Godslayer Spear", "A spear rumored to pierce the fabric of reality.", damage=55, level=5, value=900),
+    },
 }
 
 armor_dictionary = {

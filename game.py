@@ -357,6 +357,9 @@ class Game:
     def shop_screen(self) -> None:
         """Shop screen where the hero can buy items."""
         self.running = True
+
+        if self.village.shop.weapon_level < self.hero.level:
+            self.village.shop.new_card(self.hero.weapon, self.hero.level)
         
         while self.running:
             if self.village.shop.can_buy_selected(self.hero) and self.buttons[Game_State.SHOP]["Purchase"].is_locked():

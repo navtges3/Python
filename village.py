@@ -8,7 +8,8 @@ import pygame
 class Shop:
     def __init__(self, font):
         self.potion_key = random.choice(list(potion_dictionary.keys()))
-        self.weapon_key = random.choice(list(weapon_dictionary.keys()))
+        self.weapon_level = 1
+        self.weapon_key = random.choice(list(weapon_dictionary[1].keys()))
         self.armor_key = random.choice(list(armor_dictionary.keys()))
         self.card_selected_key = Shop_Constants.POTION_CARD_KEY
         self.selected_price = potion_dictionary[self.potion_key].value
@@ -18,26 +19,27 @@ class Shop:
             Shop_Constants.ARMOR_CARD_KEY:   Button(Shop_Constants.ARMOR_CARD_KEY, (Game_Constants.SCREEN_WIDTH // 16 * 11, 25), (Game_Constants.SCREEN_WIDTH // 16 * 3, Game_Constants.SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.LIGHT_BLUE, Colors.BLUE),
         }
 
-    def new_card(self, card_name: str) -> None:
+    def new_card(self, card_name: str, hero_level: int) -> None:
         """Change the card in the shop."""
         if card_name == Shop_Constants.POTION_CARD_KEY:
             self.potion_key = random.choice(list(potion_dictionary.keys()))
             self.selected_price = potion_dictionary[self.potion_key].value
         elif card_name == Shop_Constants.WEAPON_CARD_KEY:
-            self.weapon_key = random.choice(list(weapon_dictionary.keys()))
-            self.selected_price = weapon_dictionary[self.weapon_key].value
+            self.weapon_level = hero_level
+            self.weapon_key = random.choice(list(weapon_dictionary[self.weapon_level].keys()))
+            self.selected_price = weapon_dictionary[self.weapon_level][self.weapon_key].value
         elif card_name == Shop_Constants.ARMOR_CARD_KEY:
             self.armor_key = random.choice(list(armor_dictionary.keys()))
             self.selected_price = armor_dictionary[self.armor_key].value
         self.card_selected_key = card_name
 
-    def card_selected(self, card_name: str) -> None:
+    def card_selected(self, card_name: str, card_level:int=1) -> None:
         """Stelect a card in the shop."""
         print(f"Selected card: {card_name}")
         if card_name == Shop_Constants.POTION_CARD_KEY:
             self.selected_price = potion_dictionary[self.potion_key].value
         elif card_name == Shop_Constants.WEAPON_CARD_KEY:
-            self.selected_price = weapon_dictionary[self.weapon_key].value
+            self.selected_price = weapon_dictionary[card_level][self.weapon_key].value
         elif card_name == Shop_Constants.ARMOR_CARD_KEY:
             self.selected_price = armor_dictionary[self.armor_key].value
         self.card_selected_key = card_name
@@ -49,7 +51,7 @@ class Shop:
             if self.card_selected_key == Shop_Constants.POTION_CARD_KEY:
                 item = potion_dictionary[self.potion_key]
             elif self.card_selected_key == Shop_Constants.WEAPON_CARD_KEY:
-                item = weapon_dictionary[self.weapon_key]
+                item = weapon_dictionary[self.weapon_level][self.weapon_key]
             elif self.card_selected_key == Shop_Constants.ARMOR_CARD_KEY:
                 item = armor_dictionary[self.armor_key]
             return hero.gold >= item.value
@@ -59,13 +61,13 @@ class Shop:
         if self.card_selected_key == Shop_Constants.POTION_CARD_KEY:
             item = potion_dictionary[self.potion_key]
         elif self.card_selected_key == Shop_Constants.WEAPON_CARD_KEY:
-            item = weapon_dictionary[self.weapon_key]
+            item = weapon_dictionary[hero.level][self.weapon_key]
         elif self.card_selected_key == Shop_Constants.ARMOR_CARD_KEY:
             item = armor_dictionary[self.armor_key]
 
         if hero.spend_gold(self.selected_price):
             hero.add_item(item)
-            self.new_card(self.card_selected_key)
+            self.new_card(self.card_selected_key, hero.level)
         else:
             print("Not enough gold to buy the item.")
 
@@ -77,7 +79,7 @@ class Shop:
         armor_border = Colors.LIGHT_GREEN if self.card_selected_key == Shop_Constants.ARMOR_CARD_KEY else Colors.BLACK
 
         draw_item(potion_dictionary[self.potion_key], self.cards[Shop_Constants.POTION_CARD_KEY], surface, potion_border)
-        draw_item(weapon_dictionary[self.weapon_key], self.cards[Shop_Constants.WEAPON_CARD_KEY], surface, weapon_border)
+        draw_item(weapon_dictionary[self.weapon_level][self.weapon_key], self.cards[Shop_Constants.WEAPON_CARD_KEY], surface, weapon_border)
         draw_item(armor_dictionary[self.armor_key],   self.cards[Shop_Constants.ARMOR_CARD_KEY],  surface, armor_border)
 
 class Village:
