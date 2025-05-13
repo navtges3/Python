@@ -7,9 +7,10 @@ class Game_State(Enum):
     QUEST = 4
     BATTLE = 5
     SHOP = 6
-    PAUSE = 7
-    GAME_OVER = 8
-    EXIT = 9
+    VICTORY = 7
+    DEFEAT = 8
+    PAUSE = 9
+    EXIT = 10
 
 class Battle_State(Enum):
     HOME = 0

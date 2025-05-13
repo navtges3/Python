@@ -16,8 +16,10 @@ def main() -> None:
             my_game.battle_screen()
         elif my_game.game_state == Game_State.SHOP:
             my_game.shop_screen()
-        elif my_game.game_state == Game_State.GAME_OVER:
-            my_game.game_over_screen()
+        elif my_game.game_state == Game_State.VICTORY:
+            my_game.victory_screen()
+        elif my_game.game_state == Game_State.DEFEAT:
+            my_game.defeat_screen()
     
     my_game.quit()
 

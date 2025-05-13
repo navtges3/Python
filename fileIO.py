@@ -23,6 +23,14 @@ def save_game(save_data):
     except Exception as e:
         print(f"Error saving game: {e}")
 
+def save_file_exists() -> bool:
+    """Check if a save file exists.
+    
+    Returns:
+        bool: True if save file exists, False otherwise
+    """
+    return os.path.exists("savefile.json")
+
 def load_game() -> dict:
     """Load the hero's progress from a file."""
     try:

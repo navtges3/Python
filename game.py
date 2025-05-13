@@ -93,7 +93,6 @@ class Game:
             "Resume": Button("Resume", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 50), (300, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
             "Exit": Button("Exit", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 120), (300, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
-        Game_State.GAME_OVER : {},
         Game_State.EXIT : {},
     }
     key_actions = {
@@ -257,9 +256,8 @@ class Game:
     def welcome_screen(self) -> None:
         """Welcome screen with options to start a new game or load an existing game."""
         self.running = True
-        self.load_game()
 
-        if self.hero is not None:
+        if fileIO.save_file_exists():
             self.buttons[Game_State.WELCOME]["Load Game"].unlock()
         else:
             self.buttons[Game_State.WELCOME]["Load Game"].lock()
@@ -474,25 +472,34 @@ class Game:
                 self.hero.add_gold(self.monster.gold)
                 self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.slay_monster(self.monster)
                 if self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.is_complete():
-                    self.draw_quest_complete(self.screen, self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest)
-                    self.game_state = Game_State.QUEST
-                    self.running = False
+                    all_quests_complete = all(
+                        quest_button.quest.is_complete() for quest_button in self.buttons[Game_State.QUEST]["Quests"].buttons)
+                    if all_quests_complete:
+                        self.game_state = Game_State.VICTORY
+                        self.running = False
+                    else:
+                        self.draw_quest_complete(self.screen, self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest)
+                        self.game_state = Game_State.QUEST
+                        self.running = False
                 else:
                     self.battle_state = Battle_State.MONSTER_DEFEATED
             elif not self.hero.alive:
                 print("Hero defeated!")
-                self.game_state = Game_State.GAME_OVER
+                self.game_state = Game_State.DEFEAT
                 self.running = False
             self.update()    
     
-    def game_over_screen(self) -> None:
-        """Game over screen."""
+    def victory_screen(self) -> None:
+        """Victory screen shown when all quests are completed."""
         self.running = True
         while self.running:
             self.screen.fill(Colors.WHITE)
-            draw_text_centered(f"{self.hero.name} has been slain!", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)
-            draw_text_centered("Game Over", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
-            draw_text_centered("Press ESC to return to the main menu", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 + 20)
+            draw_text_centered("Victory!", self.font, Colors.GOLD, self.screen, 
+                Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered(f"{self.hero.name} has saved the village!", self.font, Colors.BLACK, 
+                self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
+            draw_text_centered("Press ESC to return to the main menu", self.font, Colors.BLACK, 
+                self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 + 20)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -502,7 +509,30 @@ class Game:
                     if event.key == pygame.K_ESCAPE:
                         self.game_state = Game_State.WELCOME
                         self.running = False
+            self.update()
 
+    def defeat_screen(self) -> None:
+        """Defeat screen shown when hero or village health reaches 0."""
+        self.running = True
+        defeat_reason = "The village has fallen!" if self.village.health <= 0 else f"{self.hero.name} has been slain!"
+        
+        while self.running:
+            self.screen.fill(Colors.WHITE)
+            draw_text_centered(defeat_reason, self.font, Colors.RED, self.screen, 
+                Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 100)
+            draw_text_centered("Game Over", self.font, Colors.BLACK, self.screen, 
+                Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
+            draw_text_centered("Press ESC to return to the main menu", self.font, Colors.BLACK, 
+                self.screen, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 + 20)
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = Game_State.EXIT
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.game_state = Game_State.WELCOME
+                        self.running = False
             self.update()
 
     def events(self) -> str:
@@ -553,7 +583,8 @@ class Game:
                                 if button_name == "New Game":
                                     self.game_state = Game_State.NEW_GAME
                                     self.running = False
-                                elif button_name == "Load Game" and self.hero is not None:
+                                elif button_name == "Load Game" and not button.is_locked():
+                                    self.load_game()
                                     self.game_state = Game_State.MAIN_GAME
                                     self.running = False
                                 elif button_name == "Exit Game":
