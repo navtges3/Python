@@ -13,36 +13,23 @@ def resource_path(relative_path: str) -> str:
         base_path = os.path.abspath(".")
     return os.path.join(base_path, relative_path)
 
-def save_game(hero):
+def save_game(save_data):
     """Save the hero's progress to a file."""
     try:
         with open("savefile.json", "w") as savefile:
             # Convert hero object to a dictionary and save it as JSON
-            save_data = {"hero": hero.to_dict()}
             json.dump(save_data, savefile, indent=4)
         print("Game saved successfully!")
     except Exception as e:
         print(f"Error saving game: {e}")
 
-def load_game() -> Hero:
+def load_game() -> dict:
     """Load the hero's progress from a file."""
     try:
         with open("savefile.json", "r") as savefile:
             # Load the hero data from the JSON file
             data = json.load(savefile)
-            if "hero" not in data:
-                raise ValueError("No hero data found in save file.")
-            else:
-                if data["hero"]["class_name"] == "Knight":
-                    hero_image = pygame.image.load(resource_path("images/knight.png")).convert()
-                elif data["hero"]["class_name"] == "Assassin":
-                    hero_image = pygame.image.load(resource_path("images/assassin.png")).convert()
-                else:
-                    hero_image = pygame.image.load(resource_path("images/knight.png")).convert()
-                hero_image = pygame.transform.scale(hero_image, (100, 100))
-                hero = Hero(hero_image)
-                hero.from_dict(data["hero"])
-                return hero
+            return data
     except FileNotFoundError:
         print("No save file found. Starting a new game.")
         return None

@@ -12,7 +12,7 @@ class Monster:
         """Initialize the monster with a name, health, damage, and an image."""
         self.name = name
         self.health = health
-        self.start_health = health
+        self.max_health = health
         self.alive = True
         self.damage = damage
         self.experience = (health + damage) // 2
@@ -23,6 +23,30 @@ class Monster:
     def __str__(self):
         """Returns the name of the monster."""
         return self.name
+
+    def to_dict(self) -> dict:
+        """Convert monster data to a dictionary for saving."""
+        return {
+            "name": self.name,
+            "health": self.health,
+            "max_health": self.max_health,
+            "damage": self.damage,
+            "image": self.image
+        }
+
+    def from_dict(self, data: dict) -> None:
+        """Load monster data from a dictionary."""
+        self.name = data.get("name", "Monster")
+        self.health = data.get("health", 10)
+        self.max_health = data.get("max_health", 10)
+        self.damage = data.get("damage", 1)
+        self.image_path = data.get("image", "goblin_image.jpg")
+        if self.image_path:
+            try:
+                self.image = pygame.image.load(fileIO.resource_path(self.image_path)).convert()
+                self.image = pygame.transform.scale(self.image, (100, 100))
+            except:
+                print(f"Failed to load monster image: {self.image_path}") 
 
     def get_damage(self) -> int:
         """Returns the damage of the monster."""
@@ -51,7 +75,7 @@ class Monster:
         health_bar_height = font.get_linesize() + 4
         health_bar_x = monster_border.x + 15
         health_bar_y = monster_border.y + monster_image.get_height() + font.get_linesize() + 15
-        draw_health_bar(surface, font, health_bar_x, health_bar_y, health_bar_width, health_bar_height, self.health, self.start_health)
+        draw_health_bar(surface, font, health_bar_x, health_bar_y, health_bar_width, health_bar_height, self.health, self.max_health)
 
     def print_stats(self):
         """Prints the monster's stats."""
@@ -107,7 +131,7 @@ def get_monster(level:int) -> Monster:
     else:
         return Ogre()
     
-def get_monster(name:str) -> Monster:
+def get_monster(name:str="Goblin") -> Monster:
     """Returns a monster based on the name."""
     if name == "Orc":
         return Orc()

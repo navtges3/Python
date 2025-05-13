@@ -160,6 +160,68 @@ class Game:
         """Quit the game."""
         pygame.quit()
 
+    def save_game(self) -> None:
+        """Save the player's progress."""
+        save_data = {}
+        if self.hero is not None:
+            save_data.update({"hero": self.hero.to_dict(),})  # Save hero data
+        if self.monster is not None:
+            save_data.update({"monster": self.monster.to_dict(),})
+        save_data.update({
+            "current_quest": self.current_quest,  # Save the currently selected quest
+            "game_state": self.game_state.name,  # Save the current game state
+            "village": {
+                "name": self.village.name,
+                "health": self.village.health,
+            },  # Save village data
+            "quests": [
+                {
+                    "name": quest_button.quest.name,
+                    "monsters_slain": quest_button.quest.monsters_slain,
+                }
+                for quest_button in self.buttons[Game_State.QUEST]["Quests"].buttons
+            ],  # Save quest progress
+        })
+        fileIO.save_game(save_data)
+
+    def load_game(self) -> None:
+        """Load the player's progress from the save file."""
+        save_data = fileIO.load_game()
+        if save_data is not None:
+            # Load hero data
+            if "hero" in save_data:
+                self.hero = Hero(pygame.image.load(fileIO.resource_path(f"images/{save_data['hero']['class_name'].lower()}.png")).convert())
+                self.hero.from_dict(save_data["hero"])
+                self.hero.image = pygame.transform.scale(self.hero.image, (100, 100))
+            else:
+                print("No hero data found in save file.")
+                return
+            
+            if "monster" in save_data:
+                if self.monster is None:
+                    self.monster = get_monster()
+                self.monster.from_dict(save_data["monster"])
+            else:
+                self.monster = None
+
+            # Load current quest
+            self.current_quest = save_data.get("current_quest", None)
+
+            # Load game state
+            self.game_state = Game_State[save_data.get("game_state", "WELCOME")]
+
+            # Load village data
+            if "village" in save_data:
+                self.village.name = save_data["village"].get("name", "Village")
+                self.village.health = save_data["village"].get("health", 1000)
+
+            # Load quest progress
+            if "quests" in save_data:
+                for quest_data in save_data["quests"]:
+                    for quest_button in self.buttons[Game_State.QUEST]["Quests"].buttons:
+                        if quest_button.quest.name == quest_data["name"]:
+                            quest_button.quest.monsters_slain = quest_data["monsters_slain"]
+        
     def show_esc_popup(self) -> None:
         """Show the escape popup menu."""
         self.popup_running = True
@@ -173,12 +235,12 @@ class Game:
             self.update()
         
         if self.game_state == Game_State.WELCOME and exit_text == "Save and Exit":
-            fileIO.save_game(self.hero)
+            self.save_game()
 
     def welcome_screen(self) -> None:
         """Welcome screen with options to start a new game or load an existing game."""
         self.running = True
-        self.hero = fileIO.load_game()
+        self.load_game()
 
         if self.hero is not None:
             self.buttons[Game_State.WELCOME]["Load Game"].unlock()
