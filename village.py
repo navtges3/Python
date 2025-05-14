@@ -25,7 +25,9 @@ class Shop:
             self.potion_key = random.choice(list(potion_dictionary.keys()))
             self.selected_price = potion_dictionary[self.potion_key].value
         elif card_name == Shop_Constants.WEAPON_CARD_KEY:
-            self.weapon_level = hero_level
+            self.weapon_level = hero_level // 2
+            if self.weapon_level > 5:
+                self.weapon_level = 5
             self.weapon_key = random.choice(list(weapon_dictionary[self.weapon_level].keys()))
             self.selected_price = weapon_dictionary[self.weapon_level][self.weapon_key].value
         elif card_name == Shop_Constants.ARMOR_CARD_KEY:
@@ -33,13 +35,13 @@ class Shop:
             self.selected_price = armor_dictionary[self.armor_key].value
         self.card_selected_key = card_name
 
-    def card_selected(self, card_name: str, card_level:int=1) -> None:
+    def card_selected(self, card_name: str) -> None:
         """Stelect a card in the shop."""
         print(f"Selected card: {card_name}")
         if card_name == Shop_Constants.POTION_CARD_KEY:
             self.selected_price = potion_dictionary[self.potion_key].value
         elif card_name == Shop_Constants.WEAPON_CARD_KEY:
-            self.selected_price = weapon_dictionary[card_level][self.weapon_key].value
+            self.selected_price = weapon_dictionary[self.weapon_level][self.weapon_key].value
         elif card_name == Shop_Constants.ARMOR_CARD_KEY:
             self.selected_price = armor_dictionary[self.armor_key].value
         self.card_selected_key = card_name
@@ -61,7 +63,7 @@ class Shop:
         if self.card_selected_key == Shop_Constants.POTION_CARD_KEY:
             item = potion_dictionary[self.potion_key]
         elif self.card_selected_key == Shop_Constants.WEAPON_CARD_KEY:
-            item = weapon_dictionary[hero.level][self.weapon_key]
+            item = weapon_dictionary[self.weapon_level][self.weapon_key]
         elif self.card_selected_key == Shop_Constants.ARMOR_CARD_KEY:
             item = armor_dictionary[self.armor_key]
 
