@@ -1,4 +1,3 @@
-
 import random
 from hero import *
 from items import *
@@ -356,8 +355,8 @@ class Game:
         """Shop screen where the hero can buy items."""
         self.running = True
 
-        if self.village.shop.weapon_level < self.hero.level:
-            self.village.shop.new_card(self.hero.weapon, self.hero.level)
+        if self.village.shop.weapon_level < self.hero.level // 2:
+            self.village.shop.new_card(Shop_Constants.WEAPON_CARD_KEY, self.hero.level)
         
         while self.running:
             if self.village.shop.can_buy_selected(self.hero) and self.buttons[Game_State.SHOP]["Purchase"].is_locked():
