@@ -47,7 +47,8 @@ class Game:
         Game_State.WELCOME : {
             "New Game":     Button("New Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 - 20), (200, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
             "Load Game":    Button("Load Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 40), (200, 50), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
-            "Exit Game":    Button("Exit Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Options":      Button("Options", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.YELLOW, Colors.LIGHT_YELLOW),
+            "Exit Game":    Button("Exit Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 160), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
         Game_State.NEW_GAME : {
             "Knight":       Button("Knight", (10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
@@ -88,8 +89,12 @@ class Game:
             "Leave":        Button("Leave", (Game_Constants.SCREEN_WIDTH // 2 + 15, Game_Constants.SCREEN_HEIGHT // 2 + 75), (250, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
         Game_State.PAUSE : {
-            "Resume": Button("Resume", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 50), (300, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-            "Exit": Button("Exit", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 120), (300, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Resume":   Button("Resume", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 50), (300, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+            "Options":  Button("Options", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 120), (300, 50), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
+            "Exit":     Button("Exit", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 190), (300, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+        },
+        Game_State.OPTIONS : {
+            "Back": Button("Back", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 190), (300, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
         },
         Game_State.EXIT : {},
     }
@@ -269,6 +274,47 @@ class Game:
                 button.draw(self.screen)
 
             self.events()
+            self.update()
+
+    def options_screen(self) -> None:
+        """Options screen for adjusting game settings."""
+        options_running = True
+        music_volume = pygame.mixer.music.get_volume()
+        
+        while options_running:
+            # Draw the base popup
+            draw_popup("Options", self.buttons[Game_State.OPTIONS], self.screen, self.font)
+            
+            # Draw volume slider
+            volume_x = (Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50
+            volume_y = (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 120
+            
+            # Draw volume label
+            draw_text("Music Volume", self.font, Colors.BLACK, self.screen, volume_x, volume_y - 30)
+            
+            # Draw slider background
+            pygame.draw.rect(self.screen, Colors.GRAY, (volume_x, volume_y, 300, 10))
+            
+            # Draw volume level
+            pygame.draw.rect(self.screen, Colors.BLUE, (volume_x, volume_y, 300 * music_volume, 10))
+            
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = Game_State.EXIT
+                    options_running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for button_name, button in self.buttons[Game_State.OPTIONS].items():
+                        if button.is_clicked(event):
+                            if button_name == "Back":
+                                options_running = False
+                elif event.type == pygame.MOUSEMOTION:
+                    if event.buttons[0]:  # Left mouse button
+                        mouse_x = event.pos[0]
+                        if volume_x <= mouse_x <= volume_x + 300:
+                            music_volume = (mouse_x - volume_x) / 300
+                            pygame.mixer.music.set_volume(music_volume)
+            
             self.update()
 
     def new_game_screen(self) -> None:
@@ -543,6 +589,8 @@ class Game:
                         if button.is_clicked(event):
                             if button_name == "Resume":
                                 self.popup_running = False
+                            elif button_name == "Options":
+                                self.options_screen()
                             elif button_name == "Exit":
                                 self.game_state = Game_State.WELCOME
                                 self.popup_running = False
@@ -575,6 +623,8 @@ class Game:
                                     self.load_game()
                                     self.game_state = Game_State.MAIN_GAME
                                     self.running = False
+                                elif button_name == "Options":
+                                    self.options_screen()
                                 elif button_name == "Exit Game":
                                     self.game_state = Game_State.EXIT
                                     self.running = False

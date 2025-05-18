@@ -10,7 +10,8 @@ class Game_State(Enum):
     VICTORY = 7
     DEFEAT = 8
     PAUSE = 9
-    EXIT = 10
+    OPTIONS = 10
+    EXIT = 11
 
 class Battle_State(Enum):
     HOME = 0
@@ -47,7 +48,7 @@ class Game_Constants:
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 600
     POPUP_WIDTH = 400
-    POPUP_HEIGHT = 200
+    POPUP_HEIGHT = 300
 
     FPS = 60
 
