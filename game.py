@@ -8,7 +8,7 @@ from quest import *
 import fileIO
 import pygame
 
-def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygame.Rect:
+def draw_hero_preview(surface:pygame.surface.Surface, font:pygame.font.Font, hero:Hero, button:Button) -> None:
     """Draw the hero preview on the screen."""
     # Border 
     hero_border = button.rect.copy()
@@ -23,7 +23,7 @@ def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygam
     if hero.armor is not None:
         armor_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3 + 50, hero_border.width // 2, hero_border.height // 3 * 2 - 50)
         draw_text_centered(hero.armor.name, font, Colors.BLACK, surface, armor_border.x + armor_border.width // 2, armor_border.y + font.get_linesize() // 2 + 10)
-        armor_text = f"Block: {hero.armor.block}\nBlock Chance: {hero.armor.block_chance:.2%}\nDodge: {hero.armor.dodge_chance:.2%}"
+        armor_text = f"Block: {hero.armor.block}\nBlock Chance: {hero.armor.block_chance:.0%}\nDodge: {hero.armor.dodge_chance:.0%}"
         draw_multiple_lines(armor_text, font, Colors.BLACK, surface, armor_border.x + 10, armor_border.y + font.get_linesize() + 25)
         pygame.draw.rect(surface, Colors.LIGHT_BLUE, armor_border, width=3, border_radius=10)
 
@@ -36,7 +36,6 @@ def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygam
         pygame.draw.rect(surface, hero.border_color, hero_border, width=5, border_radius=10)
     else:
         pygame.draw.rect(surface, Colors.GRAY, hero_border, width=5, border_radius=10)
-    return hero_border
 
 
 class Game:
@@ -276,16 +275,10 @@ class Game:
         """New game screen for creating a hero."""
         hero_name = ""
         hero_class = ""
-        self.running = True
+        self.running = True        
 
-        knight_image = pygame.image.load(fileIO.resource_path("images/knight.png")).convert()
-        knight_image = pygame.transform.scale(knight_image, (100, 100))
-
-        assassin_image = pygame.image.load(fileIO.resource_path("images/assassin.png")).convert()
-        assassin_image = pygame.transform.scale(assassin_image, (100, 100))
-
-        knight = make_hero("Knight", "Knight", knight_image)
-        assassin = make_hero("Assassin", "Assassin", assassin_image)
+        knight = make_hero("Knight", "Knight")
+        assassin = make_hero("Assassin", "Assassin")
 
         while self.running:
             if self.buttons[Game_State.NEW_GAME]["Knight"].is_selected():
@@ -302,8 +295,8 @@ class Game:
 
             self.screen.fill(Colors.WHITE)
             
-            draw_hero_preview(self.screen, self.font, 10, 10, knight, self.buttons[Game_State.NEW_GAME]["Knight"])
-            draw_hero_preview(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10, assassin, self.buttons[Game_State.NEW_GAME]["Assassin"])
+            draw_hero_preview(self.screen, self.font, knight, self.buttons[Game_State.NEW_GAME]["Knight"])
+            draw_hero_preview(self.screen, self.font, assassin, self.buttons[Game_State.NEW_GAME]["Assassin"])
 
             draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Name: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize())
             draw_text(f"Hero Class: {hero_class}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Class: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize() * 2.5)
@@ -401,6 +394,8 @@ class Game:
         self.running = True
         self.battle_state = Battle_State.HOME
 
+        tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
+
         if self.current_quest != self.buttons[Game_State.QUEST]["Quests"].selected:
             self.current_quest = self.buttons[Game_State.QUEST]["Quests"].selected
             self.monster = None
@@ -450,10 +445,15 @@ class Game:
             for button in self.buttons[Game_State.BATTLE][self.battle_state].values():
                 button.draw(self.screen)
 
+            if self.battle_state == Battle_State.HOME:
+                mouse_pos = pygame.mouse.get_pos()
+                if self.buttons[Game_State.BATTLE][Battle_State.HOME]["Attack"].rect.collidepoint(mouse_pos):
+                    tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
+
             self.events()
     
             if self.hero.is_alive() and not self.monster.is_alive() and self.battle_state != Battle_State.MONSTER_DEFEATED:
-                print("Monster defeated!")
+                ("Monster defeated!")
                 self.battle_log.append(f"{self.monster.name} has been defeated!")
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
                 self.hero.gain_experience(self.monster.experience)

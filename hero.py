@@ -2,11 +2,12 @@ from random import randint
 from items import Item, Armor, Weapon, weapon_dictionary, armor_dictionary
 from ui_helpers import *
 from combatant import Combatant
+import fileIO
 
 class Hero(Combatant):
     """Base class for all heroes in the game."""
 
-    def __init__(self, image, name:str="Hero", max_hp:int=10, weapon:Weapon=None, armor:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE, class_name:str="Hero"):
+    def __init__(self, name:str="Hero", max_hp:int=10, image=None, weapon:Weapon=None, armor:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE, class_name:str="Hero"):
         """Initialize the hero with a name, health, weapon, armor, and gold."""
         super().__init__(name, max_hp)
         self.weapon = weapon
@@ -134,6 +135,13 @@ class Hero(Combatant):
         self.weapon = weapon_dictionary[data["weapon"]]
         self.armor = armor_dictionary[data["armor"]]
         self.potion_bag = data["potion_bag"]
+        if self.class_name == "Knight":
+            self.image = pygame.image.load(fileIO.resource_path("images/knight.png")).convert()
+        else:
+            self.image = pygame.image.load(fileIO.resource_path("images/assassin.png")).convert()
+        self.image = pygame.transform.scale(self.image, (100, 100))
+
+
     
     def draw(self, surface, font, x:int=0, y:int=0) -> None:
         # Border
@@ -179,30 +187,34 @@ class Hero(Combatant):
 class Assassin(Hero):
     """A class representing a Assassin hero."""
 
-    def __init__(self, image, name:str):
+    def __init__(self, name:str):
         """Initialize the Assassin with random health and a dagger."""
-        health = randint(5, 10)
-        dagger = weapon_dictionary["Iron Knife"]
-        leather = armor_dictionary["Shadow Cloak"]
-        super().__init__(image, name, health, dagger, leather, border_color=Colors.GREEN, class_name="Assassin")
+        image = pygame.image.load(fileIO.resource_path("images/assassin.png")).convert()
+        image = pygame.transform.scale(image, (100, 100))
+        health = randint(7, 12)
+        weapon = weapon_dictionary["Iron Knife"]
+        armor = armor_dictionary["Shadow Cloak"]
+        super().__init__(name, health, image, weapon, armor, border_color=Colors.GREEN, class_name="Assassin")
 
 class Knight(Hero):
     """A class representing a Knight hero."""
 
-    def __init__(self, image, name:str):
+    def __init__(self, name:str):
         """Initialize the Knight with random health and a greatsword."""
+        image = pygame.image.load(fileIO.resource_path("images/knight.png")).convert()
+        image = pygame.transform.scale(image, (100, 100))
         health = randint(10, 15)
         weapon = weapon_dictionary["Rusty Sword"]
         armor = armor_dictionary["Iron Chestplate"]
-        super().__init__(image, name, health, weapon, armor, border_color=Colors.RED, class_name="Knight")
+        super().__init__(name, health, image, weapon, armor, border_color=Colors.RED, class_name="Knight")
 
-def make_hero(hero_name:str, hero_class:str, image) -> Hero:
+def make_hero(hero_name:str, hero_class:str) -> Hero:
     """Create a hero based on the given name and class."""
     the_hero = None
     if hero_class == "Assassin":
-        the_hero = Assassin(image, hero_name)
+        the_hero = Assassin(hero_name)
     elif hero_class == "Knight":
-        the_hero = Knight(image, hero_name)
+        the_hero = Knight(hero_name)
     else:
-        the_hero = Hero(image, hero_name)
+        the_hero = Hero(hero_name)
     return the_hero 

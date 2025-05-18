@@ -2,6 +2,25 @@ from constants import *
 from items import *
 import pygame
 
+class Tooltip:
+    def __init__(self, text: str, font: pygame.font.Font):
+        self.text = text
+        self.font = font
+        self.padding = 5
+        self.background_color = Colors.LIGHT_GRAY
+        self.text_color = Colors.BLACK
+        
+    def draw(self, surface: pygame.Surface, x: int, y: int):
+        lines = self.text.split('\n')
+        width = max(self.font.size(line)[0] for line in lines)
+        height = self.font.get_linesize() * len(lines)
+        
+        # Draw background
+        pygame.draw.rect(surface, self.background_color,
+                        (x, y, width + self.padding * 2,
+                         height + self.padding * 2))
+        draw_multiple_lines(self.text, self.font, self.text_color, surface, x + 5, y + 5)
+        
 class Button:
     def __init__(self, text, pos, size, font:pygame.font, text_color, button_color, hover_color):
         self.text = text
