@@ -160,6 +160,7 @@ class Game:
         if self.monster is not None:
             save_data.update({"monster": self.monster.to_dict(),})
         save_data.update({
+            "game_volume": pygame.mixer.music.get_volume(),
             "current_quest": self.current_quest,  # Save the currently selected quest
             "game_state": self.game_state.name,  # Save the current game state
             "village": {
@@ -194,6 +195,7 @@ class Game:
             else:
                 self.monster = None
 
+            pygame.mixer.music.set_volume(save_data.get("game_volume", 0.5))
             # Load current quest
             self.current_quest = save_data.get("current_quest", None)
 
