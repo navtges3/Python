@@ -405,7 +405,7 @@ class Game:
             self.current_quest = self.buttons[Game_State.QUEST]["Quests"].selected
             self.monster = None
 
-        if self.monster is None or not self.monster.alive:
+        if self.monster is None or not self.monster.is_alive():
             self.monster = self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.get_monster()
 
         button_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_X, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_Y, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_HEIGHT)
@@ -452,7 +452,7 @@ class Game:
 
             self.events()
     
-            if self.hero.alive and not self.monster.alive and self.battle_state != Battle_State.MONSTER_DEFEATED:
+            if self.hero.is_alive() and not self.monster.is_alive() and self.battle_state != Battle_State.MONSTER_DEFEATED:
                 print("Monster defeated!")
                 self.battle_log.append(f"{self.monster.name} has been defeated!")
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
@@ -471,7 +471,7 @@ class Game:
                         self.running = False
                 else:
                     self.battle_state = Battle_State.MONSTER_DEFEATED
-            elif not self.hero.alive:
+            elif not self.hero.is_alive():
                 print("Hero defeated!")
                 self.game_state = Game_State.DEFEAT
                 self.running = False
@@ -626,12 +626,12 @@ class Game:
                             for button_name, button in self.buttons[Game_State.BATTLE][Battle_State.HOME].items():
                                 if button.is_clicked(event):
                                     if button_name == "Attack":
-                                        self.monster.take_damage(self.hero.weapon.damage + self.hero.potion_damage)
+                                        self.hero.attack(self.monster)
                                         self.battle_log.append(f"{self.hero.name} attacks {self.monster.name} with {self.hero.weapon.name} for {self.hero.weapon.damage + self.hero.potion_damage} damage.")
                                         if self.hero.potion_damage > 0:
                                             self.hero.potion_damage = 0
-                                        if self.monster.alive:
-                                            self.hero.take_damage(self.monster.damage)
+                                        if self.monster.is_alive():
+                                            self.monster.attack(self.hero)
                                             self.battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
                                         return button_name
                                     elif button_name == "Use Potion":

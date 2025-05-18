@@ -65,7 +65,7 @@ class Shop:
 
         if hero.spend_gold(self.selected_price):
             hero.add_item(item)
-            self.new_card(self.card_selected_key, hero.level)
+            self.new_card(self.card_selected_key)
         else:
             print("Not enough gold to buy the item.")
 
