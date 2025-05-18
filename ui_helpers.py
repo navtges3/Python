@@ -175,8 +175,8 @@ def draw_item(item:Item, button:Button, surface, border_color) -> None:
         draw_text(f"Damage: {item.damage}", button.font, button.text_color,surface, button.pos[0] + 10, button.pos[1] + 40)
     elif isinstance(item, Armor):
         draw_text(f"Block: {item.block}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 40)
-        draw_text(f"Dodge: {item.dodge}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 70)
-        draw_text(f"Duration: {item.duration}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
+        draw_text(f"Block %: {item.block_chance:.1%}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 70)
+        draw_text(f"Dodge %: {item.dodge_chance:.1%}", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 100)
 
     draw_text(f"Cost: {item.value}G", button.font, button.text_color, surface, button.pos[0] + 10, button.pos[1] + 130)
 

@@ -43,11 +43,8 @@ class Hero:
             "level": self.level,
             "experience": self.experience,
             "gold": self.gold,
-            "weapon": {
-                "name": str(self.weapon),
-                "level": self.weapon.level,
-                },
-            "armor": str(self.armor),
+            "weapon": self.weapon.name,
+            "armor": self.armor.name,
             "potion_bag": self.potion_bag,
         }
     
@@ -60,7 +57,7 @@ class Hero:
         self.level = data["level"]
         self.experience = data["experience"]
         self.gold = data["gold"]
-        self.weapon = weapon_dictionary[data["weapon"]["level"]][data["weapon"]["name"]]
+        self.weapon = weapon_dictionary[data["weapon"]]
         self.armor = armor_dictionary[data["armor"]]
         self.potion_bag = data["potion_bag"]
     
@@ -99,7 +96,7 @@ class Hero:
         if self.armor is not None:
             armor_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3, hero_border.width // 2, hero_border.height // 3 * 2)
             draw_text_centered(self.armor.name, font, Colors.BLACK, surface, armor_border.x + armor_border.width // 2, armor_border.y + font.get_linesize() // 2 + 10)
-            armor_text = f"Block: {self.armor.block}\nDodge: {self.armor.dodge}\nDuration: {self.armor.duration} turns"
+            armor_text = f"Block: {self.armor.block}\nBlock %: {self.armor.block_chance:.1%}\nDodge %: {self.armor.dodge_chance:.1%}"
             draw_multiple_lines(armor_text, font, Colors.BLACK, surface, armor_border.x + 10, armor_border.y + font.get_linesize() + 25)
             pygame.draw.rect(surface, Colors.LIGHT_BLUE, armor_border, width=3, border_radius=10)
         
@@ -154,9 +151,9 @@ class Hero:
             self.potion_block = 0
 
         if self.armor.is_active():
-            if self.armor.dodge > 0:
+            if self.armor.dodge_chance > 0:
                 dodge_roll = randint(1, 100)
-                if dodge_roll <= self.armor.dodge:
+                if dodge_roll <= self.armor.dodge_chance:
                     print(f"{self.name} dodged the attack!")
                     damage = 0
             if self.armor.block > 0 and damage > 0:
@@ -237,8 +234,8 @@ class Assassin(Hero):
     def __init__(self, image, name:str):
         """Initialize the Assassin with random health and a dagger."""
         health = randint(5, 10)
-        dagger = weapon_dictionary[1]["Iron Knife"]
-        leather = armor_dictionary["Leather Armor"]
+        dagger = weapon_dictionary["Iron Knife"]
+        leather = armor_dictionary["Shadow Cloak"]
         super().__init__(image, name, health, dagger, leather, border_color=Colors.GREEN, class_name="Assassin")
 
 class Knight(Hero):
@@ -247,9 +244,9 @@ class Knight(Hero):
     def __init__(self, image, name:str):
         """Initialize the Knight with random health and a greatsword."""
         health = randint(10, 15)
-        sword = weapon_dictionary[1]["Rusty Sword"]
-        chainmail = armor_dictionary["Chainmail"]
-        super().__init__(image, name, health, sword, chainmail, border_color=Colors.RED, class_name="Knight")
+        weapon = weapon_dictionary["Rusty Sword"]
+        armor = armor_dictionary["Iron Chestplate"]
+        super().__init__(image, name, health, weapon, armor, border_color=Colors.RED, class_name="Knight")
 
 def make_hero(hero_name:str, hero_class:str, image) -> Hero:
     """Create a hero based on the given name and class."""

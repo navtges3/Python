@@ -23,7 +23,7 @@ def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygam
     if hero.armor is not None:
         armor_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3 + 50, hero_border.width // 2, hero_border.height // 3 * 2 - 50)
         draw_text_centered(hero.armor.name, font, Colors.BLACK, surface, armor_border.x + armor_border.width // 2, armor_border.y + font.get_linesize() // 2 + 10)
-        armor_text = f"Block: {hero.armor.block}\nDodge: {hero.armor.dodge}"
+        armor_text = f"Block: {hero.armor.block}\nBlock Chance: {hero.armor.block_chance:.2%}\nDodge: {hero.armor.dodge_chance:.2%}"
         draw_multiple_lines(armor_text, font, Colors.BLACK, surface, armor_border.x + 10, armor_border.y + font.get_linesize() + 25)
         pygame.draw.rect(surface, Colors.LIGHT_BLUE, armor_border, width=3, border_radius=10)
 
@@ -354,9 +354,6 @@ class Game:
     def shop_screen(self) -> None:
         """Shop screen where the hero can buy items."""
         self.running = True
-
-        if self.village.shop.weapon_level < self.hero.level // 2:
-            self.village.shop.new_card(Shop_Constants.WEAPON_CARD_KEY, self.hero.level)
         
         while self.running:
             if self.village.shop.can_buy_selected(self.hero) and self.buttons[Game_State.SHOP]["Purchase"].is_locked():
@@ -432,14 +429,6 @@ class Game:
                 elif not self.hero.has_potions() and not self.buttons[Game_State.BATTLE][Battle_State.HOME]["Use Potion"].is_locked():
                     self.buttons[Game_State.BATTLE][Battle_State.HOME]["Use Potion"].lock()
 
-                if self.hero.armor.is_available() and self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].is_locked():
-                    self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].unlock()
-                    self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].update_text("Defend")
-                elif not self.hero.armor.is_available() and not self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].is_locked():
-                    self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].lock()
-
-                if self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].is_locked():
-                    self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].update_text(f"Cooldown: {self.hero.armor.counter} turns")
             elif self.battle_state == Battle_State.USE_ITEM:
                 for button in self.buttons[Game_State.BATTLE][self.battle_state].values():
                     if button.text == "Health Potion":
@@ -651,12 +640,6 @@ class Game:
                                             self.battle_state = Battle_State.USE_ITEM
                                     elif button_name == "Defend":
                                         print("Use armor selected")
-                                        if self.hero.armor.is_available():
-                                            self.hero.armor.use()
-                                            self.battle_log.append(f"{self.hero.name} uses {self.hero.armor.name} for {self.hero.armor.duration} turns.")
-                                            if self.monster.alive:
-                                                self.hero.take_damage(self.monster.damage)
-                                                self.battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
                                     elif button_name == "Flee":
                                         print("Flee selected")
                                         self.battle_log.append(f"{self.hero.name} flees from {self.monster.name}.")
