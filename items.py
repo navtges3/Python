@@ -47,8 +47,8 @@ class Weapon(Item):
     
     def __str__(self):
         base_info = super().__str__()
-        stats = (f" Damage: {self.damage}, Accuracy: {self.accuracy:.2%} "
-                 f"Crit Chance: {self.crit_chance:.2%}, Crit Damage: {self.crit_damage:.2%}")
+        stats = (f" Damage: {self.damage}, Accuracy: {self.accuracy:.0%} "
+                 f"Crit Chance: {self.crit_chance:.0%}, Crit Damage: {self.crit_damage:.1}")
         return base_info + stats
     
 class Armor(Item):
@@ -78,7 +78,7 @@ class Armor(Item):
     
     def __str__(self):
         base_info = super().__str__()
-        stats = (f" Block: {self.block}, Block Chance: {self.block_chance:.2%}, Dodge Chance: {self.dodge_chance:.2%}")
+        stats = (f" Block: {self.block}, Block Chance: {self.block_chance:.0%}, Dodge Chance: {self.dodge_chance:.0%}")
         return base_info + stats
 
 potion_dictionary = {

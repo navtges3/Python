@@ -102,25 +102,6 @@ class Hero(Combatant):
             self.max_hp = self.current_hp
         self.level += 1
         print(self.name + " has leveled up!")
-        self.print_stats()
-        print()
-    
-    def print_stats(self):
-        """Prints the hero's stats."""
-        print()
-        print(f"{self.name} has {self.current_hp} health.")
-        print(f"{self.name} is level {self.level} with {self.experience} experience.")
-
-        if self.weapon is not None:
-            print(f"{self.name} is wielding a {self.weapon}.")
-        else:
-            print(f"{self.name} is not wielding any weapon.")
-
-        if self.armor is not None:
-            print(f"{self.name} is wearing {self.armor}.")
-        else:
-            print(f"{self.name} is not wearing any armor.")
-        print()
 
     def __str__(self):
         """Returns the name of the hero."""
@@ -189,7 +170,7 @@ class Hero(Combatant):
         if self.armor is not None:
             armor_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3, hero_border.width // 2, hero_border.height // 3 * 2)
             draw_text_centered(self.armor.name, font, Colors.BLACK, surface, armor_border.x + armor_border.width // 2, armor_border.y + font.get_linesize() // 2 + 10)
-            armor_text = f"Block: {self.armor.block}\nBlock %: {self.armor.block_chance:.1%}\nDodge %: {self.armor.dodge_chance:.1%}"
+            armor_text = f"Block: {self.armor.block}\nChance: {self.armor.block_chance:.0%}\nDodge: {self.armor.dodge_chance:.0%}"
             draw_multiple_lines(armor_text, font, Colors.BLACK, surface, armor_border.x + 10, armor_border.y + font.get_linesize() + 25)
             pygame.draw.rect(surface, Colors.LIGHT_BLUE, armor_border, width=3, border_radius=10)
         

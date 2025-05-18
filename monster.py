@@ -34,7 +34,6 @@ class Monster(Combatant):
             self.gold = gold
             self.image = image
             print("A new monster appears!")
-            self.print_stats()
 
     def attack(self, target:Combatant) -> None:
         target.take_damage(self.damage)
@@ -79,10 +78,6 @@ class Monster(Combatant):
         health_bar_x = monster_border.x + 15
         health_bar_y = monster_border.y + monster_image.get_height() + font.get_linesize() + 15
         draw_health_bar(surface, font, health_bar_x, health_bar_y, health_bar_width, health_bar_height, self.current_hp, self.max_hp)
-
-    def print_stats(self):
-        """Prints the monster's stats."""
-        print(f"{self.name} has {self.current_hp} health and {self.damage} damage and {self.experience} experience.")
 
 class Goblin(Monster):
     """A class representing a Goblin monster."""
