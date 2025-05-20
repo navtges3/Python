@@ -52,6 +52,9 @@ class Game_Constants:
 
     FPS = 60
 
+    BUTTON_IMAGE_PATH = "images\\buttons\\button.png"
+    HOVER_IMAGE_PATH = "images\\buttons\\button_hover.png"
+
     # New Game Constants
     NEW_GAME_SPACING = SCREEN_HEIGHT // 30
 

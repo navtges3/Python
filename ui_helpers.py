@@ -1,5 +1,6 @@
 from constants import *
 from items import *
+import fileIO
 import pygame
 
 class Tooltip:
@@ -22,18 +23,18 @@ class Tooltip:
         draw_multiple_lines(self.text, self.font, self.text_color, surface, x + 5, y + 5)
         
 class Button:
-    def __init__(self, text, pos, size, font:pygame.font, text_color, button_color, hover_color):
+    def __init__(self, text, pos, size, font:pygame.font, text_color, background_image_path=None, hover_image_path=None):
         self.text = text
         self.pos = pos
         self.size = size
         self.font = font
         self.text_color = text_color
-        self.button_color = button_color
-        self.hover_color = hover_color
-        self.default_color = button_color
-        self.default_hover_color = hover_color
         self.selected = False
         self.locked = False
+        self.background_image = None
+        self.hover_image = None
+        self.background_image_path = background_image_path
+        self.hover_image_path = hover_image_path
 
         self.rect = pygame.Rect(pos, size)
         self.surface = self.font.render(self.text, True, self.text_color)
@@ -51,16 +52,12 @@ class Button:
         if not self.locked:
             print(f"{self.text} Locked")
             self.locked = True
-            self.button_color = Colors.GRAY
-            self.hover_color = Colors.LIGHT_GRAY
 
     def unlock(self) -> None:
         """Unlock the button."""
         if self.locked:
             print(f"{self.text} Unlocked")
             self.locked = False
-            self.button_color = self.default_color
-            self.hover_color = self.default_hover_color
 
     def is_locked(self) -> bool:
         """Check if the button is locked."""
@@ -82,14 +79,36 @@ class Button:
         """Get the selected state of the button."""
         return self.selected
     
+    def load_background(self) -> None:
+        if self.background_image_path and not self.background_image:
+            try:
+                self.background_image = pygame.image.load(fileIO.resource_path(self.background_image_path)).convert_alpha()
+                self.background_image = pygame.transform.scale(self.background_image, self.size)
+            except Exception as e:
+                print(f"Failed to load button image: {e}")
+                self.background_image = None
+        if self.hover_image_path and not self.hover_image:
+            try:
+                self.hover_image = pygame.image.load(fileIO.resource_path(self.hover_image_path)).convert_alpha()
+                self.hover_image = pygame.transform.scale(self.hover_image, self.size)
+            except Exception as e:
+                print(f"Failed to load button image: {e}")
+                self.hover_image = None
+    
     def draw(self, screen, draw_text=True, border_color=Colors.BLACK) -> None:
         # Change color on hover
         mouse_pos = pygame.mouse.get_pos()
-        if self.rect.collidepoint(mouse_pos):
-            pygame.draw.rect(screen, self.hover_color, self.rect, border_radius=5)
+        if self.background_image and self.hover_image:
+            if self.rect.collidepoint(mouse_pos):
+                screen.blit(self.hover_image, self.rect)
+            else:
+                screen.blit(self.background_image, self.rect)
         else:
-            pygame.draw.rect(screen, self.button_color, self.rect, border_radius=5)
-        pygame.draw.rect(screen, border_color, self.rect, width=2, border_radius=5)
+            if self.rect.collidepoint(mouse_pos):
+                pygame.draw.rect(screen, Colors.LIGHT_GRAY, self.rect, border_radius=5)
+            else:
+                pygame.draw.rect(screen, Colors.GRAY, self.rect, border_radius=5)
+            pygame.draw.rect(screen, border_color, self.rect, width=2, border_radius=5)
 
         # Center text on button
         if draw_text:
@@ -104,15 +123,13 @@ class Button:
         return False
     
 class ScrollableArea:
-    def __init__(self, x, y, width, height, button_height, font, button_color, hover_color, text_color, button_spacing=10):
+    def __init__(self, x, y, width, height, button_height, font, text_color, button_spacing=10):
         self.rect = pygame.Rect(x, y, width, height)
         self.scroll_offset = 0
         self.button_height = button_height
         self.button_spacing = button_spacing
         self.buttons = []
         self.font = font
-        self.button_color = button_color
-        self.hover_color = hover_color
         self.text_color = text_color
         self.selected = None
 
@@ -125,8 +142,6 @@ class ScrollableArea:
             (self.rect.width, self.button_height),
             self.font,
             self.text_color,
-            self.button_color,
-            self.hover_color,
         )
         self.buttons.append(button)
     
