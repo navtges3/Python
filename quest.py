@@ -65,13 +65,13 @@ class QuestButton(Button):
         draw_text(self.quest.reward.name, self.font, Colors.GREEN, surface, self.rect.x + 10, self.rect.y + 40)
         draw_text(str(self.quest.penalty), self.font, Colors.RED, surface, self.rect.x + 10, self.rect.y + 70)
 
-        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 3, self.rect.y + 10, self.rect.width // 3)
+        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 3, self.rect.y + 10, self.rect.width // 3 + 75)
 
         output_text = ""
         for key in self.quest.monster_list.keys():
             output_text += f"{key}: {self.quest.monsters_slain[key]}/{self.quest.monster_list[key]}\n"
 
-        draw_multiple_lines(output_text, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4 * 3, self.rect.y + 10)
+        draw_multiple_lines(output_text, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4 * 3 + 25, self.rect.y + 10)
 
 quest_list = {
     # Quest 1
