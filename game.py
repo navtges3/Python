@@ -149,10 +149,11 @@ class Game:
                     (20, 20),
                     (Game_Constants.SCREEN_WIDTH - 150, 100),
                     self.font,
-                    Colors.BLACK,
-                    Colors.LIGHT_GRAY,
-                    Colors.LIGHT_GRAY
+                    Colors.BLACK
                 ))
+        
+        for button in self.buttons[Game_State.QUEST]["Quests"].buttons:
+            button.load_background()
 
         
         

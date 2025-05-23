@@ -47,8 +47,9 @@ class Quest:
         draw_multiple_lines(output_text, font, Colors.BLACK, surface, button.pos[0] + button.size[0] // 4 * 3, button.pos[1] + 10)
 
 class QuestButton(Button):
-    def __init__(self, quest: Quest, pos, size, font, text_color, button_color, hover_color):
-        super().__init__("QuestButton", pos, size, font, text_color, button_color, hover_color)
+    def __init__(self, quest: Quest, pos, size, font, text_color):
+        quest_image_path = fileIO.resource_path("images\\buttons\\quest_background.png")
+        super().__init__("QuestButton", pos, size, font, text_color, quest_image_path, quest_image_path)
         self.quest = quest
 
     def draw(self, surface):
@@ -65,7 +66,7 @@ class QuestButton(Button):
         draw_text(self.quest.reward.name, self.font, Colors.GREEN, surface, self.rect.x + 10, self.rect.y + 40)
         draw_text(str(self.quest.penalty), self.font, Colors.RED, surface, self.rect.x + 10, self.rect.y + 70)
 
-        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 3, self.rect.y + 10, self.rect.width // 3 + 75)
+        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 3, self.rect.y + 10, self.rect.width // 3 + 50)
 
         output_text = ""
         for key in self.quest.monster_list.keys():
