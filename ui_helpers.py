@@ -149,11 +149,11 @@ class ScrollableArea:
         self.dragging_scrollbar = False
 
     def handle_event(self, event):
-        """Handle mouse wheel events for scrolling."""
+        """Handle mouse wheel and scrollbar events."""
         if event.type == pygame.MOUSEWHEEL:
-            self.scroll_offset += event.y * 20  # Adjust scroll speed
+            self.scroll_offset += event.y * 20
             self._clamp_scroll_offset()
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        elif event.type == pygame.MOUSEBUTTONDOWN:
             if self.scrollbar_handle_rect.collidepoint(event.pos):
                 self.dragging_scrollbar = True
             elif self.rect.collidepoint(event.pos):
@@ -169,15 +169,15 @@ class ScrollableArea:
                             self.buttons[self.selected].deselect()
                             self.selected = self.buttons.index(button)
                             button.select()
-            elif event.type == pygame.MOUSEBUTTONUP:
-                self.dragging_scrollbar = False
-            elif event.type == pygame.MOUSEMOTION and self.dragging_scrollbar:
-                # Calculate scroll positino based on mouse movement
-                content_height = len(self.buttons) * (self.button_height + self.button_spacing)
-                if content_height > self.rect.height:
-                    movement_ration = (event.pos[1] - self.rect.top) / self.rect.height
-                    self.scroll_offset = -movement_ration * (content_height - self.rect.height)
-                    self._clamp_scroll_offset()
+        elif event.type == pygame.MOUSEBUTTONUP:
+            self.dragging_scrollbar = False
+        elif event.type == pygame.MOUSEMOTION and self.dragging_scrollbar:
+            # Calculate scroll position based on mouse movement
+            content_height = len(self.buttons) * (self.button_height + self.button_spacing)
+            if content_height > self.rect.height:
+                movement_ratio = (event.pos[1] - self.rect.top) / self.rect.height
+                self.scroll_offset = -movement_ratio * (content_height - self.rect.height)
+                self._clamp_scroll_offset()
 
     def _clamp_scroll_offset(self):
         content_height = len(self.buttons) * (self.button_height + self.button_spacing)

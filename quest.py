@@ -6,23 +6,24 @@ class Quest:
 
     def __init__(self, name:str, description:str, monster_list:dict, reward):
         self.name = name
-        self.description = description
         self.reward = reward
+        self.penalty = None
+        self.description = description
         self.monster_list = monster_list
         self.monsters_slain = {}
         for key in monster_list:
             self.monsters_slain[key] = 0
 
     def get_monster(self) -> Monster:
-        keys = []
+        living_monsters = []
         for key in self.monster_list.keys():
             if key in self.monsters_slain.keys():
                 if self.monsters_slain[key] < self.monster_list[key]:
-                    keys.append(key)
+                    living_monsters.append(key)
             else:
-                keys.append(key)
-        if len(keys) > 0:
-            return get_monster(random.choice(keys))
+                living_monsters.append(key)
+        if len(living_monsters) > 0:
+            return get_monster(random.choice(living_monsters))
         
     def slay_monster(self, monster:Monster) -> None:
         if monster.name in self.monsters_slain.keys():
