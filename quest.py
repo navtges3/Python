@@ -54,7 +54,7 @@ class QuestButton(Button):
         border_color = Colors.GOLD if self.selected else Colors.BLACK
         
         if self.quest.is_complete():
-            self.button_color = Colors.LIGHT_GREEN
+            self.button_color = Colors.GREEN
             self.hover_color = Colors.LIGHT_GREEN
 
         super().draw(surface, False, border_color)

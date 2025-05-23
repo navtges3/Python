@@ -133,6 +133,89 @@ class ScrollableArea:
         self.text_color = text_color
         self.selected = None
 
+        self.scrollbar_width = 10
+        self.scrollbar_rect = pygame.Rect(
+            self.rect.right - self.scrollbar_width,
+            self.rect.top,
+            self.scrollbar_width,
+            self.rect.height
+        )
+        self.scrollbar_handle_rect = pygame.Rect(
+            self.rect.right - self.scrollbar_width,
+            self.rect.top,
+            self.scrollbar_width,
+            50 # Initial height, will be adjusted in draw
+        )
+        self.dragging_scrollbar = False
+
+    def handle_event(self, event):
+        """Handle mouse wheel events for scrolling."""
+        if event.type == pygame.MOUSEWHEEL:
+            self.scroll_offset += event.y * 20  # Adjust scroll speed
+            self._clamp_scroll_offset()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.scrollbar_handle_rect.collidepoint(event.pos):
+                self.dragging_scrollbar = True
+            elif self.rect.collidepoint(event.pos):
+                for button in self.buttons:
+                    if button.is_clicked(event):
+                        if self.selected is None:
+                            self.selected = self.buttons.index(button)
+                            button.select()
+                        elif button.is_selected():
+                            self.selected = None
+                            button.deselect()
+                        else:
+                            self.buttons[self.selected].deselect()
+                            self.selected = self.buttons.index(button)
+                            button.select()
+            elif event.type == pygame.MOUSEBUTTONUP:
+                self.dragging_scrollbar = False
+            elif event.type == pygame.MOUSEMOTION and self.dragging_scrollbar:
+                # Calculate scroll positino based on mouse movement
+                content_height = len(self.buttons) * (self.button_height + self.button_spacing)
+                if content_height > self.rect.height:
+                    movement_ration = (event.pos[1] - self.rect.top) / self.rect.height
+                    self.scroll_offset = -movement_ration * (content_height - self.rect.height)
+                    self._clamp_scroll_offset()
+
+    def _clamp_scroll_offset(self):
+        content_height = len(self.buttons) * (self.button_height + self.button_spacing)
+        min_offset = -max(0, content_height - self.rect.height)
+        self.scroll_offset = max(min_offset, min(0, self.scroll_offset))
+
+    def draw(self, surface):
+        """Draw the scrollable area, its buttons, and the scrollbar."""
+        # Create a clipping surface for the content
+        surface.set_clip(self.rect)
+
+        # Draw buttons
+        for button in self.buttons:
+            button.rect.y = self.rect.y + self.buttons.index(button) * (self.button_height + self.button_spacing) + self.scroll_offset
+            if self.rect.colliderect(button.rect):
+                button.draw(surface)
+        
+        surface.set_clip(None) # Reset clipping
+
+        # Draw scrollbar background
+        pygame.draw.rect(surface, Colors.LIGHT_GRAY, self.scrollbar_handle_rect)
+
+        # Calculate and draw scrollbar handle
+        content_height = len(self.buttons) * (self.button_height + self.button_spacing)
+        if content_height > self.rect.height:
+            # Calculate handle size and position
+            handle_height = max(30, (self.rect.height / content_height) * self.rect.height)
+            handle_pos = self.rect.top + (-self.scroll_offset / content_height) * self.rect.height
+
+            self.scrollbar_handle_rect.height = handle_height
+            self.scrollbar_handle_rect.top = handle_pos
+
+            # Clamp handle position
+            self.scrollbar_handle_rect.clamp_ip(self.scrollbar_rect)
+
+            # Draw handle
+            pygame.draw.rect(surface, Colors.GRAY, self.scrollbar_handle_rect)
+
     def add_button(self, text:str=""):
         """Add a button to the scrollable area."""
         button_y = len(self.buttons) * (self.button_height + self.button_spacing)
@@ -167,39 +250,6 @@ class ScrollableArea:
                 button_y = i * (self.button_height + self.button_spacing)
                 button.pos = (self.rect.x, self.rect.y + button_y)
                 button.rect = pygame.Rect(button.pos, button.size)
-
-    def handle_event(self, event):
-        """Handle mouse wheel events for scrolling."""
-        if event.type == pygame.MOUSEWHEEL:
-            self.scroll_offset += event.y * 20  # Adjust scroll speed
-            self.scroll_offset = max(
-                min(self.scroll_offset, 0),
-                -max(0, len(self.buttons) * (self.button_height + self.button_spacing) - self.rect.height),
-            )
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.rect.collidepoint(event.pos):
-                for button in self.buttons:
-                    if button.is_clicked(event):
-                        if self.selected is None:
-                            self.selected = self.buttons.index(button)
-                            button.select()
-                        elif button.is_selected():
-                            self.selected = None
-                            button.deselect()
-                        else:
-                            self.buttons[self.selected].deselect()
-                            self.selected = self.buttons.index(button)
-                            button.select()
-
-    def draw(self, surface):
-        """Draw the scrollable area and its buttons."""
-        # Create a clipping surface
-        surface.set_clip(self.rect)
-        for button in self.buttons:
-            button.rect.y = self.rect.y + self.buttons.index(button) * (self.button_height + self.button_spacing) + self.scroll_offset
-            if self.rect.colliderect(button.rect):  # Only draw buttons within the scrollable area
-                button.draw(surface)
-        surface.set_clip(None)  # Reset clipping
 
 def draw_item(item:Item, button:Button, surface, border_color) -> None:
     """Draw an item on the screen."""

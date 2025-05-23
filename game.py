@@ -62,7 +62,7 @@ class Game:
             "Shop":         Button("Shop", (Game_Constants.SCREEN_WIDTH // 3 * 2, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
         },
         Game_State.QUEST : {
-            "Quests":       ScrollableArea(20, 20, Game_Constants.SCREEN_WIDTH - 40, Game_Constants.SCREEN_HEIGHT - 100, 100, font, Colors.BLACK),
+            "Quests":       ScrollableArea(20, 20, Game_Constants.SCREEN_WIDTH - 100, Game_Constants.SCREEN_HEIGHT - 100, 100, font, Colors.BLACK),
             "Start":        Button("Start Quest",  (Game_Constants.SCREEN_WIDTH - Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH - 20, Game_Constants.SCREEN_HEIGHT - Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT - 20), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
             "Back":         Button("Back",         (20, Game_Constants.SCREEN_HEIGHT - Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT - 20), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
         },
@@ -147,7 +147,7 @@ class Game:
                 QuestButton(
                     quest,
                     (20, 20),
-                    (Game_Constants.SCREEN_WIDTH - 40, 100),
+                    (Game_Constants.SCREEN_WIDTH - 150, 100),
                     self.font,
                     Colors.BLACK,
                     Colors.LIGHT_GRAY,
@@ -610,6 +610,8 @@ class Game:
                                 self.popup_running = False
                                 self.running = False
             else:
+                if self.game_state == Game_State.QUEST:
+                    self.buttons[Game_State.QUEST]["Quests"].handle_event(event)
                 if event.type == pygame.QUIT:
                     self.game_state = Game_State.EXIT
                     self.running = False
@@ -622,9 +624,6 @@ class Game:
                     else:
                         if event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
                             return event.unicode
-                elif event.type == pygame.MOUSEWHEEL:
-                    if self.game_state == Game_State.QUEST:
-                        self.buttons[Game_State.QUEST]["Quests"].handle_event(event)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if self.game_state == Game_State.WELCOME:
                         """Handle events for the welcome screen."""
@@ -676,7 +675,7 @@ class Game:
                     elif self.game_state == Game_State.QUEST:
                         for button_name, button in self.buttons[Game_State.QUEST].items():
                             if button_name == "Quests":
-                                button.handle_event(event)
+                                continue
                             elif button.is_clicked(event):
                                 if button_name == "Back":
                                     self.game_state = Game_State.MAIN_GAME
