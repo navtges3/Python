@@ -4,10 +4,10 @@ import random
 
 class Quest:
 
-    def __init__(self, name:str, description:str, monster_list:dict, reward):
+    def __init__(self, name:str, description:str, monster_list:dict, reward, penalty):
         self.name = name
         self.reward = reward
-        self.penalty = None
+        self.penalty = penalty
         self.description = description
         self.monster_list = monster_list
         self.monsters_slain = {}
@@ -62,7 +62,10 @@ class QuestButton(Button):
 
         # Use self.rect.x and self.rect.y for dynamic positioning
         draw_text(self.quest.name, self.font, Colors.BLACK, surface, self.rect.x + 10, self.rect.y + 10)
-        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4, self.rect.y + 10, self.rect.width // 2 - 20)
+        draw_text(self.quest.reward.name, self.font, Colors.GREEN, surface, self.rect.x + 10, self.rect.y + 40)
+        draw_text(str(self.quest.penalty), self.font, Colors.RED, surface, self.rect.x + 10, self.rect.y + 70)
+
+        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 3, self.rect.y + 10, self.rect.width // 3)
 
         output_text = ""
         for key in self.quest.monster_list.keys():
@@ -72,23 +75,23 @@ class QuestButton(Button):
 
 quest_list = {
     # Quest 1
-    Quest("Village Under Siege", "Defend the villagers by eliminating four goblins and two orcs.", {"Goblin": 4,"Orc": 2,}, potion_dictionary["Block Potion"]),
+    Quest("Village Under Siege", "Defend the villagers by eliminating four goblins and two orcs.", {"Goblin": 4,"Orc": 2,}, potion_dictionary["Block Potion"], ("village", -10)),
     # Quest 2
-    Quest("Goblin Infestation", "A horde of goblins threatens the farms! Defeat six goblins to secure the land.", {"Goblin": 6,}, potion_dictionary["Health Potion"]),
+    Quest("Goblin Infestation", "A horde of goblins threatens the farms! Defeat six goblins to secure the land.", {"Goblin": 6,}, potion_dictionary["Health Potion"], ("village", -10)),
     # Quest 3
-    Quest("Ogre Troubles", "Ogres have taken control of the mines. Slay three to reclaim the tunnels!", {"Ogre": 3,}, potion_dictionary["Damage Potion"]),
+    Quest("Ogre Troubles", "Ogres have taken control of the mines. Slay three to reclaim the tunnels!", {"Ogre": 3,}, potion_dictionary["Damage Potion"], ("village", -10)),
     # Quest 4
-    Quest("Bridge of Peril", "A goblin warband and their ogre leader guard the bridge. Eliminate them and restore safe passage.", {"Goblin": 3,"Ogre": 1,}, potion_dictionary["Block Potion"]),
+    Quest("Bridge of Peril", "A goblin warband and their ogre leader guard the bridge. Eliminate them and restore safe passage.", {"Goblin": 3,"Ogre": 1,}, potion_dictionary["Block Potion"], ("village", -10)),
     # Quest 5
-    Quest("The Forest Menace", "Patrol the woods and eliminate five goblins and their ogre brute.", {"Goblin": 5,"Ogre": 1,}, potion_dictionary["Health Potion"]),
+    Quest("The Forest Menace", "Patrol the woods and eliminate five goblins and their ogre brute.", {"Goblin": 5,"Ogre": 1,}, potion_dictionary["Health Potion"], ("village", -10)),
     # Quest 6
-    Quest("Guardian of the Ruins", "The ruins hold secrets, but goblins and ogres stand in your way. Defeat them!", {"Goblin": 2,"Ogre": 2,}, potion_dictionary["Damage Potion"]),
+    Quest("Guardian of the Ruins", "The ruins hold secrets, but goblins and ogres stand in your way. Defeat them!", {"Goblin": 2,"Ogre": 2,}, potion_dictionary["Damage Potion"], ("village", -10)),
     # Quest 7
-    Quest("Rampaging Goblins", "A large group of goblins terrorizes the countryside. Take down seven!", {"Goblin": 7,}, potion_dictionary["Block Potion"]),
+    Quest("Rampaging Goblins", "A large group of goblins terrorizes the countryside. Take down seven!", {"Goblin": 7,}, potion_dictionary["Block Potion"], ("village", -10)),
     # Quest 8
-    Quest("Cave Dweller’s Wrath", "Deep in the caves, ogres and goblins lurk. Destroy two goblins and four ogres.", {"Goblin": 2,"Ogre": 4,}, potion_dictionary["Damage Potion"]),
+    Quest("Cave Dweller’s Wrath", "Deep in the caves, ogres and goblins lurk. Destroy two goblins and four ogres.", {"Goblin": 2,"Ogre": 4,}, potion_dictionary["Damage Potion"], ("village", -10)),
     # Quest 9
-    Quest("Battle at Dawn", "A mixed force of goblins, ogres, and orcs is preparing for an assault. Strike first!", {"Goblin": 3,"Ogre": 2,"Orc": 2,}, potion_dictionary["Block Potion"]),
+    Quest("Battle at Dawn", "A mixed force of goblins, ogres, and orcs is preparing for an assault. Strike first!", {"Goblin": 3,"Ogre": 2,"Orc": 2,}, potion_dictionary["Block Potion"], ("village", -10)),
     # Quest 10
-    Quest("End of the Horde", "Wipe out the remaining goblin forces, their ogre champions, and the orc warlord!", {"Goblin": 6,"Ogre": 3,"Orc": 1,}, potion_dictionary["Health Potion"]),
+    Quest("End of the Horde", "Wipe out the remaining goblin forces, their ogre champions, and the orc warlord!", {"Goblin": 6,"Ogre": 3,"Orc": 1,}, potion_dictionary["Health Potion"], ("village", -10)),
 }
