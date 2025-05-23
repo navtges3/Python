@@ -1,5 +1,3 @@
-from hero import Hero
-import pygame
 import json
 import os
 import sys

@@ -1,19 +1,20 @@
 from constants import *
 from ui_helpers import *
+from combatant import Combatant
 import random
 import pygame
 import fileIO
 
 #Base class for all monsters
-class Monster:
+class Monster(Combatant):
     """A base class for all monsters in the game."""
 
-    def __init__(self, name_or_data: str | dict, health: int = 10, damage: int = 1, gold: int = 10, image: str = "goblin_image.jpg"):
-        """Initialize the monster with either individual parameters or a data dictionary.
-        
+    def __init__(self, name_or_data: str | dict, max_hp: int = 10, damage: int = 1, gold: int = 10, image: str = "goblin_image.jpg"):
+        """
+        Initialize the monster with either individual parameters or a data dictionary.
         Args:
             name_or_data: Either a string representing the monster name or a dictionary of monster data
-            health: Monster's health points (default: 10)
+            max_hp: Monster's max health points (default: 10)
             damage: Monster's damage points (default: 1)
             gold: Monster's gold value (default: 10)
             image: Monster's image filename (default: "goblin_image.jpg")
@@ -23,17 +24,19 @@ class Monster:
             self.from_dict(name_or_data)
             print("A returning monster stirs!")
         else:
+            super().__init__(name_or_data, max_hp)
             # Initialize from individual parameters
             self.name = name_or_data
-            self.health = health
-            self.max_health = health
-            self.alive = True
+            self.current_hp = max_hp
+            self.max_hp = max_hp
             self.damage = damage
-            self.experience = (health + damage) // 2
+            self.experience = (max_hp + damage) // 2
             self.gold = gold
             self.image = image
             print("A new monster appears!")
-            self.print_stats()
+
+    def attack(self, target:Combatant) -> None:
+        target.take_damage(self.damage)
         
     def __str__(self):
         """Returns the name of the monster."""
@@ -43,8 +46,8 @@ class Monster:
         """Convert monster data to a dictionary for saving."""
         return {
             "name": self.name,
-            "health": self.health,
-            "max_health": self.max_health,
+            "current_hp": self.current_hp,
+            "max_hp": self.max_hp,
             "damage": self.damage,
             "gold": self.gold,
             "image": self.image,
@@ -53,29 +56,11 @@ class Monster:
     def from_dict(self, data: dict) -> None:
         """Load monster data from a dictionary."""
         self.name = data.get("name", "Monster")
-        self.health = data.get("health", 10)
-        self.max_health = data.get("max_health", 10)
+        self.current_hp = data.get("current_hp", 10)
+        self.max_hp = data.get("max_hp", 10)
         self.damage = data.get("damage", 1)
         self.gold = data.get("gold", 10)
-        self.image_path = data.get("image", "goblin_image.jpg")
-        if self.image_path:
-            try:
-                self.image = pygame.image.load(fileIO.resource_path(f"images\\{self.image_path}")).convert()
-                self.image = pygame.transform.scale(self.image, (100, 100))
-            except:
-                print(f"Failed to load monster image: {self.image_path}") 
-
-    def get_damage(self) -> int:
-        """Returns the damage of the monster."""
-        return self.damage
-    
-    def take_damage(self, damage:int):
-        """Reduces the monster's health by the damage taken."""
-        self.health = self.health - damage
-        if self.health <= 0:
-            self.health = 0
-            self.alive = False
-        print(f"{self.name} has {self.health} health remaining.")
+        self.image = data.get("image", "goblin_image.jpg")
 
     def draw(self, surface, font, x:int, y:int) -> None:
         # Border 
@@ -92,11 +77,7 @@ class Monster:
         health_bar_height = font.get_linesize() + 4
         health_bar_x = monster_border.x + 15
         health_bar_y = monster_border.y + monster_image.get_height() + font.get_linesize() + 15
-        draw_health_bar(surface, font, health_bar_x, health_bar_y, health_bar_width, health_bar_height, self.health, self.max_health)
-
-    def print_stats(self):
-        """Prints the monster's stats."""
-        print(f"{self.name} has {self.health} health and {self.damage} damage and {self.experience} experience.")
+        draw_health_bar(surface, font, health_bar_x, health_bar_y, health_bar_width, health_bar_height, self.current_hp, self.max_hp)
 
 class Goblin(Monster):
     """A class representing a Goblin monster."""
@@ -146,20 +127,22 @@ class Ogre(Monster):
         gold = random.randrange(self.goldLow, self.goldHigh)
         super().__init__(name, health, damage, gold, image="ogre_image.jpg")
 
-def get_monster(level:int) -> Monster:
-    """Returns a monster based on the level."""
-    if level < 3:
-        return Goblin()
-    elif level < 6:
-        return Orc()
-    else:
-        return Ogre()
-    
-def get_monster(name:str="Goblin") -> Monster:
-    """Returns a monster based on the name."""
-    if name == "Orc":
-        return Orc()
-    elif name == "Ogre":
-        return Ogre()
-    else:
-        return Goblin()
+def get_monster(level_or_name="Goblin") -> Monster:
+    if isinstance(level_or_name, int):
+        """Returns a monster based on the level."""
+        level = level_or_name
+        if level < 3:
+            return Goblin()
+        elif level < 6:
+            return Orc()
+        else:
+            return Ogre()
+    elif isinstance(level_or_name, str):
+        """Returns a monster based on the name."""
+        name = level_or_name
+        if name == "Orc":
+            return Orc()
+        elif name == "Ogre":
+            return Ogre()
+        else:
+            return Goblin()

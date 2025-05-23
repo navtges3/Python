@@ -8,7 +8,7 @@ from quest import *
 import fileIO
 import pygame
 
-def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygame.Rect:
+def draw_hero_preview(surface:pygame.surface.Surface, font:pygame.font.Font, hero:Hero, button:Button) -> None:
     """Draw the hero preview on the screen."""
     # Border 
     hero_border = button.rect.copy()
@@ -23,7 +23,7 @@ def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygam
     if hero.armor is not None:
         armor_border = pygame.Rect(hero_border.x + hero_border.width // 2 , hero_border.y + hero_border.height // 3 + 50, hero_border.width // 2, hero_border.height // 3 * 2 - 50)
         draw_text_centered(hero.armor.name, font, Colors.BLACK, surface, armor_border.x + armor_border.width // 2, armor_border.y + font.get_linesize() // 2 + 10)
-        armor_text = f"Block: {hero.armor.block}\nDodge: {hero.armor.dodge}"
+        armor_text = f"Block: {hero.armor.block}\nBlock Chance: {hero.armor.block_chance:.0%}\nDodge: {hero.armor.dodge_chance:.0%}"
         draw_multiple_lines(armor_text, font, Colors.BLACK, surface, armor_border.x + 10, armor_border.y + font.get_linesize() + 25)
         pygame.draw.rect(surface, Colors.LIGHT_BLUE, armor_border, width=3, border_radius=10)
 
@@ -36,7 +36,6 @@ def draw_hero_preview(surface, font, x:int, y:int, hero, button:Button) -> pygam
         pygame.draw.rect(surface, hero.border_color, hero_border, width=5, border_radius=10)
     else:
         pygame.draw.rect(surface, Colors.GRAY, hero_border, width=5, border_radius=10)
-    return hero_border
 
 
 class Game:
@@ -46,51 +45,56 @@ class Game:
     
     buttons = {
         Game_State.WELCOME : {
-            "New Game":     Button("New Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 - 20), (200, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-            "Load Game":    Button("Load Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 40), (200, 50), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
-            "Exit Game":    Button("Exit Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "New Game":     Button("New Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 - 20), (200, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Load Game":    Button("Load Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 40), (200, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Options":      Button("Options", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 100), (200, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Exit Game":    Button("Exit Game", (Game_Constants.SCREEN_WIDTH // 2 - 100, Game_Constants.SCREEN_HEIGHT // 2 + 160), (200, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
         },
         Game_State.NEW_GAME : {
-            "Knight":       Button("Knight", (10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
-            "Assassin":     Button("Assassin", (Game_Constants.SCREEN_WIDTH // 2 + 10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK, Colors.WHITE, Colors.WHITE),
-            "Back":         Button("Back", (Game_Constants.SCREEN_WIDTH // 2 - 210, Game_Constants.SCREEN_HEIGHT // 4 * 3), (200, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-            "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 2 + 10, Game_Constants.SCREEN_HEIGHT // 4 * 3), (250, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
+            "Knight":       Button("Knight", (10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK),
+            "Assassin":     Button("Assassin", (Game_Constants.SCREEN_WIDTH // 2 + 10, 10), (Game_Constants.SCREEN_WIDTH // 2 - 20, Game_Constants.SCREEN_HEIGHT // 2 - 20), font, Colors.BLACK),
+            "Back":         Button("Back", (Game_Constants.SCREEN_WIDTH // 2 - 210, Game_Constants.SCREEN_HEIGHT // 4 * 3), (200, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Create Hero":  Button("Create Hero", (Game_Constants.SCREEN_WIDTH // 2 + 10, Game_Constants.SCREEN_HEIGHT // 4 * 3), (200, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
         },
         Game_State.MAIN_GAME : {
-            "Menu":         Button("Menu", (0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-            "Quest":        Button("Quest", (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
-            "Shop":         Button("Shop", (Game_Constants.SCREEN_WIDTH // 3 * 2, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Colors.YELLOW, Colors.LIGHT_YELLOW),
+            "Menu":         Button("Menu", (0, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Quest":        Button("Quest", (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Shop":         Button("Shop", (Game_Constants.SCREEN_WIDTH // 3 * 2, Game_Constants.SCREEN_HEIGHT - Game_Constants.SCREEN_HEIGHT // 12), (Game_Constants.SCREEN_WIDTH // 3, Game_Constants.SCREEN_HEIGHT // 12), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
         },
         Game_State.QUEST : {
-            "Quests":       ScrollableArea(20, 20, Game_Constants.SCREEN_WIDTH - 40, Game_Constants.SCREEN_HEIGHT - 100, 100, font, Colors.LIGHT_GRAY, Colors.LIGHT_GRAY, Colors.BLACK),
-            "Start":        Button("Start Quest",  (Game_Constants.SCREEN_WIDTH - Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH - 20, Game_Constants.SCREEN_HEIGHT - Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT - 20), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-            "Back":         Button("Back",         (20, Game_Constants.SCREEN_HEIGHT - Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT - 20), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Quests":       ScrollableArea(20, 20, Game_Constants.SCREEN_WIDTH - 100, Game_Constants.SCREEN_HEIGHT - 100, 100, font, Colors.BLACK),
+            "Start":        Button("Start Quest",  (Game_Constants.SCREEN_WIDTH - Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH - 20, Game_Constants.SCREEN_HEIGHT - Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT - 20), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Back":         Button("Back",         (20, Game_Constants.SCREEN_HEIGHT - Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT - 20), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
         },
         Game_State.BATTLE : {
             Battle_State.HOME:{
-                "Attack":       Button("Attack",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-                "Use Potion":   Button("Use Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-                "Defend":       Button("Defend",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 2), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
-                "Flee":         Button("Flee",          (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 3), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.YELLOW, Colors.LIGHT_YELLOW),
+                "Attack":       Button("Attack",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+                "Use Potion":   Button("Use Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+                "Defend":       Button("Defend",        (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 2), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+                "Flee":         Button("Flee",          (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 3), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
             },
             Battle_State.USE_ITEM:{
-                "Health Potion": Button("Health Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-                "Damage Potion": Button("Damage Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
-                "Block Potion":  Button("Block Potion",     (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 2), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.BLUE, Colors.LIGHT_BLUE),
-                "Back":          Button("Back",             (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 3), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+                "Health Potion": Button("Health Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+                "Damage Potion": Button("Damage Potion",    (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+                "Block Potion":  Button("Block Potion",     (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 2), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+                "Back":          Button("Back",             (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 3), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
             },
             Battle_State.MONSTER_DEFEATED:{
-                "Continue Fighting":    Button("Continue Fighting", (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-                "Retreat":              Button("Retreat",           (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+                "Continue Fighting":    Button("Continue Fighting", (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 0), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+                "Retreat":              Button("Retreat",           (Game_Constants.BATTLE_SCREEN_BUTTON_X, Game_Constants.BATTLE_SCREEN_BUTTON_Y + Game_Constants.BATTLE_SCREEN_BUTTON_INCREMENT * 1), (Game_Constants.BATTLE_SCREEN_BUTTON_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_HEIGHT), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
             },
         },
         Game_State.SHOP : {
-            "Purchase":     Button("Purchase", (Game_Constants.SCREEN_WIDTH // 2 + 15, Game_Constants.SCREEN_HEIGHT // 2 + 20), (250, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-            "Leave":        Button("Leave", (Game_Constants.SCREEN_WIDTH // 2 + 15, Game_Constants.SCREEN_HEIGHT // 2 + 75), (250, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Purchase":     Button("Purchase", (Game_Constants.SCREEN_WIDTH // 2 + 15, Game_Constants.SCREEN_HEIGHT // 2 + 20), (250, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Leave":        Button("Leave", (Game_Constants.SCREEN_WIDTH // 2 + 15, Game_Constants.SCREEN_HEIGHT // 2 + 75), (250, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
         },
         Game_State.PAUSE : {
-            "Resume": Button("Resume", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 50), (300, 50), font, Colors.BLACK, Colors.GREEN, Colors.LIGHT_GREEN),
-            "Exit": Button("Exit", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 120), (300, 50), font, Colors.BLACK, Colors.RED, Colors.LIGHT_RED),
+            "Resume":   Button("Resume", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 50), (300, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Options":  Button("Options", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 120), (300, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+            "Exit":     Button("Exit", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 190), (300, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
+        },
+        Game_State.OPTIONS : {
+            "Back": Button("Back", ((Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50, (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 190), (300, 50), font, Colors.BLACK, Game_Constants.BUTTON_IMAGE_PATH, Game_Constants.HOVER_IMAGE_PATH),
         },
         Game_State.EXIT : {},
     }
@@ -112,7 +116,7 @@ class Game:
         self.current_quest = None
         self.running = False
         self.popup_running = False
-        self.village = Village("Village", 1000, self.font)
+        self.village = Village("Village", 100, self.font)
         
         # Initialize the mixer for music
         pygame.mixer.init()
@@ -126,17 +130,30 @@ class Game:
         pygame.display.set_caption("Village Defense")
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
+        for state in self.buttons:
+            if isinstance(self.buttons[state], dict):
+                for button in self.buttons[state].values():
+                    if isinstance(button, Button):
+                        button.load_background()
+                    elif isinstance(button, dict):
+                        for b in button.values():
+                            if isinstance(b, Button):
+                                b.load_background()
+            elif isinstance(self.buttons[state], Button):
+                self.buttons[state].load_background()
+
         for quest in quest_list:
             self.buttons[Game_State.QUEST]["Quests"].add_button(
                 QuestButton(
                     quest,
                     (20, 20),
-                    (Game_Constants.SCREEN_WIDTH - 40, 100),
+                    (Game_Constants.SCREEN_WIDTH - 150, 100),
                     self.font,
-                    Colors.BLACK,
-                    Colors.LIGHT_GRAY,
-                    Colors.LIGHT_GRAY
+                    Colors.BLACK
                 ))
+        
+        for button in self.buttons[Game_State.QUEST]["Quests"].buttons:
+            button.load_background()
 
         
         
@@ -156,6 +173,7 @@ class Game:
         if self.monster is not None:
             save_data.update({"monster": self.monster.to_dict(),})
         save_data.update({
+            "game_volume": pygame.mixer.music.get_volume(),
             "current_quest": self.current_quest,  # Save the currently selected quest
             "game_state": self.game_state.name,  # Save the current game state
             "village": {
@@ -190,6 +208,7 @@ class Game:
             else:
                 self.monster = None
 
+            pygame.mixer.music.set_volume(save_data.get("game_volume", 0.5))
             # Load current quest
             self.current_quest = save_data.get("current_quest", None)
 
@@ -234,8 +253,8 @@ class Game:
                 (300, 50),
                 self.font,
                 Colors.BLACK,
-                Colors.GREEN,
-                Colors.LIGHT_GREEN
+                Game_Constants.BUTTON_IMAGE_PATH,
+                Game_Constants.HOVER_IMAGE_PATH
             )
         }
         
@@ -272,20 +291,55 @@ class Game:
             self.events()
             self.update()
 
+    def options_screen(self) -> None:
+        """Options screen for adjusting game settings."""
+        options_running = True
+        music_volume = pygame.mixer.music.get_volume()
+        
+        while options_running:
+            # Draw the base popup
+            draw_popup("Options", self.buttons[Game_State.OPTIONS], self.screen, self.font)
+            
+            # Draw volume slider
+            volume_x = (Game_Constants.SCREEN_WIDTH - Game_Constants.POPUP_WIDTH) // 2 + 50
+            volume_y = (Game_Constants.SCREEN_HEIGHT - Game_Constants.POPUP_HEIGHT) // 2 + 120
+            
+            # Draw volume label
+            draw_text("Music Volume", self.font, Colors.BLACK, self.screen, volume_x, volume_y - 30)
+            
+            # Draw slider background
+            pygame.draw.rect(self.screen, Colors.GRAY, (volume_x, volume_y, 300, 10))
+            
+            # Draw volume level
+            pygame.draw.rect(self.screen, Colors.BLUE, (volume_x, volume_y, 300 * music_volume, 10))
+            
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = Game_State.EXIT
+                    options_running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for button_name, button in self.buttons[Game_State.OPTIONS].items():
+                        if button.is_clicked(event):
+                            if button_name == "Back":
+                                options_running = False
+                elif event.type == pygame.MOUSEMOTION:
+                    if event.buttons[0]:  # Left mouse button
+                        mouse_x = event.pos[0]
+                        if volume_x <= mouse_x <= volume_x + 300:
+                            music_volume = (mouse_x - volume_x) / 300
+                            pygame.mixer.music.set_volume(music_volume)
+            
+            self.update()
+
     def new_game_screen(self) -> None:
         """New game screen for creating a hero."""
         hero_name = ""
         hero_class = ""
-        self.running = True
+        self.running = True        
 
-        knight_image = pygame.image.load(fileIO.resource_path("images/knight.png")).convert()
-        knight_image = pygame.transform.scale(knight_image, (100, 100))
-
-        assassin_image = pygame.image.load(fileIO.resource_path("images/assassin.png")).convert()
-        assassin_image = pygame.transform.scale(assassin_image, (100, 100))
-
-        knight = make_hero("Knight", "Knight", knight_image)
-        assassin = make_hero("Assassin", "Assassin", assassin_image)
+        knight = make_hero("Knight", "Knight")
+        assassin = make_hero("Assassin", "Assassin")
 
         while self.running:
             if self.buttons[Game_State.NEW_GAME]["Knight"].is_selected():
@@ -302,8 +356,8 @@ class Game:
 
             self.screen.fill(Colors.WHITE)
             
-            draw_hero_preview(self.screen, self.font, 10, 10, knight, self.buttons[Game_State.NEW_GAME]["Knight"])
-            draw_hero_preview(self.screen, self.font, Game_Constants.SCREEN_WIDTH // 2 + 10, 10, assassin, self.buttons[Game_State.NEW_GAME]["Assassin"])
+            draw_hero_preview(self.screen, self.font, knight, self.buttons[Game_State.NEW_GAME]["Knight"])
+            draw_hero_preview(self.screen, self.font, assassin, self.buttons[Game_State.NEW_GAME]["Assassin"])
 
             draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Name: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize())
             draw_text(f"Hero Class: {hero_class}", self.font, Colors.BLACK, self.screen, Game_Constants.SCREEN_WIDTH // 2 - self.font.size("Hero Class: ")[0], Game_Constants.SCREEN_HEIGHT // 2 + self.font.get_linesize() * 2.5)
@@ -354,9 +408,6 @@ class Game:
     def shop_screen(self) -> None:
         """Shop screen where the hero can buy items."""
         self.running = True
-
-        if self.village.shop.weapon_level < self.hero.level // 2:
-            self.village.shop.new_card(Shop_Constants.WEAPON_CARD_KEY, self.hero.level)
         
         while self.running:
             if self.village.shop.can_buy_selected(self.hero) and self.buttons[Game_State.SHOP]["Purchase"].is_locked():
@@ -408,8 +459,10 @@ class Game:
             self.current_quest = self.buttons[Game_State.QUEST]["Quests"].selected
             self.monster = None
 
-        if self.monster is None or not self.monster.alive:
+        if self.monster is None or not self.monster.is_alive():
             self.monster = self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.get_monster()
+        
+        tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
 
         button_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_X, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_Y, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_HEIGHT)
         log_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_LOG_BORDER_X, Game_Constants.BATTLE_SCREEN_LOG_BORDER_Y, Game_Constants.BATTLE_SCREEN_LOG_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_LOG_BORDER_HEIGHT)
@@ -432,14 +485,6 @@ class Game:
                 elif not self.hero.has_potions() and not self.buttons[Game_State.BATTLE][Battle_State.HOME]["Use Potion"].is_locked():
                     self.buttons[Game_State.BATTLE][Battle_State.HOME]["Use Potion"].lock()
 
-                if self.hero.armor.is_available() and self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].is_locked():
-                    self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].unlock()
-                    self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].update_text("Defend")
-                elif not self.hero.armor.is_available() and not self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].is_locked():
-                    self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].lock()
-
-                if self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].is_locked():
-                    self.buttons[Game_State.BATTLE][Battle_State.HOME]["Defend"].update_text(f"Cooldown: {self.hero.armor.counter} turns")
             elif self.battle_state == Battle_State.USE_ITEM:
                 for button in self.buttons[Game_State.BATTLE][self.battle_state].values():
                     if button.text == "Health Potion":
@@ -461,9 +506,14 @@ class Game:
             for button in self.buttons[Game_State.BATTLE][self.battle_state].values():
                 button.draw(self.screen)
 
+            if self.battle_state == Battle_State.HOME:
+                mouse_pos = pygame.mouse.get_pos()
+                if self.buttons[Game_State.BATTLE][Battle_State.HOME]["Attack"].rect.collidepoint(mouse_pos):
+                    tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
+
             self.events()
     
-            if self.hero.alive and not self.monster.alive and self.battle_state != Battle_State.MONSTER_DEFEATED:
+            if self.hero.is_alive() and not self.monster.is_alive() and self.battle_state != Battle_State.MONSTER_DEFEATED:
                 print("Monster defeated!")
                 self.battle_log.append(f"{self.monster.name} has been defeated!")
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
@@ -482,7 +532,7 @@ class Game:
                         self.running = False
                 else:
                     self.battle_state = Battle_State.MONSTER_DEFEATED
-            elif not self.hero.alive:
+            elif not self.hero.is_alive():
                 print("Hero defeated!")
                 self.game_state = Game_State.DEFEAT
                 self.running = False
@@ -554,11 +604,15 @@ class Game:
                         if button.is_clicked(event):
                             if button_name == "Resume":
                                 self.popup_running = False
+                            elif button_name == "Options":
+                                self.options_screen()
                             elif button_name == "Exit":
                                 self.game_state = Game_State.WELCOME
                                 self.popup_running = False
                                 self.running = False
             else:
+                if self.game_state == Game_State.QUEST:
+                    self.buttons[Game_State.QUEST]["Quests"].handle_event(event)
                 if event.type == pygame.QUIT:
                     self.game_state = Game_State.EXIT
                     self.running = False
@@ -571,9 +625,6 @@ class Game:
                     else:
                         if event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
                             return event.unicode
-                elif event.type == pygame.MOUSEWHEEL:
-                    if self.game_state == Game_State.QUEST:
-                        self.buttons[Game_State.QUEST]["Quests"].handle_event(event)
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if self.game_state == Game_State.WELCOME:
                         """Handle events for the welcome screen."""
@@ -586,6 +637,8 @@ class Game:
                                     self.load_game()
                                     self.game_state = Game_State.MAIN_GAME
                                     self.running = False
+                                elif button_name == "Options":
+                                    self.options_screen()
                                 elif button_name == "Exit Game":
                                     self.game_state = Game_State.EXIT
                                     self.running = False
@@ -623,7 +676,7 @@ class Game:
                     elif self.game_state == Game_State.QUEST:
                         for button_name, button in self.buttons[Game_State.QUEST].items():
                             if button_name == "Quests":
-                                button.handle_event(event)
+                                continue
                             elif button.is_clicked(event):
                                 if button_name == "Back":
                                     self.game_state = Game_State.MAIN_GAME
@@ -637,12 +690,12 @@ class Game:
                             for button_name, button in self.buttons[Game_State.BATTLE][Battle_State.HOME].items():
                                 if button.is_clicked(event):
                                     if button_name == "Attack":
-                                        self.monster.take_damage(self.hero.weapon.damage + self.hero.potion_damage)
+                                        self.hero.attack(self.monster)
                                         self.battle_log.append(f"{self.hero.name} attacks {self.monster.name} with {self.hero.weapon.name} for {self.hero.weapon.damage + self.hero.potion_damage} damage.")
                                         if self.hero.potion_damage > 0:
                                             self.hero.potion_damage = 0
-                                        if self.monster.alive:
-                                            self.hero.take_damage(self.monster.damage)
+                                        if self.monster.is_alive():
+                                            self.monster.attack(self.hero)
                                             self.battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
                                         return button_name
                                     elif button_name == "Use Potion":
@@ -651,12 +704,6 @@ class Game:
                                             self.battle_state = Battle_State.USE_ITEM
                                     elif button_name == "Defend":
                                         print("Use armor selected")
-                                        if self.hero.armor.is_available():
-                                            self.hero.armor.use()
-                                            self.battle_log.append(f"{self.hero.name} uses {self.hero.armor.name} for {self.hero.armor.duration} turns.")
-                                            if self.monster.alive:
-                                                self.hero.take_damage(self.monster.damage)
-                                                self.battle_log.append(f"{self.monster.name} attacks {self.hero.name} for {self.monster.damage} damage.")
                                     elif button_name == "Flee":
                                         print("Flee selected")
                                         self.battle_log.append(f"{self.hero.name} flees from {self.monster.name}.")
