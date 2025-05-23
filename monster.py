@@ -127,20 +127,22 @@ class Ogre(Monster):
         gold = random.randrange(self.goldLow, self.goldHigh)
         super().__init__(name, health, damage, gold, image="ogre_image.jpg")
 
-def get_monster(level:int) -> Monster:
-    """Returns a monster based on the level."""
-    if level < 3:
-        return Goblin()
-    elif level < 6:
-        return Orc()
-    else:
-        return Ogre()
-    
-def get_monster(name:str="Goblin") -> Monster:
-    """Returns a monster based on the name."""
-    if name == "Orc":
-        return Orc()
-    elif name == "Ogre":
-        return Ogre()
-    else:
-        return Goblin()
+def get_monster(level_or_name="Goblin") -> Monster:
+    if isinstance(level_or_name, int):
+        """Returns a monster based on the level."""
+        level = level_or_name
+        if level < 3:
+            return Goblin()
+        elif level < 6:
+            return Orc()
+        else:
+            return Ogre()
+    elif isinstance(level_or_name, str):
+        """Returns a monster based on the name."""
+        name = level_or_name
+        if name == "Orc":
+            return Orc()
+        elif name == "Ogre":
+            return Ogre()
+        else:
+            return Goblin()

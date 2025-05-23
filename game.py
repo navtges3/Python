@@ -116,7 +116,7 @@ class Game:
         self.current_quest = None
         self.running = False
         self.popup_running = False
-        self.village = Village("Village", 1000, self.font)
+        self.village = Village("Village", 100, self.font)
         
         # Initialize the mixer for music
         pygame.mixer.init()
@@ -455,14 +455,14 @@ class Game:
         self.running = True
         self.battle_state = Battle_State.HOME
 
-        tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
-
         if self.current_quest != self.buttons[Game_State.QUEST]["Quests"].selected:
             self.current_quest = self.buttons[Game_State.QUEST]["Quests"].selected
             self.monster = None
 
         if self.monster is None or not self.monster.is_alive():
             self.monster = self.buttons[Game_State.QUEST]["Quests"].buttons[self.current_quest].quest.get_monster()
+        
+        tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
 
         button_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_X, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_Y, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_BUTTON_BORDER_HEIGHT)
         log_border = pygame.Rect(Game_Constants.BATTLE_SCREEN_LOG_BORDER_X, Game_Constants.BATTLE_SCREEN_LOG_BORDER_Y, Game_Constants.BATTLE_SCREEN_LOG_BORDER_WIDTH, Game_Constants.BATTLE_SCREEN_LOG_BORDER_HEIGHT)
@@ -514,7 +514,7 @@ class Game:
             self.events()
     
             if self.hero.is_alive() and not self.monster.is_alive() and self.battle_state != Battle_State.MONSTER_DEFEATED:
-                ("Monster defeated!")
+                print("Monster defeated!")
                 self.battle_log.append(f"{self.monster.name} has been defeated!")
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
                 self.hero.gain_experience(self.monster.experience)
