@@ -1,4 +1,5 @@
 from battle_manager import *
+from screen_manager import *
 from hero import *
 from items import *
 from constants import *
@@ -131,6 +132,8 @@ class Game:
         pygame.display.set_caption("Village Defense")
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path("icon.ico")))
 
+        self.screen_manager = ScreenManager(self.screen, self.font)
+
         for state in self.buttons.keys():
             if isinstance(self.buttons[state], dict):
                 for button in self.buttons[state].values():
@@ -234,7 +237,7 @@ class Game:
         self.buttons[GameState.PAUSE]["Exit"].update_text(exit_text)
 
         while self.popup_running:
-            draw_popup("Pause Menu", self.buttons[GameState.PAUSE], self.screen, self.font)
+            self.screen_manager.draw_popup("Pause Menu", self.buttons[GameState.PAUSE])
             self.events()
             self.update()
         
@@ -258,7 +261,7 @@ class Game:
         }
         
         # Draw the popup
-        draw_popup("Quest Complete!", popup_buttons, surface, self.font)
+        self.screen_manager.draw_popup("Quest Complete!", popup_buttons)
         
         # Handle the button click
         running = True
@@ -297,7 +300,7 @@ class Game:
         
         while options_running:
             # Draw the base popup
-            draw_popup("Options", self.buttons[GameState.OPTIONS], self.screen, self.font)
+            self.screen_manager.draw_popup("Options", self.buttons[GameState.OPTIONS])
             
             # Draw volume slider
             volume_x = (GameConstants.SCREEN_WIDTH - GameConstants.POPUP_WIDTH) // 2 + 50
@@ -464,48 +467,33 @@ class Game:
         
         tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
 
-        button_border = pygame.Rect(GameConstants.BATTLE_SCREEN_BUTTON_BORDER_X, GameConstants.BATTLE_SCREEN_BUTTON_BORDER_Y, GameConstants.BATTLE_SCREEN_BUTTON_BORDER_WIDTH, GameConstants.BATTLE_SCREEN_BUTTON_BORDER_HEIGHT)
-        log_border = pygame.Rect(GameConstants.BATTLE_SCREEN_LOG_BORDER_X, GameConstants.BATTLE_SCREEN_LOG_BORDER_Y, GameConstants.BATTLE_SCREEN_LOG_BORDER_WIDTH, GameConstants.BATTLE_SCREEN_LOG_BORDER_HEIGHT)
-
         while self.running:
-            self.screen.fill(Colors.WHITE)
-            self.hero.draw(self.screen, self.font, 0,  25)
-            self.monster.draw(self.screen, self.font, GameConstants.SCREEN_WIDTH // 2, 25)
-
-            pygame.draw.rect(self.screen, Colors.BLACK, button_border, width=5, border_radius=10)
-            pygame.draw.rect(self.screen, Colors.BLACK, log_border, width=5, border_radius=10)
-
-            lines = 0
-            for i, log_entry in enumerate(self.battle_log[-15:]):
-                lines += draw_wrapped_text(log_entry, self.font, Colors.BLACK, self.screen, GameConstants.BATTLE_SCREEN_LOG_X, GameConstants.BATTLE_SCREEN_LOG_Y + (i + lines) * self.font.get_linesize(), GameConstants.BATTLE_SCREEN_LOG_WIDTH)
-
-            if self.battle_manager.state == BattleState.HOME:
-                if self.hero.has_potions() and self.buttons[GameState.BATTLE][BattleState.HOME]["Use Potion"].is_locked():
-                    self.buttons[GameState.BATTLE][BattleState.HOME]["Use Potion"].unlock()
-                elif not self.hero.has_potions() and not self.buttons[GameState.BATTLE][BattleState.HOME]["Use Potion"].is_locked():
-                    self.buttons[GameState.BATTLE][BattleState.HOME]["Use Potion"].lock()
-
-            elif self.battle_manager.state == BattleState.USE_ITEM:
-                for button in self.buttons[GameState.BATTLE][self.battle_manager.state].values():
-                    if button.text == "Health Potion":
-                        if self.hero.potion_bag["Health Potion"] > 0 and button.is_locked():
-                            button.unlock()
-                        elif self.hero.potion_bag["Health Potion"] == 0 and not button.is_locked():
-                            button.lock()
-                    elif button.text == "Damage Potion":
-                        if self.hero.potion_bag["Damage Potion"] > 0 and button.is_locked():
-                            button.unlock()
-                        elif self.hero.potion_bag["Damage Potion"] == 0 and not button.is_locked():
-                            button.lock()
-                    elif button.text == "Block Potion":
-                        if self.hero.potion_bag["Block Potion"] > 0 and button.is_locked():
-                            button.unlock()
-                        elif self.hero.potion_bag["Block Potion"] == 0 and not button.is_locked():
-                            button.lock()
             
-            for button in self.buttons[GameState.BATTLE][self.battle_manager.state].values():
-                button.draw(self.screen)
+            if self.battle_manager.state == BattleState.HOME:
+                if self.hero.has_potions() and self.buttons[GameState.BATTLE][self.battle_manager.state]["Use Potion"].is_locked():
+                    self.buttons[GameState.BATTLE][self.battle_manager.state]["Use Potion"].unlock()
+                elif not self.hero.has_potions() and not self.buttons[GameState.BATTLE][self.battle_manager.state]["Use Potion"].is_locked():
+                    self.buttons[GameState.BATTLE][self.battle_manager.state]["Use Potion"].lock()
+            elif self.battle_manager.state == BattleState.USE_ITEM:
+                    for button in self.buttons[GameState.BATTLE][self.battle_manager.state].values():
+                        if button.text == "Health Potion":
+                            if self.hero.potion_bag["Health Potion"] > 0 and button.is_locked():
+                                button.unlock()
+                            elif self.hero.potion_bag["Health Potion"] == 0 and not button.is_locked():
+                                button.lock()
+                        elif button.text == "Damage Potion":
+                            if self.hero.potion_bag["Damage Potion"] > 0 and button.is_locked():
+                                button.unlock()
+                            elif self.hero.potion_bag["Damage Potion"] == 0 and not button.is_locked():
+                                button.lock()
+                        elif button.text == "Block Potion":
+                            if self.hero.potion_bag["Block Potion"] > 0 and button.is_locked():
+                                button.unlock()
+                            elif self.hero.potion_bag["Block Potion"] == 0 and not button.is_locked():
+                                button.lock()
 
+            self.screen_manager.draw_battle_screen(self.hero, self.monster, self.battle_log, self.buttons[GameState.BATTLE][self.battle_manager.state].values())
+            
             if self.battle_manager.state == BattleState.HOME:
                 mouse_pos = pygame.mouse.get_pos()
                 if self.buttons[GameState.BATTLE][BattleState.HOME]["Attack"].rect.collidepoint(mouse_pos):

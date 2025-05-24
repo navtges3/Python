@@ -348,16 +348,3 @@ def draw_health_bar(surface, font:pygame.font, x:int, y:int, width:int, height:i
     health_fill_rect = pygame.Rect(x, y, width * health_percentage, height)
     pygame.draw.rect(surface, Colors.GREEN, health_fill_rect)
     draw_text_centered(f"{health_low}/{health_high}", font, Colors.BLACK, surface, x + width // 2, y + height // 2 + 2)
-
-def draw_popup(title:str, buttons:dict[str, callable], surface, font) -> None:
-    """Draw a popup window with a title and buttons."""
-    popup_x = (GameConstants.SCREEN_WIDTH - GameConstants.POPUP_WIDTH) // 2
-    popup_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2
-    popup_rect = pygame.Rect(popup_x, popup_y, GameConstants.POPUP_WIDTH, GameConstants.POPUP_HEIGHT)
-
-    pygame.draw.rect(surface, Colors.WHITE, popup_rect, border_radius=10)
-    pygame.draw.rect(surface, Colors.BLACK, popup_rect, width=5, border_radius=10)
-    draw_text_centered(title, font, Colors.BLACK, surface, GameConstants.SCREEN_WIDTH // 2, popup_y + 20)
-
-    for button in buttons.values():
-        button.draw(surface)
