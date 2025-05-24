@@ -1,4 +1,4 @@
-from managers import *
+from battle_manager import *
 from hero import *
 from items import *
 from constants import *
