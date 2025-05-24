@@ -468,7 +468,6 @@ class Game:
         tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
 
         while self.running:
-            
             if self.battle_manager.state == BattleState.HOME:
                 if self.hero.has_potions() and self.buttons[GameState.BATTLE][self.battle_manager.state]["Use Potion"].is_locked():
                     self.buttons[GameState.BATTLE][self.battle_manager.state]["Use Potion"].unlock()
