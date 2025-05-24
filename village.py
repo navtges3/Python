@@ -13,9 +13,9 @@ class Shop:
         self.card_selected_key = Shop_Constants.POTION_CARD_KEY
         self.selected_price = potion_dictionary[self.potion_key].value
         self.cards = {
-            Shop_Constants.POTION_CARD_KEY:  Button(Shop_Constants.POTION_CARD_KEY, (Game_Constants.SCREEN_WIDTH // 8, 25), (Game_Constants.SCREEN_WIDTH // 16 * 3, Game_Constants.SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.LIGHT_GRAY, Colors.GRAY),
-            Shop_Constants.WEAPON_CARD_KEY:  Button(Shop_Constants.WEAPON_CARD_KEY, (Game_Constants.SCREEN_WIDTH // 32 * 13, 25), (Game_Constants.SCREEN_WIDTH // 16 * 3, Game_Constants.SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.LIGHT_RED, Colors.RED),
-            Shop_Constants.ARMOR_CARD_KEY:   Button(Shop_Constants.ARMOR_CARD_KEY, (Game_Constants.SCREEN_WIDTH // 16 * 11, 25), (Game_Constants.SCREEN_WIDTH // 16 * 3, Game_Constants.SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.LIGHT_BLUE, Colors.BLUE),
+            Shop_Constants.POTION_CARD_KEY:  Button(Shop_Constants.POTION_CARD_KEY, (Game_Constants.SCREEN_WIDTH // 8, 25), (Game_Constants.SCREEN_WIDTH // 16 * 3, Game_Constants.SCREEN_HEIGHT // 3), font, Colors.BLACK),
+            Shop_Constants.WEAPON_CARD_KEY:  Button(Shop_Constants.WEAPON_CARD_KEY, (Game_Constants.SCREEN_WIDTH // 32 * 13, 25), (Game_Constants.SCREEN_WIDTH // 16 * 3, Game_Constants.SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.RED),
+            Shop_Constants.ARMOR_CARD_KEY:   Button(Shop_Constants.ARMOR_CARD_KEY, (Game_Constants.SCREEN_WIDTH // 16 * 11, 25), (Game_Constants.SCREEN_WIDTH // 16 * 3, Game_Constants.SCREEN_HEIGHT // 3), font, Colors.BLACK, Colors.BLUE),
         }
 
     def new_card(self, card_name: str) -> None:

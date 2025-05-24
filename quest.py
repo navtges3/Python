@@ -49,7 +49,7 @@ class Quest:
 class QuestButton(Button):
     def __init__(self, quest: Quest, pos, size, font, text_color):
         quest_image_path = fileIO.resource_path("images\\buttons\\quest_background.png")
-        super().__init__("QuestButton", pos, size, font, text_color, quest_image_path, quest_image_path)
+        super().__init__("QuestButton", pos, size, font, text_color, background_image_path=quest_image_path, hover_image_path=quest_image_path)
         self.quest = quest
 
     def draw(self, surface):

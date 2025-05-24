@@ -2,6 +2,7 @@ from constants import *
 from items import *
 import fileIO
 import pygame
+import random
 
 class Tooltip:
     def __init__(self, text: str, font: pygame.font.Font):
@@ -21,9 +22,9 @@ class Tooltip:
                         (x, y, width + self.padding * 2,
                          height + self.padding * 2))
         draw_multiple_lines(self.text, self.font, self.text_color, surface, x + 5, y + 5)
-        
+
 class Button:
-    def __init__(self, text, pos, size, font:pygame.font, text_color, background_image_path=None, hover_image_path=None):
+    def __init__(self, text, pos, size, font:pygame.font, text_color, color:Colors=None, background_image_path=None, hover_image_path=None):
         self.text = text
         self.pos = pos
         self.size = size
@@ -33,8 +34,28 @@ class Button:
         self.locked = False
         self.background_image = None
         self.hover_image = None
+        self.locked_image = None
+        
+
+        random_num = random.choice(range(0, 5))
+        color_text = "gray"
+        if color:
+            if color == Colors.BLUE:
+                color_text = "blue"
+            elif color == Colors.GREEN:
+                color_text = "green"
+            elif color == Colors.RED:
+                color_text = "red"
+            elif color == Colors.YELLOW:
+                color_text = "yellow"                
+            
+        if background_image_path is None:
+            background_image_path  = f"images\\buttons\\{color_text}\\button_{random_num}_background.png"
+        if hover_image_path is None:
+            hover_image_path = f"images\\buttons\\{color_text}\\button_{random_num}_hover.png"
         self.background_image_path = background_image_path
         self.hover_image_path = hover_image_path
+        self.locked_image_path = f"images\\buttons\\gray\\button_{random_num}_hover.png"
 
         self.rect = pygame.Rect(pos, size)
         self.surface = self.font.render(self.text, True, self.text_color)
@@ -94,11 +115,20 @@ class Button:
             except Exception as e:
                 print(f"Failed to load button image: {e}")
                 self.hover_image = None
+        if self.locked_image_path and not self.locked_image:
+            try:
+                self.locked_image = pygame.image.load(fileIO.resource_path(self.locked_image_path)).convert_alpha()
+                self.locked_image = pygame.transform.scale(self.locked_image, self.size)
+            except Exception as e:
+                print(f"Failed to load locked button image: {e}")
+                self.locked_image = None
     
     def draw(self, screen, draw_text=True, border_color=Colors.BLACK) -> None:
         # Change color on hover
         mouse_pos = pygame.mouse.get_pos()
-        if self.background_image and self.hover_image:
+        if self.locked:
+            screen.blit(self.locked_image, self.rect)
+        elif self.background_image and self.hover_image:
             if self.rect.collidepoint(mouse_pos):
                 screen.blit(self.hover_image, self.rect)
             else:
@@ -109,6 +139,9 @@ class Button:
             else:
                 pygame.draw.rect(screen, Colors.GRAY, self.rect, border_radius=5)
             pygame.draw.rect(screen, border_color, self.rect, width=2, border_radius=5)
+
+        if self.selected:
+            pygame.draw.rect(screen, Colors.GREEN, self.rect, width=5, border_radius=5)
 
         # Center text on button
         if draw_text:
@@ -128,7 +161,7 @@ class ScrollableArea:
         self.scroll_offset = 0
         self.button_height = button_height
         self.button_spacing = button_spacing
-        self.buttons = []
+        self.buttons: list[Button] = []
         self.font = font
         self.text_color = text_color
         self.selected = None
