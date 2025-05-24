@@ -64,7 +64,7 @@ class Monster(Combatant):
 
     def draw(self, surface, font, x:int, y:int) -> None:
         # Border 
-        monster_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
+        monster_border = pygame.Rect(x, y, GameConstants.SCREEN_WIDTH // 2, GameConstants.SCREEN_HEIGHT // 2 - 50)
         pygame.draw.rect(surface, Colors.RED, monster_border, width=5, border_radius=10)
         # Image
 

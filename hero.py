@@ -145,7 +145,7 @@ class Hero(Combatant):
     
     def draw(self, surface, font, x:int=0, y:int=0) -> None:
         # Border
-        hero_border = pygame.Rect(x, y, Game_Constants.SCREEN_WIDTH // 2, Game_Constants.SCREEN_HEIGHT // 2 - 50)
+        hero_border = pygame.Rect(x, y, GameConstants.SCREEN_WIDTH // 2, GameConstants.SCREEN_HEIGHT // 2 - 50)
 
         # Hero Name
         draw_text(self.name, font, Colors.BLACK, surface, hero_border.x + 20, hero_border.y + 10)

@@ -1,6 +1,6 @@
 from enum import Enum
 
-class Game_State(Enum):
+class GameState(Enum):
     WELCOME = 1
     NEW_GAME = 2
     MAIN_GAME = 3
@@ -13,13 +13,13 @@ class Game_State(Enum):
     OPTIONS = 10
     EXIT = 11
 
-class Battle_State(Enum):
+class BattleState(Enum):
     HOME = 0
     USE_ITEM = 1
     RUN_AWAY = 2
     MONSTER_DEFEATED = 3
 
-class Battle_Actions(Enum):
+class BattleActions(Enum):
     ATTACK = 0
     DEFEND = 1
     USE_POTION = 2
@@ -39,12 +39,12 @@ class Colors:
     LIGHT_GREEN = (144, 238, 144)
     GOLD = (255, 215, 0)
 
-class Shop_Constants:
+class ShopConstants:
     POTION_CARD_KEY = "Potion Card"
     WEAPON_CARD_KEY = "Weapon Card"
     ARMOR_CARD_KEY = "Armor Card"
 
-class Game_Constants:
+class GameConstants:
     SCREEN_WIDTH = 800
     SCREEN_HEIGHT = 600
     POPUP_WIDTH = 400

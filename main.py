@@ -1,24 +1,24 @@
-from constants import Game_State
+from constants import GameState
 from game import Game
 
 def main() -> None:
     my_game = Game()
-    while my_game.game_state != Game_State.EXIT:
-        if my_game.game_state == Game_State.WELCOME:
+    while my_game.game_state != GameState.EXIT:
+        if my_game.game_state == GameState.WELCOME:
             my_game.welcome_screen()
-        elif my_game.game_state == Game_State.NEW_GAME:
+        elif my_game.game_state == GameState.NEW_GAME:
             my_game.new_game_screen()
-        elif my_game.game_state == Game_State.MAIN_GAME:
+        elif my_game.game_state == GameState.MAIN_GAME:
             my_game.main_game()
-        elif my_game.game_state == Game_State.QUEST:
+        elif my_game.game_state == GameState.QUEST:
             my_game.quest_screen()
-        elif my_game.game_state == Game_State.BATTLE:
+        elif my_game.game_state == GameState.BATTLE:
             my_game.battle_screen()
-        elif my_game.game_state == Game_State.SHOP:
+        elif my_game.game_state == GameState.SHOP:
             my_game.shop_screen()
-        elif my_game.game_state == Game_State.VICTORY:
+        elif my_game.game_state == GameState.VICTORY:
             my_game.victory_screen()
-        elif my_game.game_state == Game_State.DEFEAT:
+        elif my_game.game_state == GameState.DEFEAT:
             my_game.defeat_screen()
     
     my_game.quit()
