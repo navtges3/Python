@@ -33,12 +33,14 @@ class Button():
         if not self.locked:
             self.state = BUTTON_LOCKED
             self.locked = True
+            self.toggled = False
 
     def unlock(self):
         """Unlock the button, allowing interaction."""
         if self.locked:
             self.state = BUTTON_DEFUALT
             self.locked = False
+            self.toggled = False
 
     def is_locked(self) -> bool:
         """Check if the button is locked."""
@@ -60,28 +62,37 @@ class Button():
         """Check if the button is toggled."""
         return self.toggled
     
+    def reset_click(self) -> None:
+        """Reset the button's clicked state."""
+        self.was_clicked = False
+        self.was_pressed = False
+        if not self.locked:
+            self.state = BUTTON_DEFUALT
+    
     def update_state(self) -> None:
         """Update the button's state based on mouse interaction."""
         if self.locked:
             return
 
-        self.was_clicked = False
         pos = pygame.mouse.get_pos()
-        mouse_pressed = pygame.mouse.get_pressed()[0]
+        mouse_pressed = pygame.mouse.get_pressed()[0]  # Left mouse button only
 
         if self.rect.collidepoint(pos):
-            if mouse_pressed and (self.state == BUTTON_DEFUALT or self.state == BUTTON_SELECTED):
+            if mouse_pressed and not self.was_pressed and (self.state == BUTTON_DEFUALT or self.state == BUTTON_SELECTED):
                 self.state = BUTTON_CLICKED
                 self.was_pressed = True
-            elif not mouse_pressed and self.state == BUTTON_CLICKED:
-                if self.was_pressed:
+                self.was_clicked = False
+            elif not mouse_pressed and self.was_pressed:
+                if self.state == BUTTON_CLICKED:
                     self.was_clicked = True
                 self.state = BUTTON_SELECTED if self.toggled else BUTTON_DEFUALT
                 self.was_pressed = False
         else:
-            if self.state == BUTTON_CLICKED:
-                self.state = BUTTON_SELECTED if self.toggled else BUTTON_DEFUALT
+            # Reset button state when mouse leaves the button area
+            if not self.toggled:
+                self.state = BUTTON_DEFUALT
             self.was_pressed = False
+            self.was_clicked = False
     
     def draw(self, surface:pygame.Surface) -> None:
         """Draw the button if a surface is provided, otherwise just update state."""

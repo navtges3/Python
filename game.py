@@ -1,6 +1,7 @@
 from battle_manager import *
 from screen_manager import *
 from button_manager import ButtonManager
+from event_manager import EventManager
 from hero import *
 from items import *
 from constants import *
@@ -26,17 +27,16 @@ class Game:
         self.game_state = GameState.WELCOME
         self.battle_log = []
         self.hero = None
-        self.monster = None
         self.current_quest = None
         self.running = False
         self.popup_running = False
         self.battle_manager = None
-
+        self.event_manager = EventManager()  # Initialize the event manager
         
         # Initialize the mixer for music
         pygame.mixer.init()
         # Load and play background music
-        pygame.mixer.music.load(fileIO.resource_path('music\\background_music.mp3'))  # Replace with your music file path
+        pygame.mixer.music.load(fileIO.resource_path('music\\background_music.mp3'))
         pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
         pygame.mixer.music.play(-1)  # Play music in a loop
 
@@ -45,7 +45,8 @@ class Game:
         pygame.display.set_caption('Village Defense')
         pygame.display.set_icon(pygame.image.load(fileIO.resource_path('icon.ico')))
 
-        self.screen_manager = ScreenManager(self.screen, self.font)        # Load button sprite sheet
+        self.screen_manager = ScreenManager(self.screen, self.font)
+        # Load button sprite sheet
         button_sheet = pygame.image.load(fileIO.resource_path('images\\buttons\\button_sheet_0.png')).convert_alpha()
         quest_button_sheet = pygame.image.load(fileIO.resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
         self.button_manager = ButtonManager(self.font, button_sheet, quest_button_sheet)
@@ -69,13 +70,11 @@ class Game:
         save_data = {}
         if self.hero is not None:
             save_data.update({"hero": self.hero.to_dict(),})  # Save hero data
-        if self.monster is not None:
-            save_data.update({"monster": self.monster.to_dict(),})
+        if self.battle_manager and self.battle_manager.monster is not None:
+            save_data.update({"monster": self.battle_manager.monster.to_dict(),})
         save_data.update({
             "game_volume": pygame.mixer.music.get_volume(),
         })
-
-
 
         # Save quest lists
         available_quests = []
@@ -117,10 +116,11 @@ class Game:
                 print("No hero data found in save file.")
                 return
             
+            # Initialize battle manager
+            self.battle_manager = BattleManager(self.hero, self.battle_log)
+            
             if "monster" in save_data:
-                self.monster = Monster(save_data["monster"])
-            else:
-                self.monster = None
+                self.battle_manager.monster = Monster(save_data["monster"])
 
             pygame.mixer.music.set_volume(save_data.get("game_volume", 0.5))
             
@@ -199,34 +199,57 @@ class Game:
                 self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
                 self.button_manager.draw_buttons(self.screen, GameState.MAIN_GAME)
             
-            # Update and draw popup
+            # Handle events first
+            for event in self.event_manager.process_events():
+                # Check for quit
+                self.game_state, self.running = self.event_manager.handle_quit_event(event, self.game_state)
+                if not self.running:
+                    self.popup_running = False
+                    break
+                    
+                # Check for popup close
+                if self.event_manager.handle_popup_events(event):
+                    self.popup_running = False
+                    break
+                
+                # Handle keyboard input
+                key_action = self.event_manager.handle_keyboard_event(event)
+                if key_action == "escape":
+                    self.popup_running = False
+                    break
+                
+                # Handle button clicks
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    # Get pause buttons
+                    pause_buttons = self.button_manager.get_buttons(GameState.PAUSE)
+                    
+                    # Check each button
+                    for button_name, button in pause_buttons.items():
+                        if self.event_manager.handle_button_click(event, button.rect, button.is_locked()):
+                            if button_name == "Resume":
+                                self.popup_running = False
+                                break
+                            elif button_name == "Options":
+                                self.show_options_popup()
+                                break
+                            elif button_name == "Exit":
+                                if self.game_state != GameState.NEW_GAME:
+                                    self.save_game()  # Save the game if we're not in new game state
+                                self.game_state = GameState.WELCOME
+                                self.popup_running = False
+                                self.running = False
+                                break
+            
+            # Update and draw popup buttons (without processing clicks)
             pause_buttons = self.button_manager.get_buttons(GameState.PAUSE)
             for button in pause_buttons.values():
-                button.draw(None)  # Update button states
-                if button.was_clicked:
-                    if button.text == "Resume":
-                        self.popup_running = False
-                        break
-                    elif button.text == "Options":
-                        self.show_options_popup()
-                        break
-                    elif button.text == "Exit" or button.text == "Save and Exit":
-                        if self.game_state != GameState.NEW_GAME:
-                            self.save_game()
-                        self.game_state = GameState.WELCOME
-                        self.popup_running = False
-                        self.running = False
-                        break
+                button.draw(None)  # Just update visual state
             
             # Draw the popup and its buttons
             self.screen_manager.draw_popup("Pause Menu", pause_buttons)
             
-            # Handle events
-            self.events()
+            # Update display
             self.update()
-        
-        if self.game_state == GameState.WELCOME and exit_text == "Save and Exit":
-            self.save_game()
 
     def show_options_popup(self) -> None:
         """Show the options popup menu."""
@@ -248,14 +271,50 @@ class Game:
                 self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
                 self.button_manager.draw_buttons(self.screen, GameState.MAIN_GAME)
             
-            # Update and draw popup
+            # Handle events
+            for event in self.event_manager.process_events():
+                # Check for quit
+                self.game_state, self.running = self.event_manager.handle_quit_event(event, self.game_state)
+                if not self.running:
+                    options_running = False
+                    break
+                
+                # Check for popup close
+                if self.event_manager.handle_popup_events(event):
+                    options_running = False
+                    break
+                    
+                # Handle volume slider
+                if dragging_volume:
+                    new_volume = self.event_manager.handle_volume_slider(event, volume_rect, volume_x)
+                    if new_volume is not None:
+                        music_volume = new_volume
+                        pygame.mixer.music.set_volume(music_volume)
+                    if event.type == pygame.MOUSEBUTTONUP:
+                        dragging_volume = False
+                else:
+                    # Handle button clicks and volume slider activation
+                    if event.type == pygame.MOUSEBUTTONDOWN:
+                        # Check if clicked on volume bar
+                        if volume_rect.collidepoint(event.pos):
+                            dragging_volume = True
+                            new_volume = self.event_manager.handle_volume_slider(event, volume_rect, volume_x)
+                            if new_volume is not None:
+                                music_volume = new_volume
+                                pygame.mixer.music.set_volume(music_volume)
+                        else:
+                            # Check buttons
+                            for button_name, button in options_buttons.items():
+                                if self.event_manager.handle_button_click(event, button.rect, button.is_locked()):
+                                    if button_name == "Back":
+                                        options_running = False
+                                    break
+            
+            # Update and draw buttons
             for button in options_buttons.values():
                 button.draw(None)  # Update button states
-                if button.was_clicked:
-                    if button.text == "Back":
-                        options_running = False
-                        break
-
+            
+            # Draw the popup and its buttons
             self.screen_manager.draw_popup("Options", options_buttons)
             
             # Draw volume label
@@ -264,32 +323,6 @@ class Game:
             pygame.draw.rect(self.screen, Colors.GRAY, volume_rect)
             # Draw volume level
             pygame.draw.rect(self.screen, Colors.BLUE, (volume_x, volume_y, 300 * music_volume, 10))
-
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.game_state = GameState.EXIT
-                    options_running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    clicked_button = self.button_manager.handle_click(GameState.OPTIONS, event.pos)
-                    if clicked_button == "Back":
-                        options_running = False
-                    # Check if clicked on volume bar
-                    elif volume_rect.collidepoint(event.pos):
-                        dragging_volume = True
-                        # Update volume based on click position
-                        mouse_x = event.pos[0]
-                        music_volume = (mouse_x - volume_x) / 300
-                        music_volume = max(0, min(1, music_volume))  # Clamp between 0 and 1
-                        pygame.mixer.music.set_volume(music_volume)
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    dragging_volume = False
-                elif event.type == pygame.MOUSEMOTION:
-                    if dragging_volume:  # Only update if dragging started on volume bar
-                        mouse_x = event.pos[0]
-                        music_volume = (mouse_x - volume_x) / 300
-                        music_volume = max(0, min(1, music_volume))  # Clamp between 0 and 1
-                        pygame.mixer.music.set_volume(music_volume)
             
             self.update()
 
@@ -316,10 +349,35 @@ class Game:
                 GameConstants.SCREEN_HEIGHT // 2 - 100
             )
 
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
+                    self.running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click only
+                    # Get welcome buttons
+                    welcome_buttons = self.button_manager.get_buttons(GameState.WELCOME)
+                    mouse_pos = pygame.mouse.get_pos()
+                    
+                    # Check each button
+                    for button_name, button in welcome_buttons.items():
+                        if not button.is_locked() and button.rect.collidepoint(mouse_pos):
+                            if button_name == "New Game":
+                                self.game_state = GameState.NEW_GAME
+                                self.running = False
+                            elif button_name == "Load Game":
+                                self.load_game()
+                                self.game_state = GameState.MAIN_GAME
+                                self.running = False
+                            elif button_name == "Options":
+                                self.show_options_popup()
+                            elif button_name == "Exit Game":
+                                self.game_state = GameState.EXIT
+                                self.running = False
+                            break
+
             # Draw all welcome screen buttons
             self.button_manager.draw_buttons(self.screen, GameState.WELCOME)
-
-            self.events()
             self.update()
 
     def new_game_screen(self) -> None:
@@ -351,6 +409,48 @@ class Game:
                      GameConstants.SCREEN_WIDTH // 2 - self.font.size("Hero Class: ")[0], 
                      GameConstants.SCREEN_HEIGHT // 2 + self.font.get_linesize() * 2.5)
 
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
+                    self.running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    # Handle text box activation
+                    if self.text_box.rect.collidepoint(event.pos):
+                        self.text_box.active = True
+                    else:
+                        self.text_box.active = False
+                        
+                    # Handle button clicks
+                    if event.button == 1 and self.event_manager.can_click_buttons():  # Left click only
+                        new_game_buttons = self.button_manager.get_buttons(GameState.NEW_GAME)
+                        mouse_pos = pygame.mouse.get_pos()
+                        
+                        for button_name, button in new_game_buttons.items():
+                            if not button.is_locked() and button.rect.collidepoint(mouse_pos):
+                                self.event_manager.reset_button_delay()
+                                if button_name == "Knight":
+                                    self.button_manager.get_button(GameState.NEW_GAME, "Knight").toggle()
+                                    self.button_manager.get_button(GameState.NEW_GAME, "Assassin").reset_toggle()
+                                elif button_name == "Assassin":
+                                    self.button_manager.get_button(GameState.NEW_GAME, "Assassin").toggle()
+                                    self.button_manager.get_button(GameState.NEW_GAME, "Knight").reset_toggle()
+                                elif button_name == "Back":
+                                    self.button_manager.get_button(GameState.NEW_GAME, "Knight").reset_toggle()
+                                    self.button_manager.get_button(GameState.NEW_GAME, "Assassin").reset_toggle()
+                                    self.game_state = GameState.WELCOME
+                                    self.running = False
+                                elif button_name == "Create Hero":
+                                    self.game_state = GameState.MAIN_GAME
+                                    self.running = False
+                                break
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE and self.event_manager.can_click_buttons():
+                        self.event_manager.reset_button_delay()
+                        self.show_esc_popup()
+                    else:
+                        self.text_box.handle_event(event)
+
             # Enable/disable Create Hero button based on having both name and class
             create_hero_button = self.button_manager.get_button(GameState.NEW_GAME, "Create Hero")
             if hero_name and hero_class and create_hero_button.is_locked():
@@ -358,28 +458,60 @@ class Game:
             elif (not hero_name or not hero_class) and not create_hero_button.is_locked():
                 create_hero_button.lock()
 
+            # Draw buttons and text box
             self.button_manager.draw_buttons(self.screen, GameState.NEW_GAME)
             self.text_box.draw(self.screen)
-
-            self.events()         
             self.update()
 
         if self.game_state == GameState.MAIN_GAME:
             self.hero = knight if hero_class == "Knight" else assassin
-            # Use the text box's final text as the hero name
             self.hero.name = self.text_box.text
 
     def main_game(self) -> None:
         """Main game screen."""
         self.running = True
+        self.event_manager.reset_button_delay()  # Start delay timer
+        
         while self.running:
-            self.screen.fill(Colors.WHITE)            # Draw the heros
+            self.screen.fill(Colors.WHITE)
+            
+            # Draw the hero
             self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
+
+            # Handle events
+            for event in self.event_manager.process_events():
+                # Check for quit
+                self.game_state, self.running = self.event_manager.handle_quit_event(event, self.game_state)
+                if not self.running:
+                    break
+                    
+                # Handle keyboard events
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        if self.event_manager.can_click_buttons():
+                            self.event_manager.reset_button_delay()
+                            self.show_esc_popup()
+                
+                # Handle button clicks
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    # Get main game buttons
+                    main_buttons = self.button_manager.get_buttons(GameState.MAIN_GAME)
+                    
+                    # Check each button
+                    for button_name, button in main_buttons.items():
+                        if self.event_manager.handle_button_click(event, button.rect, button.is_locked()):
+                            if button_name == "Menu":
+                                self.show_esc_popup()
+                            elif button_name == "Quest":
+                                self.game_state = GameState.QUEST
+                                self.running = False
+                            elif button_name == "Shop":
+                                self.game_state = GameState.SHOP
+                                self.running = False
+                            break
 
             # Draw Buttons
             self.button_manager.draw_buttons(self.screen, GameState.MAIN_GAME)
-
-            self.events()
             self.update()
 
     def shop_screen(self) -> None:
@@ -389,10 +521,30 @@ class Game:
         while self.running:
             self.screen.fill(Colors.WHITE)
             
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE and self.event_manager.can_click_buttons():
+                        self.event_manager.reset_button_delay()
+                        self.show_esc_popup()
+                elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click only
+                    if self.event_manager.can_click_buttons():
+                        shop_buttons = self.button_manager.get_buttons(GameState.SHOP)
+                        mouse_pos = pygame.mouse.get_pos()
+                        
+                        for button_name, button in shop_buttons.items():
+                            if not button.is_locked() and button.rect.collidepoint(mouse_pos):
+                                self.event_manager.reset_button_delay()
+                                if button_name == "Leave":
+                                    self.game_state = GameState.MAIN_GAME
+                                    self.running = False
+                                break
+            
             # Draw shop buttons
             self.button_manager.draw_buttons(self.screen, GameState.SHOP)
-            
-            self.events()
             self.update()
 
     def quest_screen(self) -> None:
@@ -408,29 +560,55 @@ class Game:
             start_button = quest_buttons.get("Start")
             available_button = quest_buttons.get("Available")
             complete_button = quest_buttons.get("Complete")
-            back_button = quest_buttons.get("Back")
             
-            # Update button states
-            for button in quest_buttons.values():
-                button.draw(None)  # Update button state without drawing
-                if button.was_clicked:
-                    if button.text == "Available":
-                        showing_available = True
-                        available_button.toggle()
-                        complete_button.reset_toggle()
-                    elif button.text == "Complete":
-                        showing_available = False
-                        complete_button.toggle()
-                        available_button.reset_toggle()
-                    elif button.text == "Back":
-                        self.game_state = GameState.MAIN_GAME
-                        self.running = False
-                        return
-                    elif button.text == "Start Quest" and selected_quest:
-                        self.current_quest = selected_quest.quest
-                        self.game_state = GameState.BATTLE
-                        self.running = False
-                        return
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE and self.event_manager.can_click_buttons():
+                        self.event_manager.reset_button_delay()
+                        self.show_esc_popup()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    # Handle quest list scrolling and selection
+                    if showing_available:
+                        self.button_manager.available_quests.handle_event(event)
+                    else:
+                        self.button_manager.completed_quests.handle_event(event)
+                        
+                    # Handle button clicks
+                    if event.button == 1 and self.event_manager.can_click_buttons():  # Left click only
+                        mouse_pos = pygame.mouse.get_pos()
+                        for button_name, button in quest_buttons.items():
+                            if not button.is_locked() and button.rect.collidepoint(mouse_pos):
+                                self.event_manager.reset_button_delay()
+                                if button_name == "Available":
+                                    showing_available = True
+                                    available_button.toggle()
+                                    complete_button.reset_toggle()
+                                elif button_name == "Complete":
+                                    showing_available = False
+                                    complete_button.toggle()
+                                    available_button.reset_toggle()
+                                elif button_name == "Back":
+                                    self.game_state = GameState.MAIN_GAME
+                                    self.running = False
+                                elif button_name == "Start" and selected_quest:
+                                    self.current_quest = selected_quest.quest
+                                    self.game_state = GameState.BATTLE
+                                    self.running = False
+                                break
+                elif event.type == pygame.MOUSEBUTTONUP or event.type == pygame.MOUSEMOTION:
+                    if showing_available:
+                        self.button_manager.available_quests.handle_event(event)
+                    else:
+                        self.button_manager.completed_quests.handle_event(event)
+                elif event.type == pygame.MOUSEWHEEL:
+                    if showing_available:
+                        self.button_manager.available_quests.handle_event(event)
+                    else:
+                        self.button_manager.completed_quests.handle_event(event)
             
             # Draw the appropriate quest list
             if showing_available:
@@ -448,29 +626,6 @@ class Game:
                 
             # Draw all quest screen buttons
             self.button_manager.draw_buttons(self.screen, GameState.QUEST)
-                
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.game_state = GameState.EXIT
-                    self.running = False
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    # Handle quest list scrolling and selection
-                    if showing_available:
-                        self.button_manager.available_quests.handle_event(event)
-                    else:
-                        self.button_manager.completed_quests.handle_event(event)
-                elif event.type == pygame.MOUSEBUTTONUP or event.type == pygame.MOUSEMOTION:
-                    if showing_available:
-                        self.button_manager.available_quests.handle_event(event)
-                    else:
-                        self.button_manager.completed_quests.handle_event(event)
-                elif event.type == pygame.MOUSEWHEEL:
-                    if showing_available:
-                        self.button_manager.available_quests.handle_event(event)
-                    else:
-                        self.button_manager.completed_quests.handle_event(event)
-            
             self.update()
 
     def _update_potion_button_state(self, button_name: str, potion_type: str) -> None:
@@ -526,11 +681,11 @@ class Game:
     def _handle_monster_defeat(self) -> None:
         """Helper method to handle monster defeat logic."""
         print("Monster defeated!")
-        self.battle_log.append(f"{self.monster.name} has been defeated!")
-        self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and {self.monster.gold} gold.")
-        self.hero.gain_experience(self.monster.experience)
-        self.hero.add_gold(self.monster.gold)
-        self.current_quest.slay_monster(self.monster)
+        self.battle_log.append(f"{self.battle_manager.monster.name} has been defeated!")
+        self.battle_log.append(f"{self.hero.name} gains {self.battle_manager.monster.experience} experience and {self.battle_manager.monster.gold} gold.")
+        self.hero.gain_experience(self.battle_manager.monster.experience)
+        self.hero.add_gold(self.battle_manager.monster.gold)
+        self.current_quest.slay_monster(self.battle_manager.monster)
         
         # Switch to victory layout
         self._switch_battle_layout(True)
@@ -570,51 +725,79 @@ class Game:
     def battle_screen(self) -> None:
         """Battle screen where the hero fights a monster."""
         self.running = True
+        self.event_manager.reset_button_delay()  # Start delay timer
+        
         if self.battle_manager is None:
             self.battle_manager = BattleManager(self.hero, self.battle_log)
         
-        if self.monster is None or not self.monster.is_alive():
-            self.monster = self.current_quest.get_monster()
-            if self.monster:
-                self._switch_battle_layout(False)  # Switch to combat layout for new monster
-                self.battle_log.append(f"A {self.monster.name} appears!")
-                self.battle_manager.monster = self.monster  # Set the monster in battle manager
+        # Spawn a new monster if there's no monster or if the current monster is dead
+        if self.battle_manager.monster is None or not self.battle_manager.monster.is_alive():
+            new_monster = self.current_quest.get_monster()
+            if new_monster:
+                self.battle_manager.start_battle(new_monster)
+            else:
+                # No more monsters in the quest, return to quest screen
+                self.game_state = GameState.QUEST
+                self.running = False
+                return
         
-        tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
+        tooltip = Tooltip(f"Attack {self.battle_manager.monster.name} with your {self.hero.weapon.name}!", self.font)
 
         while self.running:
-            # Update button states based on turn and battle state
-            if self.battle_manager.state == BattleState.MONSTER_DEFEATED:
-                self._switch_battle_layout(True)  # Show victory buttons
-            else:
-                # Update combat button states based on turn
-                if self.battle_manager.turn == TurnState.MONSTER_TURN:
-                    # Lock all hero action buttons during monster's turn
-                    for button_name in ['Attack', 'Defend', 'Use Potion', 'Flee']:
-                        button = self.button_manager.get_button(GameState.BATTLE, button_name)
-                        if not button.is_locked():
-                            button.lock()
-                else:  # Hero's turn
-                    # Unlock buttons based on state
-                    if self.battle_manager.state == BattleState.HOME:
-                        for button_name in ['Attack', 'Defend', 'Flee']:
-                            button = self.button_manager.get_button(GameState.BATTLE, button_name)
-                            if button.is_locked():
-                                button.unlock()
-                        # Handle potion button separately
-                        use_potion_button = self.button_manager.get_button(GameState.BATTLE, "Use Potion")
-                        if self.hero.has_potions() and use_potion_button.is_locked():
-                            use_potion_button.unlock()
-                        elif not self.hero.has_potions() and not use_potion_button.is_locked():
-                            use_potion_button.lock()
-                    elif self.battle_manager.state == BattleState.USE_ITEM:
-                        self._update_potion_button_state("Health Potion", "Health Potion")
-                        self._update_potion_button_state("Damage Potion", "Damage Potion")
-                        self._update_potion_button_state("Block Potion", "Block Potion")
-            
+            # Draw the battle screen first
             self.screen.fill(Colors.WHITE)
             self.hero.draw(self.screen, self.font, 0, 25)
-            self.monster.draw(self.screen, self.font, GameConstants.SCREEN_WIDTH // 2, 25)
+            if self.battle_manager.monster:
+                self.battle_manager.monster.draw(self.screen, self.font, GameConstants.SCREEN_WIDTH // 2, 25)
+            
+            # Update battle state and check for victory/defeat
+            battle_result = self.battle_manager.update_battle_state()
+            if battle_result is False:  # Hero defeated
+                print("Hero defeated!")
+                self.game_state = GameState.DEFEAT
+                self.running = False
+            elif battle_result is True:  # Monster defeated
+                self._handle_monster_defeat()
+            
+            # Update button states after state changes
+            self.battle_manager.update_button_states(self.button_manager)
+            
+            # Handle events before drawing buttons
+            for event in self.event_manager.process_events():
+                # Check for quit
+                self.game_state, self.running = self.event_manager.handle_quit_event(event, self.game_state)
+                if not self.running:
+                    break
+                    
+                # Handle keyboard events
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        if self.event_manager.can_click_buttons():
+                            self.event_manager.reset_button_delay()
+                            self.show_esc_popup()
+                
+                # Handle button clicks
+                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                    # Get all battle buttons
+                    battle_buttons = self.button_manager.get_buttons(GameState.BATTLE)
+                    
+                    # Check each button
+                    for button_name, button in battle_buttons.items():
+                        if self.event_manager.handle_button_click(event, button.rect, button.is_locked()):
+                            if button_name == "Continue" and self.battle_manager.state == BattleState.MONSTER_DEFEATED:
+                                # Get next monster when Continue is pressed
+                                new_monster = self.current_quest.get_monster()
+                                if new_monster:
+                                    self.battle_manager.start_battle(new_monster)
+                                    tooltip = Tooltip(f"Attack {self.battle_manager.monster.name} with your {self.hero.weapon.name}!", self.font)
+                                else:
+                                    # No more monsters in quest, return to quest screen
+                                    self.game_state = GameState.QUEST
+                                    self.running = False
+                                break
+                            else:
+                                self._handle_button_click(button_name)
+                            break
             
             # Draw battle buttons
             self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
@@ -628,20 +811,13 @@ class Game:
                 draw_text_centered(turn_text, self.font, Colors.BLACK, self.screen, 
                                 GameConstants.SCREEN_WIDTH // 2, 10)
             
+            # Draw tooltip if hovering over attack button
             if self.battle_manager.state == BattleState.HOME and self.battle_manager.turn == TurnState.HERO_TURN:
                 mouse_pos = pygame.mouse.get_pos()
                 attack_button = self.button_manager.get_button(GameState.BATTLE, "Attack")
                 if attack_button and not attack_button.is_locked() and attack_button.rect.collidepoint(mouse_pos):
                     tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
 
-            self.events()
-    
-            if self.hero.is_alive() and not self.monster.is_alive() and self.battle_manager.state != BattleState.MONSTER_DEFEATED:
-                self._handle_monster_defeat()
-            elif not self.hero.is_alive():
-                print("Hero defeated!")
-                self.game_state = GameState.DEFEAT
-                self.running = False
             self.update()
 
     def victory_screen(self) -> None:
@@ -827,7 +1003,7 @@ class Game:
             # Only process battle actions during hero's turn
             if self.battle_manager.turn == TurnState.HERO_TURN:
                 if button_name == "Attack":
-                    self.battle_manager.handle_attack(self.monster)
+                    self.battle_manager.handle_attack(self.battle_manager.monster)
                 elif button_name == "Defend":
                     self.battle_manager.handle_defend()
                 elif button_name == "Use Potion":
@@ -838,23 +1014,8 @@ class Game:
                         self.game_state = GameState.QUEST
                         self.running = False
             
-            # These buttons work regardless of turn
-            if button_name == "Continue":
-                if not self.current_quest.is_complete():
-                    self.monster = self.current_quest.get_monster()
-                    if self.monster:
-                        self._switch_battle_layout(False)  # Switch back to combat layout
-                        self.battle_manager.state = BattleState.HOME
-                        self.battle_manager.monster = self.monster  # Update monster in battle manager
-                        self.battle_manager.turn = TurnState.HERO_TURN  # Reset to hero's turn
-                        self.battle_log.append(f"A new {self.monster.name} appears!")
-                    else:
-                        self.game_state = GameState.QUEST
-                        self.running = False
-                else:
-                    self.game_state = GameState.QUEST
-                    self.running = False
-            elif button_name == "Retreat":
+            # Handle Retreat button regardless of turn
+            if button_name == "Retreat":
                 self.battle_log.append(f"{self.hero.name} retreats to regroup!")
                 self.game_state = GameState.QUEST
                 self.running = False

@@ -17,16 +17,17 @@ class Quest:
             self.monsters_slain[key] = 0
 
     def get_monster(self) -> Monster:
+        """Returns a monster that still needs to be defeated for this quest."""
         living_monsters = []
-        for key in self.monster_list.keys():
-            if key in self.monsters_slain.keys():
-                if self.monsters_slain[key] < self.monster_list[key]:
-                    living_monsters.append(key)
-            else:
-                living_monsters.append(key)
-        if len(living_monsters) > 0:
-            return get_monster(random.choice(living_monsters))
+        for monster_type, required_count in self.monster_list.items():
+            current_count = self.monsters_slain.get(monster_type, 0)
+            if current_count < required_count:
+                living_monsters.append(monster_type)
         
+        if living_monsters:
+            return get_monster(random.choice(living_monsters))
+        return None
+
     def slay_monster(self, monster:Monster) -> None:
         if monster.name in self.monsters_slain.keys():
             self.monsters_slain[monster.name] += 1

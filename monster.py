@@ -30,10 +30,11 @@ class Monster(Combatant):
             self.current_hp = max_hp
             self.max_hp = max_hp
             self.damage = damage
-            self.experience = (max_hp + damage) // 2
             self.gold = gold
             self.image = image
             print("A new monster appears!")
+        # Always calculate experience based on max_hp and damage
+        self.experience = (self.max_hp + self.damage) // 2
 
     def attack(self, target:Combatant) -> None:
         target.take_damage(self.damage)
@@ -51,6 +52,7 @@ class Monster(Combatant):
             "damage": self.damage,
             "gold": self.gold,
             "image": self.image,
+            "experience": self.experience,
         }
 
     def from_dict(self, data: dict) -> None:
@@ -61,6 +63,7 @@ class Monster(Combatant):
         self.damage = data.get("damage", 1)
         self.gold = data.get("gold", 10)
         self.image = data.get("image", "goblin_image.jpg")
+        # Experience will be calculated in __init__ after from_dict completes
 
     def draw(self, surface, font, x:int, y:int) -> None:
         # Border 

@@ -13,12 +13,6 @@ class GameState(Enum):
     OPTIONS = 10
     EXIT = 11
 
-class BattleState(Enum):
-    HOME = 0
-    USE_ITEM = 1
-    RUN_AWAY = 2
-    MONSTER_DEFEATED = 3
-
 class BattleActions(Enum):
     ATTACK = 0
     DEFEND = 1
