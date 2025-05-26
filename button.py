@@ -22,61 +22,70 @@ class Button():
         self.rect = pygame.rect.Rect((x, y), (width, height))
         self.state = BUTTON_DEFUALT
         self.max_state = self.button_sheet.sheet.get_width() // self.width
-
+        self.was_pressed = False
+        self.was_clicked = False
         self.toggled = False
         self.locked = False
 
-    # Handle Button Locking
     def lock(self):
+        """Lock the button, preventing interaction."""
         if not self.locked:
-            print('Button Locked')
             self.state = BUTTON_LOCKED
+            self.locked = True
 
     def unlock(self):
+        """Unlock the button, allowing interaction."""
         if self.locked:
-            print('Button Unlocked')
             self.state = BUTTON_DEFUALT
+            self.locked = False
 
     def is_locked(self) -> bool:
+        """Check if the button is locked."""
         return self.locked
 
-    # Handle Toggle
     def toggle(self) -> None:
-        if self.toggled:
-            self.toggled = False
-        else:
-            self.toggled = True
-            print('Button Toggled')
-    
+        """Toggle the button state."""
+        self.toggled = not self.toggled
+
     def reset_toggle(self) -> None:
+        """Reset the toggle state."""
         self.toggled = False
-        print('Button Toggle Reset')
 
     def is_toggled(self) -> bool:
+        """Check if the button is toggled."""
         return self.toggled
     
-    def draw(self, surface):
-        image = None
+    def update_state(self) -> None:
+        """Update the button's state based on mouse interaction."""
+        if self.locked:
+            return
 
-        # get mouse position
+        self.was_clicked = False
         pos = pygame.mouse.get_pos()
+        mouse_pressed = pygame.mouse.get_pressed()[0]
 
-        # check mouseover and clicked conditions
         if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] and self.state == BUTTON_DEFUALT:
-                print('Clicked')
+            if mouse_pressed and self.state == BUTTON_DEFUALT:
                 self.state = BUTTON_CLICKED
-        
-        if not pygame.mouse.get_pressed()[0] and self.state == BUTTON_CLICKED:
-            print('Unclicked')
-            self.state = BUTTON_DEFUALT
-
-        # draw button
-        image = self.button_sheet.get_image(self.state, self.width, self.height, self.scale, Colors.BLACK)
-        surface.blit(image, (self.rect.x, self.rect.y))
-
-        return self.state
+                self.was_pressed = True
+            elif not mouse_pressed and self.state == BUTTON_CLICKED:
+                if self.was_pressed:
+                    self.was_clicked = True
+                self.state = BUTTON_DEFUALT
+                self.was_pressed = False
+        else:
+            if self.state == BUTTON_CLICKED:
+                self.state = BUTTON_DEFUALT
+            self.was_pressed = False
     
+    def draw(self, surface:pygame.Surface) -> None:
+        """Draw the button if a surface is provided, otherwise just update state."""
+        self.update_state()
+        
+        if surface is not None:
+            image = self.button_sheet.get_image(self.state, self.width, self.height, self.scale, Colors.BLACK)
+            surface.blit(image, (self.rect.x, self.rect.y))
+
 class TextButton(Button):
     def __init__(self, button_sheet:SpriteSheet, x:int, y:int, width:int, height:int, scale:float,
                 text:str, font:pygame.font.Font, text_color:tuple=Colors.BLACK):
@@ -89,15 +98,14 @@ class TextButton(Button):
         self.text_rect = self.text_surface.get_rect(center=self.rect.center)
 
     def draw(self, surface):
-        button_state = super().draw(surface)
+        super().draw(surface)
 
-        if self.state == BUTTON_LOCKED:
-            surface.blit(self.locked_surface, self.text_rect)
-        else:
-            surface.blit(self.text_surface, self.text_rect)
+        if surface is not None:
+            if self.state == BUTTON_LOCKED:
+                surface.blit(self.locked_surface, self.text_rect)
+            else:
+                surface.blit(self.text_surface, self.text_rect)
 
-        return button_state
-    
     def update_text(self, new_text:str):
         self.text = new_text
         self.text_surface = self.font.render(new_text, True, self.text_color)

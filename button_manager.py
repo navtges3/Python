@@ -291,5 +291,6 @@ class ButtonManager:
         """Handle click events and return clicked button name if any."""
         for button_name, button in self.buttons[state].items():
             if button.rect.collidepoint(pos) and not button.is_locked():
-                return button_name
+                if button.was_clicked:
+                    return button_name
         return None

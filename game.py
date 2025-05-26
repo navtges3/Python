@@ -113,8 +113,35 @@ class Game:
         self.button_manager.get_button(GameState.PAUSE, "Exit").update_text(exit_text)
 
         while self.popup_running:
+            # Draw the current game screen in the background
+            if self.game_state == GameState.MAIN_GAME:
+                self.screen.fill(Colors.WHITE)
+                self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
+                self.button_manager.draw_buttons(self.screen, GameState.MAIN_GAME)
+            
+            # Update and draw popup
             pause_buttons = self.button_manager.get_buttons(GameState.PAUSE)
+            for button in pause_buttons.values():
+                button.draw(None)  # Update button states
+                if button.was_clicked:
+                    if button.text == "Resume":
+                        self.popup_running = False
+                        break
+                    elif button.text == "Options":
+                        self.options_screen()
+                        break
+                    elif button.text == "Exit" or button.text == "Save and Exit":
+                        if self.game_state != GameState.NEW_GAME:
+                            self.save_game()
+                        self.game_state = GameState.WELCOME
+                        self.popup_running = False
+                        self.running = False
+                        break
+            
+            # Draw the popup and its buttons
             self.screen_manager.draw_popup("Pause Menu", pause_buttons)
+            
+            # Handle events
             self.events()
             self.update()
         
@@ -412,67 +439,82 @@ class Game:
                         self.running = False
             self.update()
 
-    def events(self) -> str:
-        for event in pygame.event.get():
-            if self.popup_running:
-                if event.type == pygame.QUIT:
-                    self.game_state = GameState.EXIT
-                    self.running = False
-                elif event.type == pygame.KEYDOWN:
-                    if self.key_actions and event.key in self.key_actions:
-                        if self.key_actions[event.key] == "escape" and self.game_state != GameState.WELCOME:
-                            self.popup_running = False
-                        else:
-                            return self.key_actions[event.key]
-                    elif event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
-                        return event.unicode
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    clicked_button = self.button_manager.handle_click(GameState.PAUSE, event.pos)
-                    if clicked_button:
-                        if clicked_button == "Resume":
-                            self.popup_running = False
-                        elif clicked_button == "Options":
-                            self.options_screen()
-                        elif clicked_button == "Exit":
-                            self.game_state = GameState.WELCOME
-                            self.popup_running = False
-                            self.running = False
-            else:
-                if self.game_state == GameState.QUEST:
-                    quest_button = self.button_manager.get_button(GameState.QUEST, "Quests")
-                    quest_button.handle_event(event)
+    def _handle_popup_events(self, event) -> str:
+        """Handle events when a popup is active."""
+        if event.type == pygame.QUIT:
+            self.game_state = GameState.EXIT
+            self.running = False
+        elif event.type == pygame.KEYDOWN:
+            if self.key_actions and event.key in self.key_actions:
+                if self.key_actions[event.key] == "escape":
+                    self.popup_running = False  # Resume game on escape
+                else:
+                    return self.key_actions[event.key]
+            elif event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
+                return event.unicode
+        return None
 
+    def _handle_keyboard_events(self, event) -> str:
+        """Handle keyboard events."""
+        if event.type == pygame.KEYDOWN:
+            if self.key_actions and event.key in self.key_actions:
+                if self.game_state != GameState.WELCOME:
+                    if self.key_actions[event.key] == "escape":
+                        self.show_esc_popup()
+                    else:
+                        return self.key_actions[event.key]
+            elif event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
+                return event.unicode
+        return None
+
+    def _handle_mouse_events(self, event) -> None:
+        """Handle mouse events."""
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.game_state == GameState.NEW_GAME:
+                if self.text_box.rect.collidepoint(event.pos):
+                    self.text_box.active = True
+                else:
+                    self.text_box.active = False
+
+    def _update_buttons(self) -> None:
+        """Update all buttons in the current game state."""
+        buttons = self.button_manager.get_buttons(self.game_state)
+        for button in buttons.values():
+            button.draw(None)  # Update button state without drawing
+            if button.was_clicked:
+                for button_name, btn in buttons.items():
+                    if btn == button:
+                        self._handle_button_click(button_name)
+                        break
+
+    def events(self) -> str:
+        """Handle all game events."""
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                self.game_state = GameState.EXIT
+                self.running = False
+                return None
+
+            if self.popup_running:
+                result = self._handle_popup_events(event)
+                if result:
+                    return result
+            else:
                 # Handle text box input in NEW_GAME state
                 if self.game_state == GameState.NEW_GAME:
                     self.text_box.handle_event(event)
-                
-                if event.type == pygame.QUIT:
-                    self.game_state = GameState.EXIT
-                    self.running = False
-                elif event.type == pygame.KEYDOWN:
-                    if self.key_actions and event.key in self.key_actions:
-                        if self.key_actions[event.key] == "escape" and self.game_state != GameState.WELCOME:
-                            self.show_esc_popup()
-                        else:
-                            return self.key_actions[event.key]
-                    elif event.unicode and len(event.unicode) == 1 and event.unicode.isprintable():
-                        return event.unicode
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    clicked_button = self.button_manager.handle_click(self.game_state, event.pos)
-                    if clicked_button:
-                        self._handle_button_click(clicked_button)
-                    elif self.game_state == GameState.NEW_GAME:
-                        if self.text_box.rect.collidepoint(event.pos):
-                            self.text_box.active = True
-                        else:
-                            self.text_box.active = False
-                elif self.game_state == GameState.NEW_GAME and (event.type == pygame.KEYDOWN or event.type == pygame.KEYUP):
-                    self.text_box.handle_event(event)
-                    if self.text_box.temp_text:
-                        hero_name = self.text_box.temp_text
-                elif self.game_state == GameState.NEW_GAME:
-                    # Handle text box events
-                    self.text_box.handle_event(event)
+
+                # Handle keyboard events
+                result = self._handle_keyboard_events(event)
+                if result:
+                    return result
+
+                # Handle mouse events
+                self._handle_mouse_events(event)
+
+            # Update button states
+            self._update_buttons()
+
         return None
 
     def _handle_button_click(self, button_name: str) -> None:
@@ -515,4 +557,9 @@ class Game:
                 self.running = False
             elif button_name == "Shop":
                 self.game_state = GameState.SHOP
+                self.running = False
+                
+        elif self.game_state == GameState.SHOP:
+            if button_name == "Leave":
+                self.game_state = GameState.MAIN_GAME
                 self.running = False
