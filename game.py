@@ -47,7 +47,8 @@ class Game:
 
         self.screen_manager = ScreenManager(self.screen, self.font)        # Load button sprite sheet
         button_sheet = pygame.image.load(fileIO.resource_path('images\\buttons\\button_sheet_0.png')).convert_alpha()
-        self.button_manager = ButtonManager(self.font, button_sheet)
+        quest_button_sheet = pygame.image.load(fileIO.resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
+        self.button_manager = ButtonManager(self.font, button_sheet, quest_button_sheet)
         
         self.text_box = TextBox(
             rect=pygame.Rect(100, 150, 200, 30),
@@ -291,29 +292,81 @@ class Game:
             self.update()
 
     def quest_screen(self) -> None:
-
+        """Quest screen where the player can select and start quests."""
         self.running = True
-        quest_selected = False
+        showing_available = True  # Track which quest list is being shown
+        
         while self.running:
-            quest_button = self.button_manager.get_button(GameState.QUEST, "Quests")
-            start_button = self.button_manager.get_button(GameState.QUEST, "Start")
-
-            if quest_button.selected is not None and not quest_button.buttons[quest_button.selected].quest.is_complete():
-                quest_selected = True
-            else:
-                quest_selected = False
-
-            if quest_selected and start_button.is_locked():
-                start_button.unlock()
-            elif not quest_selected and not start_button.is_locked():
-                start_button.lock()
-
             self.screen.fill(Colors.WHITE)
             
+            # Get quest buttons
+            quest_buttons = self.button_manager.get_buttons(GameState.QUEST)
+            start_button = quest_buttons.get("Start")
+            available_button = quest_buttons.get("Available")
+            complete_button = quest_buttons.get("Complete")
+            back_button = quest_buttons.get("Back")
+            
+            # Update button states
+            for button in quest_buttons.values():
+                button.draw(None)  # Update button state without drawing
+                if button.was_clicked:
+                    if button.text == "Available":
+                        showing_available = True
+                        available_button.toggle()
+                        complete_button.reset_toggle()
+                    elif button.text == "Complete":
+                        showing_available = False
+                        complete_button.toggle()
+                        available_button.reset_toggle()
+                    elif button.text == "Back":
+                        self.game_state = GameState.MAIN_GAME
+                        self.running = False
+                        return
+                    elif button.text == "Start Quest" and selected_quest:
+                        self.current_quest = selected_quest.quest
+                        self.game_state = GameState.BATTLE
+                        self.running = False
+                        return
+            
+            # Draw the appropriate quest list
+            if showing_available:
+                self.button_manager.available_quests.draw(self.screen)
+                selected_quest = self.button_manager.available_quests.get_selected_button()
+            else:
+                self.button_manager.completed_quests.draw(self.screen)
+                selected_quest = self.button_manager.completed_quests.get_selected_button()
+            
+            # Update Start button state based on selection
+            if selected_quest and showing_available and start_button.is_locked():
+                start_button.unlock()
+            elif (not selected_quest or not showing_available) and not start_button.is_locked():
+                start_button.lock()
+                
             # Draw all quest screen buttons
             self.button_manager.draw_buttons(self.screen, GameState.QUEST)
                 
-            self.events()
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
+                    self.running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    # Handle quest list scrolling and selection
+                    if showing_available:
+                        self.button_manager.available_quests.handle_event(event)
+                    else:
+                        self.button_manager.completed_quests.handle_event(event)
+                elif event.type == pygame.MOUSEBUTTONUP or event.type == pygame.MOUSEMOTION:
+                    if showing_available:
+                        self.button_manager.available_quests.handle_event(event)
+                    else:
+                        self.button_manager.completed_quests.handle_event(event)
+                elif event.type == pygame.MOUSEWHEEL:
+                    if showing_available:
+                        self.button_manager.available_quests.handle_event(event)
+                    else:
+                        self.button_manager.completed_quests.handle_event(event)
+            
             self.update()
 
     def battle_screen(self) -> None:
@@ -321,13 +374,9 @@ class Game:
         self.running = True
         if self.battle_manager is None:
             self.battle_manager = BattleManager(self.hero, self.battle_log)
-            quest_button = self.button_manager.get_button(GameState.QUEST, "Quests")
-        if self.current_quest != quest_button.selected:
-            self.current_quest = quest_button.selected
-            self.monster = None
-
+        
         if self.monster is None or not self.monster.is_alive():
-            self.monster = quest_button.buttons[self.current_quest].quest.get_monster()
+            self.monster = self.current_quest.get_monster()
         
         tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
 
@@ -356,7 +405,7 @@ class Game:
                             button.unlock()
                         elif self.hero.potion_bag["Block Potion"] == 0 and not button.is_locked():
                             button.lock()
-                            battle_buttons = self.button_manager.get_buttons(GameState.BATTLE)
+            
             self.screen_manager.draw_battle_screen(self.hero, self.monster, self.battle_log, battle_buttons.values())
             
             if self.battle_manager.state == BattleState.HOME:
@@ -373,16 +422,21 @@ class Game:
                 self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
                 self.hero.gain_experience(self.monster.experience)
                 self.hero.add_gold(self.monster.gold)
-                quest_button = self.button_manager.get_button(GameState.QUEST, "Quests")
-                quest_button.buttons[self.current_quest].quest.slay_monster(self.monster)
-                if quest_button.buttons[self.current_quest].quest.is_complete():
-                    all_quests_complete = all(
-                        quest_btn.quest.is_complete() for quest_btn in quest_button.buttons)
-                    if all_quests_complete:
+                self.current_quest.slay_monster(self.monster)
+                
+                # Check if quest is complete
+                if self.current_quest.is_complete():
+                    # Find the quest button in available quests
+                    for button in self.button_manager.available_quests.buttons:
+                        if button.quest == self.current_quest:
+                            self.button_manager.move_completed_quest(button)
+                            break
+                    
+                    # Check if all quests are complete
+                    if len(self.button_manager.available_quests.buttons) == 0:
                         self.game_state = GameState.VICTORY
                         self.running = False
                     else:
-                        self.draw_quest_complete(self.screen, self.buttons[GameState.QUEST]["Quests"].buttons[self.current_quest].quest)
                         self.game_state = GameState.QUEST
                         self.running = False
                 else:
@@ -391,8 +445,8 @@ class Game:
                 print("Hero defeated!")
                 self.game_state = GameState.DEFEAT
                 self.running = False
-            self.update()    
-    
+            self.update()
+
     def victory_screen(self) -> None:
         """Victory screen shown when all quests are completed."""
         self.running = True
@@ -562,4 +616,12 @@ class Game:
         elif self.game_state == GameState.SHOP:
             if button_name == "Leave":
                 self.game_state = GameState.MAIN_GAME
+                self.running = False
+                
+        elif self.game_state == GameState.QUEST:
+            if button_name == "Back":
+                self.game_state = GameState.MAIN_GAME
+                self.running = False
+            elif button_name == "Start":
+                self.game_state = GameState.BATTLE
                 self.running = False

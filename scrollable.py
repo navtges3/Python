@@ -1,4 +1,3 @@
-
 import pygame
 from constants import Colors
 from button import Button
@@ -47,17 +46,43 @@ class ScrollableButtons:
             event: The pygame event to handle
         """
         if event.type == pygame.MOUSEWHEEL:
-            self.scroll_offset += event.y * 20
-            self._clamp_scroll_offset()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
+            # Only scroll if mouse is inside the scrollable area
+            mouse_pos = pygame.mouse.get_pos()
+            if self.rect.collidepoint(mouse_pos):
+                content_height = len(self.buttons) * (self.button_height + self.button_spacing)
+                
+                # Only scroll if content is taller than view area
+                if content_height > self.rect.height:
+                    # Calculate new scroll offset
+                    new_offset = self.scroll_offset + event.y * 20
+                    
+                    # Calculate maximum scroll offset
+                    max_scroll = content_height - self.rect.height
+                    
+                    # If new offset would go beyond bounds, set to boundary
+                    if new_offset > 0:
+                        self.scroll_offset = 0
+                    elif new_offset < -max_scroll:
+                        self.scroll_offset = -max_scroll
+                    else:
+                        self.scroll_offset = new_offset
+        elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button only
             if self.scrollbar_handle_rect.collidepoint(event.pos):
                 self.dragging_scrollbar = True
             elif self.rect.collidepoint(event.pos):
-                mouse_y = event.pos[1] - self.scroll_offset
-                for button in self.buttons:
-                    if button.rect.collidepoint(event.pos[0], mouse_y):
+                for i, button in enumerate(self.buttons):
+                    # Calculate the button's actual position with scroll offset
+                    actual_y = self.rect.y + i * (self.button_height + self.button_spacing) + self.scroll_offset
+                    actual_rect = pygame.Rect(
+                        self.rect.x,
+                        actual_y,
+                        self.rect.width - self.scrollbar_width,
+                        self.button_height
+                    )
+                    
+                    if actual_rect.collidepoint(event.pos):
                         if self.selected is None:
-                            self.selected = self.buttons.index(button)
+                            self.selected = i
                             button.toggle()
                         elif button.is_toggled():
                             self.selected = None
@@ -65,22 +90,36 @@ class ScrollableButtons:
                         else:
                             if self.selected is not None and 0 <= self.selected < len(self.buttons):
                                 self.buttons[self.selected].toggle()
-                            self.selected = self.buttons.index(button)
+                            self.selected = i
                             button.toggle()
-        elif event.type == pygame.MOUSEBUTTONUP:
+                        break  # Exit loop after handling the click
+        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:  # Left mouse button only
             self.dragging_scrollbar = False
         elif event.type == pygame.MOUSEMOTION and self.dragging_scrollbar:
             content_height = len(self.buttons) * (self.button_height + self.button_spacing)
             if content_height > self.rect.height:
+                # Calculate the scroll position based on mouse position
                 movement_ratio = (event.pos[1] - self.rect.top) / self.rect.height
-                self.scroll_offset = -movement_ratio * (content_height - self.rect.height)
-                self._clamp_scroll_offset()
+                new_offset = -movement_ratio * (content_height - self.rect.height)
+                
+                # Clamp the scroll offset to boundaries
+                max_scroll = content_height - self.rect.height
+                self.scroll_offset = max(-max_scroll, min(0, new_offset))
 
     def _clamp_scroll_offset(self) -> None:
         """Clamp the scroll offset to prevent scrolling beyond content bounds."""
         content_height = len(self.buttons) * (self.button_height + self.button_spacing)
-        min_offset = -max(0, content_height - self.rect.height)
-        self.scroll_offset = max(min_offset, min(0, self.scroll_offset))
+        
+        # If content is shorter than view area, keep at top
+        if content_height <= self.rect.height:
+            self.scroll_offset = 0
+            return
+            
+        # Calculate the maximum scroll offset (content height - view height)
+        max_scroll = content_height - self.rect.height
+        
+        # Clamp the scroll offset between -max_scroll and 0
+        self.scroll_offset = max(-max_scroll, min(0, self.scroll_offset))
 
     def draw(self, surface: pygame.Surface) -> None:
         """Draw the scrollable area, buttons, and scrollbar.
@@ -88,6 +127,9 @@ class ScrollableButtons:
         Args:
             surface: The pygame surface to draw on
         """
+        # Draw border around the scrollable area
+        pygame.draw.rect(surface, Colors.BLACK, self.rect, 2)
+
         # Create a clipping surface for the content
         surface.set_clip(self.rect)
 

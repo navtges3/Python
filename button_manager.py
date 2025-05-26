@@ -3,19 +3,53 @@ import pygame
 from button import Button, TextButton
 from spritesheet import SpriteSheet
 from constants import GameState, GameConstants, Colors
+from scrollable import ScrollableButtons
+from quest import QuestButton, quest_list
 
 class ButtonManager:
     """Manages button creation and organization for different game states."""
     
-    def __init__(self, font: pygame.font.Font, button_sheet: pygame.Surface):
+    def __init__(self, font: pygame.font.Font, button_sheet: pygame.Surface, quest_button_sheet: pygame.Surface):
         self.font = font
-        # Split the 600x250 button sheet into 5 rows of 600x50
-        self.button_sheet_gray      = SpriteSheet(button_sheet.subsurface((0, 0, 600, 50)))
-        self.button_sheet_red       = SpriteSheet(button_sheet.subsurface((0, 50, 600, 50)))
-        self.button_sheet_green     = SpriteSheet(button_sheet.subsurface((0, 100, 600, 50)))
-        self.button_sheet_blue      = SpriteSheet(button_sheet.subsurface((0, 150, 600, 50)))
-        self.button_sheet_yellow    = SpriteSheet(button_sheet.subsurface((0, 200, 600, 50)))
+        # Split the 800x250 button sheet into 5 rows of 800x50
+        self.button_sheet_gray      = SpriteSheet(button_sheet.subsurface((0, 0, 800, 50)))
+        self.button_sheet_red       = SpriteSheet(button_sheet.subsurface((0, 50, 800, 50)))
+        self.button_sheet_green     = SpriteSheet(button_sheet.subsurface((0, 100, 800, 50)))
+        self.button_sheet_blue      = SpriteSheet(button_sheet.subsurface((0, 150, 800, 50)))
+        self.button_sheet_yellow    = SpriteSheet(button_sheet.subsurface((0, 200, 800, 50)))
         self.buttons: Dict[GameState, Dict[str, Button]] = self._initialize_buttons()
+
+        self.quest_button_sheet = SpriteSheet(quest_button_sheet)
+        
+        # Initialize quest containers
+        self.available_quests = ScrollableButtons(
+            10, 70,  # x, y
+            GameConstants.SCREEN_WIDTH - 20,  # width
+            GameConstants.SCREEN_HEIGHT - 200,  # height
+            100,  # button_height
+            20  # button_spacing
+        )
+        
+        self.completed_quests = ScrollableButtons(
+            10, 70,  # x, y
+            GameConstants.SCREEN_WIDTH - 20,  # width
+            GameConstants.SCREEN_HEIGHT - 200,  # height
+            100,  # button_height
+            20  # button_spacing
+        )
+        
+        # Initialize available quests
+        for quest in quest_list:
+            quest_button = QuestButton(
+                self.quest_button_sheet,  # Use yellow button sheet for quests
+                0,  # x position will be set by ScrollableButtons
+                0,  # y position will be set by ScrollableButtons
+                700,  # width
+                100,  # height
+                1,  # scale
+                quest  # quest object
+            )
+            self.available_quests.add_button(quest_button)
 
     def _initialize_buttons(self) -> Dict[GameState, Dict[str, Button]]:
         """Initialize all game buttons organized by game state."""
@@ -157,17 +191,18 @@ class ButtonManager:
         return {
             'Back': TextButton(
                 self.button_sheet_red,
-                GameConstants.SCREEN_WIDTH // 3,
-                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12,
-                GameConstants.SCREEN_WIDTH // 3,
-                GameConstants.SCREEN_HEIGHT // 12, 1,
+                10,
+                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12 - 10,
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
                 'Back',
                 self.font,
             ),
             'Start': TextButton(
                 self.button_sheet_green,
-                GameConstants.SCREEN_WIDTH // 3 * 2,
-                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12,
+                GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH - 10,
+                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12 - 10,
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -176,16 +211,17 @@ class ButtonManager:
             ),
             'Available': TextButton(
                 self.button_sheet_yellow,
-                GameConstants.SCREEN_WIDTH // 3,
                 10,
-                GameConstants.SCREEN_WIDTH // 3,
-                GameConstants.SCREEN_HEIGHT // 12, 1,
+                10,
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
                 'Available',
                 self.font,
             ),
             'Complete': TextButton(
                 self.button_sheet_green,
-                GameConstants.SCREEN_WIDTH // 3 * 2,
+                GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH - 10,
                 10,
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
@@ -294,3 +330,11 @@ class ButtonManager:
                 if button.was_clicked:
                     return button_name
         return None
+
+    def move_completed_quest(self, quest_button):
+        """Move a completed quest from available to completed list."""
+        if quest_button in self.available_quests.buttons:
+            # Remove from available quests
+            self.available_quests.remove_button(self.available_quests.buttons.index(quest_button))
+            # Add to completed quests
+            self.completed_quests.add_button(quest_button)

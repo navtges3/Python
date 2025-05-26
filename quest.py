@@ -1,6 +1,8 @@
 from monster import *
 from ui_helpers import *
+from spritesheet import SpriteSheet
 import random
+import pygame
 
 class Quest:
 
@@ -47,32 +49,40 @@ class Quest:
         draw_multiple_lines(output_text, font, Colors.BLACK, surface, button.pos[0] + button.size[0] // 4 * 3, button.pos[1] + 10)
 
 class QuestButton(Button):
-    def __init__(self, quest: Quest, pos, size, font, text_color):
-        quest_image_path = fileIO.resource_path("images\\buttons\\quest_background.png")
-        super().__init__("QuestButton", pos, size, font, text_color, background_image_path=quest_image_path, hover_image_path=quest_image_path)
+    def __init__(self, button_sheet: SpriteSheet, x: int, y: int, width: int, height: int, scale: float, quest: Quest):
+        super().__init__(button_sheet, x, y, width, height, scale)
         self.quest = quest
-
-    def draw(self, surface):
-        border_color = Colors.GOLD if self.selected else Colors.BLACK
-        
+        self.selected = False
         if self.quest.is_complete():
-            self.button_color = Colors.GREEN
-            self.hover_color = Colors.LIGHT_GREEN
+            self.toggle()  # Set to selected state if quest is complete
 
-        super().draw(surface, False, border_color)
+    def draw(self, surface: pygame.Surface) -> None:
+        """Draw the button if a surface is provided, otherwise just update state."""
+        # Check if quest completion state changed
+        if self.quest.is_complete() and not self.is_toggled():
+            self.toggle()
+        
+        self.update_state()
+        
+        if surface is not None:
+            # Draw the base button
+            image = self.button_sheet.get_image(self.state, self.width, self.height, self.scale, Colors.BLACK)
+            surface.blit(image, (self.rect.x, self.rect.y))
+            
+            # Draw quest information
+            draw_text(self.quest.name, pygame.font.Font(None, 24), Colors.BLACK, surface, self.rect.x + 10, self.rect.y + 10)
+            draw_text(self.quest.reward.name, pygame.font.Font(None, 24), Colors.GREEN, surface, self.rect.x + 10, self.rect.y + 40)
+            draw_text(str(self.quest.penalty), pygame.font.Font(None, 24), Colors.RED, surface, self.rect.x + 10, self.rect.y + 70)
 
-        # Use self.rect.x and self.rect.y for dynamic positioning
-        draw_text(self.quest.name, self.font, Colors.BLACK, surface, self.rect.x + 10, self.rect.y + 10)
-        draw_text(self.quest.reward.name, self.font, Colors.GREEN, surface, self.rect.x + 10, self.rect.y + 40)
-        draw_text(str(self.quest.penalty), self.font, Colors.RED, surface, self.rect.x + 10, self.rect.y + 70)
+            draw_wrapped_text(self.quest.description, pygame.font.Font(None, 24), Colors.BLACK, surface, 
+                            self.rect.x + self.rect.width // 3, self.rect.y + 10, self.rect.width // 3 + 50)
 
-        draw_wrapped_text(self.quest.description, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 3, self.rect.y + 10, self.rect.width // 3 + 50)
+            output_text = ""
+            for key in self.quest.monster_list.keys():
+                output_text += f"{key}: {self.quest.monsters_slain[key]}/{self.quest.monster_list[key]}\n"
 
-        output_text = ""
-        for key in self.quest.monster_list.keys():
-            output_text += f"{key}: {self.quest.monsters_slain[key]}/{self.quest.monster_list[key]}\n"
-
-        draw_multiple_lines(output_text, self.font, Colors.BLACK, surface, self.rect.x + self.rect.width // 4 * 3 + 25, self.rect.y + 10)
+            draw_multiple_lines(output_text, pygame.font.Font(None, 24), Colors.BLACK, surface, 
+                              self.rect.x + self.rect.width // 4 * 3 + 25, self.rect.y + 10)
 
 quest_list = {
     # Quest 1
@@ -90,7 +100,7 @@ quest_list = {
     # Quest 7
     Quest("Rampaging Goblins", "A large group of goblins terrorizes the countryside. Take down seven!", {"Goblin": 7,}, potion_dictionary["Block Potion"], ("village", -10)),
     # Quest 8
-    Quest("Cave Dweller’s Wrath", "Deep in the caves, ogres and goblins lurk. Destroy two goblins and four ogres.", {"Goblin": 2,"Ogre": 4,}, potion_dictionary["Damage Potion"], ("village", -10)),
+    Quest("Cave Dweller's Wrath", "Deep in the caves, ogres and goblins lurk. Destroy two goblins and four ogres.", {"Goblin": 2,"Ogre": 4,}, potion_dictionary["Damage Potion"], ("village", -10)),
     # Quest 9
     Quest("Battle at Dawn", "A mixed force of goblins, ogres, and orcs is preparing for an assault. Strike first!", {"Goblin": 3,"Ogre": 2,"Orc": 2,}, potion_dictionary["Block Potion"], ("village", -10)),
     # Quest 10
