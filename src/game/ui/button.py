@@ -1,6 +1,6 @@
 import pygame
-from spritesheet import SpriteSheet
-from constants import Colors
+from src.game.ui.spritesheet import SpriteSheet
+from src.game.core.constants import Colors
 
 BUTTON_DEFUALT = 0
 BUTTON_CLICKED = 1

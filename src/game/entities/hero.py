@@ -1,8 +1,9 @@
 from random import randint
-from items import Item, Armor, Weapon, weapon_dictionary, armor_dictionary
-from ui_helpers import *
-from combatant import Combatant
-import fileIO
+from src.game.entities.items import Item, Armor, Weapon, weapon_dictionary, armor_dictionary
+from src.game.ui.ui_helpers import *
+from src.game.core.combatant import Combatant
+from src.game.utils.fileIO import resource_path
+import pygame
 
 class Hero(Combatant):
     """Base class for all heroes in the game."""
@@ -136,9 +137,9 @@ class Hero(Combatant):
         self.armor = armor_dictionary[data["armor"]]
         self.potion_bag = data["potion_bag"]
         if self.class_name == "Knight":
-            self.image = pygame.image.load(fileIO.resource_path("images/knight.png")).convert()
+            self.image = pygame.image.load(resource_path("images/knight.png")).convert()
         else:
-            self.image = pygame.image.load(fileIO.resource_path("images/assassin.png")).convert()
+            self.image = pygame.image.load(resource_path("images/assassin.png")).convert()
         self.image = pygame.transform.scale(self.image, (100, 100))
 
 
@@ -189,7 +190,7 @@ class Assassin(Hero):
 
     def __init__(self, name:str):
         """Initialize the Assassin with random health and a dagger."""
-        image = pygame.image.load(fileIO.resource_path("images/assassin.png")).convert()
+        image = pygame.image.load(resource_path("images/assassin.png")).convert()
         image = pygame.transform.scale(image, (100, 100))
         health = randint(7, 12)
         weapon = weapon_dictionary["Iron Knife"]
@@ -201,7 +202,7 @@ class Knight(Hero):
 
     def __init__(self, name:str):
         """Initialize the Knight with random health and a greatsword."""
-        image = pygame.image.load(fileIO.resource_path("images/knight.png")).convert()
+        image = pygame.image.load(resource_path("images/knight.png")).convert()
         image = pygame.transform.scale(image, (100, 100))
         health = randint(10, 15)
         weapon = weapon_dictionary["Rusty Sword"]

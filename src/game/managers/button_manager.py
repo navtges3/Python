@@ -1,10 +1,10 @@
 from typing import Dict, Optional
 import pygame
-from button import Button, TextButton
-from spritesheet import SpriteSheet
-from constants import GameState, GameConstants, Colors
-from scrollable import ScrollableButtons
-from quest import QuestButton, quest_list
+from src.game.ui.button import Button, TextButton
+from src.game.ui.spritesheet import SpriteSheet
+from src.game.core.constants import GameState, GameConstants, Colors
+from src.game.ui.scrollable import ScrollableButtons
+from src.game.entities.quest import QuestButton, quest_list
 
 class ButtonManager:
     """Manages button creation and organization for different game states."""

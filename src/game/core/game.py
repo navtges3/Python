@@ -1,12 +1,12 @@
-from battle_manager import *
-from screen_manager import *
-from button_manager import ButtonManager
-from event_manager import EventManager
-from hero import *
-from items import *
-from constants import *
-from quest import *
-import fileIO
+from src.game.managers.battle_manager import *
+from src.game.managers.screen_manager import *
+from src.game.managers.button_manager import ButtonManager
+from src.game.managers.event_manager import EventManager
+from src.game.entities.hero import *
+from src.game.entities.items import *
+from src.game.core.constants import *
+from src.game.entities.quest import *
+from src.game.utils.fileIO import save_file_exists, save_game, load_game, resource_path
 import pygame
 
 class Game:
@@ -36,19 +36,19 @@ class Game:
         # Initialize the mixer for music
         pygame.mixer.init()
         # Load and play background music
-        pygame.mixer.music.load(fileIO.resource_path('music\\background_music.mp3'))
+        pygame.mixer.music.load(resource_path('music\\background_music.mp3'))
         pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
         pygame.mixer.music.play(-1)  # Play music in a loop
 
         self.clock = pygame.time.Clock()
         self.screen = pygame.display.set_mode((GameConstants.SCREEN_WIDTH, GameConstants.SCREEN_HEIGHT))
         pygame.display.set_caption('Village Defense')
-        pygame.display.set_icon(pygame.image.load(fileIO.resource_path('icon.ico')))
+        pygame.display.set_icon(pygame.image.load(resource_path('icon.ico')))
 
         self.screen_manager = ScreenManager(self.screen, self.font)
         # Load button sprite sheet
-        button_sheet = pygame.image.load(fileIO.resource_path('images\\buttons\\button_sheet_0.png')).convert_alpha()
-        quest_button_sheet = pygame.image.load(fileIO.resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
+        button_sheet = pygame.image.load(resource_path('images\\buttons\\button_sheet_0.png')).convert_alpha()
+        quest_button_sheet = pygame.image.load(resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
         self.button_manager = ButtonManager(self.font, button_sheet, quest_button_sheet)
         
         self.text_box = TextBox(
@@ -101,15 +101,15 @@ class Game:
             "completed_quests": completed_quests
         })
 
-        fileIO.save_game(save_data)
+        save_game(save_data)
 
     def load_game(self) -> None:
         """Load the player's progress from the save file."""
-        save_data = fileIO.load_game()
+        save_data = load_game()
         if save_data is not None:
             # Load hero data
             if "hero" in save_data:
-                self.hero = Hero(pygame.image.load(fileIO.resource_path(f"images/{save_data['hero']['class_name'].lower()}.png")).convert())
+                self.hero = Hero(pygame.image.load(resource_path(f"images/{save_data['hero']['class_name'].lower()}.png")).convert())
                 self.hero.from_dict(save_data["hero"])
                 self.hero.image = pygame.transform.scale(self.hero.image, (100, 100))
             else:
@@ -331,7 +331,7 @@ class Game:
         self.running = True
 
         # Check for save file
-        if fileIO.save_file_exists():
+        if save_file_exists():
             self.button_manager.get_button(GameState.WELCOME, "Load Game").unlock()
         else:
             self.button_manager.get_button(GameState.WELCOME, "Load Game").lock()

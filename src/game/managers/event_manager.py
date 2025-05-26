@@ -1,5 +1,5 @@
 import pygame
-from constants import GameState
+from src.game.core.constants import GameState
 from typing import Tuple, Optional, List, Dict, Any
 
 class EventManager:

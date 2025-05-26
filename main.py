@@ -1,5 +1,5 @@
-from constants import GameState
-from game import Game
+from src.game.core.constants import GameState
+from src.game.core.game import Game
 
 def main() -> None:
     my_game = Game()

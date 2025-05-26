@@ -1,6 +1,7 @@
-from monster import *
-from ui_helpers import *
-from spritesheet import SpriteSheet
+from src.game.entities.monster import *
+from src.game.ui.ui_helpers import *
+from src.game.ui.spritesheet import SpriteSheet
+from src.game.entities.items import potion_dictionary
 import random
 import pygame
 

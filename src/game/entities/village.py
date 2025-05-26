@@ -1,7 +1,7 @@
-from ui_helpers import *
-from constants import *
-from items import *
-from hero import *
+from src.game.ui.ui_helpers import *
+from src.game.core.constants import *
+from src.game.entities.items import *
+from src.game.entities.hero import *
 import random
 import pygame
 

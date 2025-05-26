@@ -1,6 +1,6 @@
 import pygame
-from constants import Colors
-from button import Button
+from src.game.core.constants import Colors
+from src.game.ui.button import Button
 
 class ScrollableButtons:
     """A scrollable container that manages and displays buttons with scrollbar functionality."""

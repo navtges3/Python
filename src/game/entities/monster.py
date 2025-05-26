@@ -1,9 +1,9 @@
-from constants import *
-from ui_helpers import *
-from combatant import Combatant
+from src.game.core.constants import *
+from src.game.ui.ui_helpers import *
+from src.game.core.combatant import Combatant
+from src.game.utils.fileIO import resource_path
 import random
 import pygame
-import fileIO
 
 #Base class for all monsters
 class Monster(Combatant):
@@ -72,7 +72,7 @@ class Monster(Combatant):
         # Image
 
         draw_text(self.name, font, Colors.BLACK, surface, monster_border.x + 20, monster_border.y + 10)
-        monster_image = pygame.image.load(fileIO.resource_path(f"images\\{self.image}")).convert()
+        monster_image = pygame.image.load(resource_path(f"images\\{self.image}")).convert()
         monster_image = pygame.transform.scale(monster_image, (100, 100))
         surface.blit(monster_image, (monster_border.x + 10, monster_border.y + font.get_linesize() + 10))
         

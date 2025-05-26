@@ -1,8 +1,8 @@
-from constants import GameState
-from monster import Monster
-from hero import Hero
+from src.game.core.constants import GameState
+from src.game.entities.monster import Monster
+from src.game.entities.hero import Hero
 from enum import Enum
-from button_manager import ButtonManager
+from src.game.managers.button_manager import ButtonManager
 
 
 class TurnState(Enum):

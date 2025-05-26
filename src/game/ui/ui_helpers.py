@@ -1,10 +1,10 @@
-from constants import *
-from items import *
-import fileIO
+from src.game.core.constants import *
+from src.game.entities.items import *
+from src.game.utils.fileIO import *
 import pygame
 import random
 
-from button import Button
+from src.game.ui.button import Button
 
 class Tooltip:
     def __init__(self, text: str, font: pygame.font.Font):
