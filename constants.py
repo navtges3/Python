@@ -52,6 +52,9 @@ class GameConstants:
 
     FPS = 60
 
+    BUTTON_WIDTH = 200
+    BUTTON_HEIGHT = 50
+
     BUTTON_IMAGE_PATH = "images\\buttons\\button.png"
     HOVER_IMAGE_PATH = "images\\buttons\\button_hover.png"
 
