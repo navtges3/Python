@@ -232,7 +232,53 @@ class ButtonManager:
         }
     
     def _create_battle_buttons(self) -> Dict[str, Button]:
-        return
+        # Starting position for the first button (left side, halfway down screen)
+        x_pos = 20  # 20 pixels from left edge
+        y_start = GameConstants.SCREEN_HEIGHT // 2
+        button_spacing = GameConstants.BUTTON_HEIGHT + 10  # 10 pixels between buttons
+
+        return {
+            'Attack': TextButton(
+                self.button_sheet_red,
+                x_pos,
+                y_start,
+                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Attack',
+                self.font,
+            ),
+            'Defend': TextButton(
+                self.button_sheet_blue,
+                x_pos,
+                y_start + button_spacing,
+                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Defend',
+                self.font,
+            ),
+            'Use Potion': TextButton(
+                self.button_sheet_green,
+                x_pos,
+                y_start + button_spacing * 2,
+                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Use Potion',
+                self.font,
+            ),
+            'Flee': TextButton(
+                self.button_sheet_yellow,
+                x_pos,
+                y_start + button_spacing * 3,
+                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Flee',
+                self.font,
+            ),
+        }
     
     def _create_shop_buttons(self) -> Dict[str, Button]:
         return {

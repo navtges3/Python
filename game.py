@@ -76,7 +76,30 @@ class Game:
             "current_quest": self.current_quest,  # Save the currently selected quest
         })
 
-        # TODO save quests
+        # Save quest lists
+        available_quests = []
+        completed_quests = []
+        
+        # Save available quests
+        for button in self.button_manager.available_quests.buttons:
+            quest_data = {
+                "name": button.quest.name,
+                "monsters_slain": button.quest.monsters_slain
+            }
+            available_quests.append(quest_data)
+            
+        # Save completed quests
+        for button in self.button_manager.completed_quests.buttons:
+            quest_data = {
+                "name": button.quest.name,
+                "monsters_slain": button.quest.monsters_slain
+            }
+            completed_quests.append(quest_data)
+            
+        save_data.update({
+            "available_quests": available_quests,
+            "completed_quests": completed_quests
+        })
 
         fileIO.save_game(save_data)
 
@@ -99,14 +122,56 @@ class Game:
                 self.monster = None
 
             pygame.mixer.music.set_volume(save_data.get("game_volume", 0.5))
+            
             # Load current quest
             self.current_quest = save_data.get("current_quest", None)
+            
+            # Clear existing quest lists
+            self.button_manager.available_quests.clear_buttons()
+            self.button_manager.completed_quests.clear_buttons()
+            
+            # Load available quests
+            if "available_quests" in save_data:
+                for quest_data in save_data["available_quests"]:
+                    # Find the quest in quest_list by name
+                    for quest in quest_list:
+                        if quest.name == quest_data["name"]:
+                            # Update monsters slain
+                            quest.monsters_slain = quest_data["monsters_slain"]
+                            # Create new quest button
+                            quest_button = QuestButton(
+                                self.button_manager.quest_button_sheet,
+                                0,  # x position will be set by ScrollableButtons
+                                0,  # y position will be set by ScrollableButtons
+                                700,  # width
+                                100,  # height
+                                1,  # scale
+                                quest  # quest object
+                            )
+                            self.button_manager.available_quests.add_button(quest_button)
+                            break
+            
+            # Load completed quests
+            if "completed_quests" in save_data:
+                for quest_data in save_data["completed_quests"]:
+                    # Find the quest in quest_list by name
+                    for quest in quest_list:
+                        if quest.name == quest_data["name"]:
+                            # Update monsters slain
+                            quest.monsters_slain = quest_data["monsters_slain"]
+                            # Create new quest button
+                            quest_button = QuestButton(
+                                self.button_manager.quest_button_sheet,
+                                0,  # x position will be set by ScrollableButtons
+                                0,  # y position will be set by ScrollableButtons
+                                700,  # width
+                                100,  # height
+                                1,  # scale
+                                quest  # quest object
+                            )
+                            self.button_manager.completed_quests.add_button(quest_button)
+                            break
 
-            # Load game state
-            self.game_state = GameState[save_data.get("game_state", "WELCOME")]
-
-            # TODO load quests
-        
     def show_esc_popup(self) -> None:
         """Show the escape popup menu."""
         self.popup_running = True
@@ -406,7 +471,12 @@ class Game:
                         elif self.hero.potion_bag["Block Potion"] == 0 and not button.is_locked():
                             button.lock()
             
-            self.screen_manager.draw_battle_screen(self.hero, self.monster, self.battle_log, battle_buttons.values())
+            self.screen.fill(Colors.WHITE)
+            self.hero.draw(self.screen, self.font, 0, 25)
+            self.monster.draw(self.screen, self.font, GameConstants.SCREEN_WIDTH // 2, 25)
+            
+            # Draw battle buttons
+            self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
             
             if self.battle_manager.state == BattleState.HOME:
                 mouse_pos = pygame.mouse.get_pos()
@@ -586,7 +656,7 @@ class Game:
             elif button_name == "Exit Game":
                 self.game_state = GameState.EXIT
                 self.running = False
-        
+                
         elif self.game_state == GameState.NEW_GAME:
             if button_name == "Knight":
                 self.button_manager.get_button(GameState.NEW_GAME, "Knight").toggle()
@@ -624,4 +694,18 @@ class Game:
                 self.running = False
             elif button_name == "Start":
                 self.game_state = GameState.BATTLE
+                self.running = False
+
+        elif self.game_state == GameState.BATTLE:
+            if button_name == "Attack":
+                self.battle_manager.handle_attack(self.monster)
+            elif button_name == "Defend":
+                self.hero.potion_block += 5
+                self.battle_log.append(f"{self.hero.name} takes a defensive stance!")
+                self.monster.attack(self.hero)
+            elif button_name == "Use Potion":
+                self.battle_manager.state = BattleState.USE_ITEM
+            elif button_name == "Flee":
+                self.battle_log.append(f"{self.hero.name} flees from battle!")
+                self.game_state = GameState.QUEST
                 self.running = False
