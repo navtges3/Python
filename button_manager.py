@@ -232,12 +232,13 @@ class ButtonManager:
         }
     
     def _create_battle_buttons(self) -> Dict[str, Button]:
-        # Starting position for the first button (left side, halfway down screen)
+        """Create two sets of buttons for battle screen: combat and victory layouts."""
         x_pos = 20  # 20 pixels from left edge
         y_start = GameConstants.SCREEN_HEIGHT // 2
         button_spacing = GameConstants.BUTTON_HEIGHT + 10  # 10 pixels between buttons
 
-        return {
+        # Combat layout buttons
+        combat_buttons = {
             'Attack': TextButton(
                 self.button_sheet_red,
                 x_pos,
@@ -279,6 +280,37 @@ class ButtonManager:
                 self.font,
             ),
         }
+
+        # Victory layout buttons (positioned in the middle of the combat button area)
+        victory_buttons = {
+            'Continue': TextButton(
+                self.button_sheet_green,
+                x_pos,
+                y_start + button_spacing,
+                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Continue',
+                self.font,
+            ),
+            'Retreat': TextButton(
+                self.button_sheet_red,
+                x_pos,
+                y_start + button_spacing * 2,
+                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Retreat',
+                self.font,
+            ),
+        }
+
+        # Lock victory buttons initially
+        for button in victory_buttons.values():
+            button.lock()
+
+        # Combine both layouts
+        return {**combat_buttons, **victory_buttons}
     
     def _create_shop_buttons(self) -> Dict[str, Button]:
         return {
@@ -344,14 +376,14 @@ class ButtonManager:
         popup_x = (GameConstants.SCREEN_WIDTH - GameConstants.POPUP_WIDTH) // 2 + GameConstants.BUTTON_WIDTH // 2
         popup_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2 + GameConstants.BUTTON_HEIGHT
         return {
-            'Exit': TextButton(
-                self.button_sheet_red,
+            'Back': TextButton(
+                self.button_sheet_green,
                 popup_x,
                 popup_y + 140,
                 GameConstants.BUTTON_WIDTH,
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Exit',
+                'Back',
                 self.font,
             ),
         }
@@ -367,7 +399,8 @@ class ButtonManager:
     def draw_buttons(self, surface: pygame.Surface, state: GameState) -> None:
         """Draw all buttons for a specific game state."""
         for button in self.buttons[state].values():
-            button.draw(surface)
+            if not button.is_locked():  # Only draw unlocked buttons
+                button.draw(surface)
 
     def handle_click(self, state: GameState, pos: tuple) -> Optional[str]:
         """Handle click events and return clicked button name if any."""

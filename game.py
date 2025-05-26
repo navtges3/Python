@@ -73,8 +73,9 @@ class Game:
             save_data.update({"monster": self.monster.to_dict(),})
         save_data.update({
             "game_volume": pygame.mixer.music.get_volume(),
-            "current_quest": self.current_quest,  # Save the currently selected quest
         })
+
+
 
         # Save quest lists
         available_quests = []
@@ -123,9 +124,6 @@ class Game:
 
             pygame.mixer.music.set_volume(save_data.get("game_volume", 0.5))
             
-            # Load current quest
-            self.current_quest = save_data.get("current_quest", None)
-            
             # Clear existing quest lists
             self.button_manager.available_quests.clear_buttons()
             self.button_manager.completed_quests.clear_buttons()
@@ -136,8 +134,16 @@ class Game:
                     # Find the quest in quest_list by name
                     for quest in quest_list:
                         if quest.name == quest_data["name"]:
+                            # Create a new quest instance to avoid modifying the original
+                            new_quest = Quest(
+                                quest.name,
+                                quest.description,
+                                quest.monster_list.copy(),
+                                quest.reward,
+                                quest.penalty
+                            )
                             # Update monsters slain
-                            quest.monsters_slain = quest_data["monsters_slain"]
+                            new_quest.monsters_slain = quest_data["monsters_slain"]
                             # Create new quest button
                             quest_button = QuestButton(
                                 self.button_manager.quest_button_sheet,
@@ -146,7 +152,7 @@ class Game:
                                 700,  # width
                                 100,  # height
                                 1,  # scale
-                                quest  # quest object
+                                new_quest  # quest object
                             )
                             self.button_manager.available_quests.add_button(quest_button)
                             break
@@ -157,8 +163,16 @@ class Game:
                     # Find the quest in quest_list by name
                     for quest in quest_list:
                         if quest.name == quest_data["name"]:
+                            # Create a new quest instance to avoid modifying the original
+                            new_quest = Quest(
+                                quest.name,
+                                quest.description,
+                                quest.monster_list.copy(),
+                                quest.reward,
+                                quest.penalty
+                            )
                             # Update monsters slain
-                            quest.monsters_slain = quest_data["monsters_slain"]
+                            new_quest.monsters_slain = quest_data["monsters_slain"]
                             # Create new quest button
                             quest_button = QuestButton(
                                 self.button_manager.quest_button_sheet,
@@ -167,7 +181,7 @@ class Game:
                                 700,  # width
                                 100,  # height
                                 1,  # scale
-                                quest  # quest object
+                                new_quest  # quest object
                             )
                             self.button_manager.completed_quests.add_button(quest_button)
                             break
@@ -194,7 +208,7 @@ class Game:
                         self.popup_running = False
                         break
                     elif button.text == "Options":
-                        self.options_screen()
+                        self.show_options_popup()
                         break
                     elif button.text == "Exit" or button.text == "Save and Exit":
                         if self.game_state != GameState.NEW_GAME:
@@ -213,6 +227,71 @@ class Game:
         
         if self.game_state == GameState.WELCOME and exit_text == "Save and Exit":
             self.save_game()
+
+    def show_options_popup(self) -> None:
+        """Show the options popup menu."""
+        options_running = True
+        self.button_manager.get_button(GameState.OPTIONS, "Back").update_text("Back")
+        music_volume = pygame.mixer.music.get_volume()
+        dragging_volume = False
+
+        # Create volume slider rect
+        volume_x = (GameConstants.SCREEN_WIDTH - GameConstants.POPUP_WIDTH) // 2 + 50
+        volume_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2 + 120
+        volume_rect = pygame.Rect(volume_x, volume_y, 300, 10)
+
+        options_buttons = self.button_manager.get_buttons(GameState.OPTIONS) 
+        while options_running:
+            # Draw the current game screen in the background
+            if self.game_state == GameState.MAIN_GAME:
+                self.screen.fill(Colors.WHITE)
+                self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
+                self.button_manager.draw_buttons(self.screen, GameState.MAIN_GAME)
+            
+            # Update and draw popup
+            for button in options_buttons.values():
+                button.draw(None)  # Update button states
+                if button.was_clicked:
+                    if button.text == "Back":
+                        options_running = False
+                        break
+
+            self.screen_manager.draw_popup("Options", options_buttons)
+            
+            # Draw volume label
+            draw_text("Music Volume", self.font, Colors.BLACK, self.screen, volume_x, volume_y - 30)
+            # Draw slider background
+            pygame.draw.rect(self.screen, Colors.GRAY, volume_rect)
+            # Draw volume level
+            pygame.draw.rect(self.screen, Colors.BLUE, (volume_x, volume_y, 300 * music_volume, 10))
+
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
+                    options_running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    clicked_button = self.button_manager.handle_click(GameState.OPTIONS, event.pos)
+                    if clicked_button == "Back":
+                        options_running = False
+                    # Check if clicked on volume bar
+                    elif volume_rect.collidepoint(event.pos):
+                        dragging_volume = True
+                        # Update volume based on click position
+                        mouse_x = event.pos[0]
+                        music_volume = (mouse_x - volume_x) / 300
+                        music_volume = max(0, min(1, music_volume))  # Clamp between 0 and 1
+                        pygame.mixer.music.set_volume(music_volume)
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    dragging_volume = False
+                elif event.type == pygame.MOUSEMOTION:
+                    if dragging_volume:  # Only update if dragging started on volume bar
+                        mouse_x = event.pos[0]
+                        music_volume = (mouse_x - volume_x) / 300
+                        music_volume = max(0, min(1, music_volume))  # Clamp between 0 and 1
+                        pygame.mixer.music.set_volume(music_volume)
+            
+            self.update()
 
     def welcome_screen(self) -> None:
         """Welcome screen with options to start a new game or load an existing game."""
@@ -243,46 +322,6 @@ class Game:
             self.events()
             self.update()
 
-    def options_screen(self) -> None:
-        """Options screen for adjusting game settings."""
-        options_running = True
-        music_volume = pygame.mixer.music.get_volume()
-        
-        while options_running:            # Draw the base popup
-            options_buttons = self.button_manager.get_buttons(GameState.OPTIONS) 
-            self.screen_manager.draw_popup("Options", options_buttons)
-            
-            # Draw volume slider
-            volume_x = (GameConstants.SCREEN_WIDTH - GameConstants.POPUP_WIDTH) // 2 + 50
-            volume_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2 + 120
-            
-            # Draw volume label
-            draw_text("Music Volume", self.font, Colors.BLACK, self.screen, volume_x, volume_y - 30)
-            
-            # Draw slider background
-            pygame.draw.rect(self.screen, Colors.GRAY, (volume_x, volume_y, 300, 10))
-            
-            # Draw volume level
-            pygame.draw.rect(self.screen, Colors.BLUE, (volume_x, volume_y, 300 * music_volume, 10))
-            
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.game_state = GameState.EXIT
-                    options_running = False                
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    clicked_button = self.button_manager.handle_click(GameState.OPTIONS, event.pos)
-                    if clicked_button == "Back":
-                        options_running = False
-                elif event.type == pygame.MOUSEMOTION:
-                    if event.buttons[0]:  # Left mouse button
-                        mouse_x = event.pos[0]
-                        if volume_x <= mouse_x <= volume_x + 300:
-                            music_volume = (mouse_x - volume_x) / 300
-                            pygame.mixer.music.set_volume(music_volume)
-            
-            self.update()
-            
     def new_game_screen(self) -> None:
         """New game screen for creating a hero."""
         hero_class = ''
@@ -334,7 +373,7 @@ class Game:
         """Main game screen."""
         self.running = True
         while self.running:
-            self.screen.fill(Colors.WHITE)            # Draw the hero
+            self.screen.fill(Colors.WHITE)            # Draw the heros
             self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
 
             # Draw Buttons
@@ -434,6 +473,100 @@ class Game:
             
             self.update()
 
+    def _update_potion_button_state(self, button_name: str, potion_type: str) -> None:
+        """Helper method to update potion button states."""
+        button = self.button_manager.get_button(GameState.BATTLE, button_name)
+        if self.hero.potion_bag[potion_type] > 0 and button.is_locked():
+            button.unlock()
+        elif self.hero.potion_bag[potion_type] == 0 and not button.is_locked():
+            button.lock()
+
+    def _handle_quest_completion(self) -> None:
+        """Helper method to handle quest completion logic."""
+        # Find the quest button in available quests
+        for button in self.button_manager.available_quests.buttons:
+            if button.quest == self.current_quest:
+                self.button_manager.move_completed_quest(button)
+                break
+        
+        # Check if all quests are complete
+        if len(self.button_manager.available_quests.buttons) == 0:
+            self.game_state = GameState.VICTORY
+            self.running = False
+        else:
+            self.game_state = GameState.QUEST
+            self.running = False
+
+    def _switch_battle_layout(self, to_victory: bool) -> None:
+        """Switch between combat and victory button layouts."""
+        battle_buttons = self.button_manager.get_buttons(GameState.BATTLE)
+        
+        # Combat buttons
+        combat_buttons = ['Attack', 'Defend', 'Use Potion', 'Flee']
+        # Victory buttons
+        victory_buttons = ['Continue', 'Retreat']
+        
+        # Lock/unlock appropriate buttons
+        for name, button in battle_buttons.items():
+            if name in combat_buttons:
+                if to_victory:
+                    button.lock()
+                else:
+                    # During combat, availability depends on turn
+                    if self.battle_manager.turn == TurnState.HERO_TURN:
+                        button.unlock()
+                    else:
+                        button.lock()
+            elif name in victory_buttons:
+                if to_victory:
+                    button.unlock()
+                else:
+                    button.lock()
+
+    def _handle_monster_defeat(self) -> None:
+        """Helper method to handle monster defeat logic."""
+        print("Monster defeated!")
+        self.battle_log.append(f"{self.monster.name} has been defeated!")
+        self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and {self.monster.gold} gold.")
+        self.hero.gain_experience(self.monster.experience)
+        self.hero.add_gold(self.monster.gold)
+        self.current_quest.slay_monster(self.monster)
+        
+        # Switch to victory layout
+        self._switch_battle_layout(True)
+        
+        # Check if quest is complete
+        if self.current_quest.is_complete():
+            self.battle_log.append("Quest complete!")
+            self._handle_quest_completion()
+        else:
+            self.battle_manager.state = BattleState.MONSTER_DEFEATED
+
+    def _draw_battle_log(self) -> None:
+        """Helper method to draw the battle log."""
+        # Draw border for battle log
+        log_border = pygame.Rect(
+            GameConstants.BATTLE_SCREEN_LOG_BORDER_X,  # Start after buttons
+            GameConstants.BATTLE_SCREEN_LOG_BORDER_Y,  # Same height as buttons
+            GameConstants.BATTLE_SCREEN_LOG_BORDER_WIDTH - 10,  # Rest of screen width minus margin
+            GameConstants.BATTLE_SCREEN_LOG_BORDER_HEIGHT - 10  # Same height as button area minus margin
+        )
+        pygame.draw.rect(self.screen, Colors.BLACK, log_border, width=2, border_radius=10)
+
+        # Draw battle log title
+        draw_text_centered("Battle Log", self.font, Colors.BLACK, self.screen,
+                        log_border.centerx, log_border.y + 20)
+
+        # Draw the most recent battle log entries
+        log_x = log_border.x + 20
+        log_y = log_border.y + 50
+        max_width = log_border.width - 40
+
+        # Show the last 8 log entries
+        for log_entry in self.battle_log[-8:]:
+            draw_wrapped_text(log_entry, self.font, Colors.BLACK, self.screen, log_x, log_y, max_width)
+            log_y += self.font.get_linesize() * 2  # Double space between entries
+
     def battle_screen(self) -> None:
         """Battle screen where the hero fights a monster."""
         self.running = True
@@ -442,34 +575,42 @@ class Game:
         
         if self.monster is None or not self.monster.is_alive():
             self.monster = self.current_quest.get_monster()
+            if self.monster:
+                self._switch_battle_layout(False)  # Switch to combat layout for new monster
+                self.battle_log.append(f"A {self.monster.name} appears!")
+                self.battle_manager.monster = self.monster  # Set the monster in battle manager
         
         tooltip = Tooltip(f"Attack {self.monster.name} with your {self.hero.weapon.name}!", self.font)
 
         while self.running:
-            if self.battle_manager.state == BattleState.HOME:
-                use_potion_button = self.button_manager.get_button(GameState.BATTLE, "Use Potion")
-                if self.hero.has_potions() and use_potion_button.is_locked():
-                    use_potion_button.unlock()
-                elif not self.hero.has_potions() and not use_potion_button.is_locked():
-                    use_potion_button.lock()
-            elif self.battle_manager.state == BattleState.USE_ITEM:
-                battle_buttons = self.button_manager.get_buttons(GameState.BATTLE)
-                for button_name, button in battle_buttons.items():
-                    if button_name == "Health Potion":
-                        if self.hero.potion_bag["Health Potion"] > 0 and button.is_locked():
-                            button.unlock()
-                        elif self.hero.potion_bag["Health Potion"] == 0 and not button.is_locked():
+            # Update button states based on turn and battle state
+            if self.battle_manager.state == BattleState.MONSTER_DEFEATED:
+                self._switch_battle_layout(True)  # Show victory buttons
+            else:
+                # Update combat button states based on turn
+                if self.battle_manager.turn == TurnState.MONSTER_TURN:
+                    # Lock all hero action buttons during monster's turn
+                    for button_name in ['Attack', 'Defend', 'Use Potion', 'Flee']:
+                        button = self.button_manager.get_button(GameState.BATTLE, button_name)
+                        if not button.is_locked():
                             button.lock()
-                    elif button_name == "Damage Potion":
-                        if self.hero.potion_bag["Damage Potion"] > 0 and button.is_locked():
-                            button.unlock()
-                        elif self.hero.potion_bag["Damage Potion"] == 0 and not button.is_locked():
-                            button.lock()
-                    elif button_name == "Block Potion":
-                        if self.hero.potion_bag["Block Potion"] > 0 and button.is_locked():
-                            button.unlock()
-                        elif self.hero.potion_bag["Block Potion"] == 0 and not button.is_locked():
-                            button.lock()
+                else:  # Hero's turn
+                    # Unlock buttons based on state
+                    if self.battle_manager.state == BattleState.HOME:
+                        for button_name in ['Attack', 'Defend', 'Flee']:
+                            button = self.button_manager.get_button(GameState.BATTLE, button_name)
+                            if button.is_locked():
+                                button.unlock()
+                        # Handle potion button separately
+                        use_potion_button = self.button_manager.get_button(GameState.BATTLE, "Use Potion")
+                        if self.hero.has_potions() and use_potion_button.is_locked():
+                            use_potion_button.unlock()
+                        elif not self.hero.has_potions() and not use_potion_button.is_locked():
+                            use_potion_button.lock()
+                    elif self.battle_manager.state == BattleState.USE_ITEM:
+                        self._update_potion_button_state("Health Potion", "Health Potion")
+                        self._update_potion_button_state("Damage Potion", "Damage Potion")
+                        self._update_potion_button_state("Block Potion", "Block Potion")
             
             self.screen.fill(Colors.WHITE)
             self.hero.draw(self.screen, self.font, 0, 25)
@@ -478,39 +619,25 @@ class Game:
             # Draw battle buttons
             self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
             
-            if self.battle_manager.state == BattleState.HOME:
+            # Draw battle log
+            self._draw_battle_log()
+            
+            # Draw turn indicator only during combat
+            if self.battle_manager.state != BattleState.MONSTER_DEFEATED:
+                turn_text = "Monster's Turn" if self.battle_manager.turn == TurnState.MONSTER_TURN else "Your Turn"
+                draw_text_centered(turn_text, self.font, Colors.BLACK, self.screen, 
+                                GameConstants.SCREEN_WIDTH // 2, 10)
+            
+            if self.battle_manager.state == BattleState.HOME and self.battle_manager.turn == TurnState.HERO_TURN:
                 mouse_pos = pygame.mouse.get_pos()
                 attack_button = self.button_manager.get_button(GameState.BATTLE, "Attack")
-                if attack_button and attack_button.rect.collidepoint(mouse_pos):
+                if attack_button and not attack_button.is_locked() and attack_button.rect.collidepoint(mouse_pos):
                     tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
 
             self.events()
     
             if self.hero.is_alive() and not self.monster.is_alive() and self.battle_manager.state != BattleState.MONSTER_DEFEATED:
-                print("Monster defeated!")
-                self.battle_log.append(f"{self.monster.name} has been defeated!")
-                self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and 10 gold.")
-                self.hero.gain_experience(self.monster.experience)
-                self.hero.add_gold(self.monster.gold)
-                self.current_quest.slay_monster(self.monster)
-                
-                # Check if quest is complete
-                if self.current_quest.is_complete():
-                    # Find the quest button in available quests
-                    for button in self.button_manager.available_quests.buttons:
-                        if button.quest == self.current_quest:
-                            self.button_manager.move_completed_quest(button)
-                            break
-                    
-                    # Check if all quests are complete
-                    if len(self.button_manager.available_quests.buttons) == 0:
-                        self.game_state = GameState.VICTORY
-                        self.running = False
-                    else:
-                        self.game_state = GameState.QUEST
-                        self.running = False
-                else:
-                    self.battle_manager.state = BattleState.MONSTER_DEFEATED
+                self._handle_monster_defeat()
             elif not self.hero.is_alive():
                 print("Hero defeated!")
                 self.game_state = GameState.DEFEAT
@@ -652,7 +779,7 @@ class Game:
                 self.game_state = GameState.MAIN_GAME
                 self.running = False
             elif button_name == "Options":
-                self.options_screen()
+                self.show_options_popup()
             elif button_name == "Exit Game":
                 self.game_state = GameState.EXIT
                 self.running = False
@@ -697,15 +824,37 @@ class Game:
                 self.running = False
 
         elif self.game_state == GameState.BATTLE:
-            if button_name == "Attack":
-                self.battle_manager.handle_attack(self.monster)
-            elif button_name == "Defend":
-                self.hero.potion_block += 5
-                self.battle_log.append(f"{self.hero.name} takes a defensive stance!")
-                self.monster.attack(self.hero)
-            elif button_name == "Use Potion":
-                self.battle_manager.state = BattleState.USE_ITEM
-            elif button_name == "Flee":
-                self.battle_log.append(f"{self.hero.name} flees from battle!")
+            # Only process battle actions during hero's turn
+            if self.battle_manager.turn == TurnState.HERO_TURN:
+                if button_name == "Attack":
+                    self.battle_manager.handle_attack(self.monster)
+                elif button_name == "Defend":
+                    self.battle_manager.handle_defend()
+                elif button_name == "Use Potion":
+                    self.battle_manager.handle_use_potion()
+                elif button_name == "Flee":
+                    if self.battle_manager.handle_flee():
+                        self.battle_log.append(f"{self.hero.name} flees from battle!")
+                        self.game_state = GameState.QUEST
+                        self.running = False
+            
+            # These buttons work regardless of turn
+            if button_name == "Continue":
+                if not self.current_quest.is_complete():
+                    self.monster = self.current_quest.get_monster()
+                    if self.monster:
+                        self._switch_battle_layout(False)  # Switch back to combat layout
+                        self.battle_manager.state = BattleState.HOME
+                        self.battle_manager.monster = self.monster  # Update monster in battle manager
+                        self.battle_manager.turn = TurnState.HERO_TURN  # Reset to hero's turn
+                        self.battle_log.append(f"A new {self.monster.name} appears!")
+                    else:
+                        self.game_state = GameState.QUEST
+                        self.running = False
+                else:
+                    self.game_state = GameState.QUEST
+                    self.running = False
+            elif button_name == "Retreat":
+                self.battle_log.append(f"{self.hero.name} retreats to regroup!")
                 self.game_state = GameState.QUEST
                 self.running = False
