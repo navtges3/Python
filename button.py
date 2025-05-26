@@ -5,6 +5,7 @@ from constants import Colors
 BUTTON_DEFUALT = 0
 BUTTON_CLICKED = 1
 BUTTON_LOCKED  = 2
+BUTTON_SELECTED = 3
 
 BUTTON_GRAY   = 0
 BUTTON_RED    = 1
@@ -46,10 +47,14 @@ class Button():
     def toggle(self) -> None:
         """Toggle the button state."""
         self.toggled = not self.toggled
+        if not self.locked:
+            self.state = BUTTON_SELECTED if self.toggled else BUTTON_DEFUALT
 
     def reset_toggle(self) -> None:
         """Reset the toggle state."""
         self.toggled = False
+        if not self.locked:
+            self.state = BUTTON_DEFUALT
 
     def is_toggled(self) -> bool:
         """Check if the button is toggled."""
@@ -65,17 +70,17 @@ class Button():
         mouse_pressed = pygame.mouse.get_pressed()[0]
 
         if self.rect.collidepoint(pos):
-            if mouse_pressed and self.state == BUTTON_DEFUALT:
+            if mouse_pressed and (self.state == BUTTON_DEFUALT or self.state == BUTTON_SELECTED):
                 self.state = BUTTON_CLICKED
                 self.was_pressed = True
             elif not mouse_pressed and self.state == BUTTON_CLICKED:
                 if self.was_pressed:
                     self.was_clicked = True
-                self.state = BUTTON_DEFUALT
+                self.state = BUTTON_SELECTED if self.toggled else BUTTON_DEFUALT
                 self.was_pressed = False
         else:
             if self.state == BUTTON_CLICKED:
-                self.state = BUTTON_DEFUALT
+                self.state = BUTTON_SELECTED if self.toggled else BUTTON_DEFUALT
             self.was_pressed = False
     
     def draw(self, surface:pygame.Surface) -> None:
