@@ -29,6 +29,8 @@ class BattleManager:
         self.monster: Optional[Monster] = None
         self.state: BattleState = BattleState.HOME
         self.turn: TurnState = TurnState.HERO_TURN  # Start with hero's turn
+        self.showing_potions: bool = False  # Track if potion buttons are visible
+        self.button_manager: Optional[ButtonManager] = None  # Store button manager reference
 
     def start_battle(self, monster: Monster) -> None:
         """Initialize a new battle with a monster.
@@ -74,14 +76,19 @@ class BattleManager:
         Args:
             button_manager: The button manager to update button states
         """
+        # Store button manager reference for use in other methods
+        self.button_manager = button_manager
+        
         if self.state == BattleState.MONSTER_DEFEATED:
             # Lock combat buttons, unlock victory buttons
-            for name in ['Attack', 'Defend', 'Use Potion', 'Flee']:
+            for name in ['Attack', 'Defend', 'Potion', 'Flee']:
                 button = button_manager.get_button(GameState.BATTLE, name)
                 button.lock()
             for name in ['Continue', 'Retreat']:
                 button = button_manager.get_button(GameState.BATTLE, name)
                 button.unlock()
+            # Hide potion buttons if they were showing
+            self._toggle_potion_buttons(button_manager, False)
         else:
             # Lock victory buttons
             for name in ['Continue', 'Retreat']:
@@ -90,9 +97,11 @@ class BattleManager:
                 
             if self.turn == TurnState.MONSTER_TURN:
                 # Lock all hero action buttons during monster's turn
-                for name in ['Attack', 'Defend', 'Use Potion', 'Flee']:
+                for name in ['Attack', 'Defend', 'Potion', 'Flee']:
                     button = button_manager.get_button(GameState.BATTLE, name)
                     button.lock()
+                # Hide potion buttons if they were showing
+                self._toggle_potion_buttons(button_manager, False)
                 self.start_monster_turn()
             else:  # Hero's turn
                 if self.state == BattleState.HOME:
@@ -101,11 +110,50 @@ class BattleManager:
                         button = button_manager.get_button(GameState.BATTLE, name)
                         button.unlock()
                     # Handle potion button separately
-                    use_potion_button = button_manager.get_button(GameState.BATTLE, "Use Potion")
+                    potions_button = button_manager.get_button(GameState.BATTLE, "Potion")
                     if self.hero.has_potions():
-                        use_potion_button.unlock()
+                        potions_button.unlock()
                     else:
-                        use_potion_button.lock()
+                        potions_button.lock()
+                    # Update potion selection buttons if they're showing
+                    if self.showing_potions:
+                        self._update_potion_button_states(button_manager)
+                elif self.state == BattleState.USE_ITEM:
+                    # Lock combat buttons except Potion
+                    for name in ['Attack', 'Defend', 'Flee']:
+                        button = button_manager.get_button(GameState.BATTLE, name)
+                        button.lock()
+                    # Show and update potion selection buttons
+                    self._toggle_potion_buttons(button_manager, True)
+                    self._update_potion_button_states(button_manager)
+
+    def _toggle_potion_buttons(self, button_manager: ButtonManager, show: bool) -> None:
+        """Show or hide potion selection buttons.
+        
+        Args:
+            button_manager: The button manager to update button states
+            show: Whether to show or hide the buttons
+        """
+        self.showing_potions = show
+        for name in ['Health Potion', 'Damage Potion', 'Block Potion']:
+            button = button_manager.get_button(GameState.BATTLE, name)
+            if show:
+                button.show()
+            else:
+                button.hide()
+
+    def _update_potion_button_states(self, button_manager: ButtonManager) -> None:
+        """Update potion selection button states based on inventory.
+        
+        Args:
+            button_manager: The button manager to update button states
+        """
+        for potion_name in ['Health Potion', 'Damage Potion', 'Block Potion']:
+            button = button_manager.get_button(GameState.BATTLE, potion_name)
+            if self.hero.potion_bag[potion_name] > 0:
+                button.unlock()
+            else:
+                button.lock()
 
     def handle_monster_attack(self) -> None:
         """Handle monster's attack action."""
@@ -177,10 +225,38 @@ class BattleManager:
 
     def handle_use_potion(self) -> None:
         """Handle hero's potion use."""
-        if self.turn != TurnState.HERO_TURN:
-            return  # Not hero's turn
-        self.state = BattleState.USE_ITEM
+        if self.turn != TurnState.HERO_TURN or not self.button_manager:
+            return  # Not hero's turn or no button manager
+            
+        # Toggle between showing and hiding potion buttons
+        if self.state == BattleState.USE_ITEM:
+            self.state = BattleState.HOME
+            self._toggle_potion_buttons(self.button_manager, False)
+        else:
+            self.state = BattleState.USE_ITEM
+            self._toggle_potion_buttons(self.button_manager, True)
         # Note: Turn state doesn't change until potion is actually used
+
+    def use_potion(self, potion_name: str) -> None:
+        """Use a specific potion.
+        
+        Args:
+            potion_name: Name of the potion to use
+        """
+        if self.turn != TurnState.HERO_TURN or self.state != BattleState.USE_ITEM or not self.button_manager:
+            return  # Not in correct state to use potion
+            
+        self.hero.use_potion(potion_name)
+        self.battle_log.append(f"{self.hero.name} used a {potion_name}!")
+        
+        # Hide potion buttons after use
+        self._toggle_potion_buttons(self.button_manager, False)
+        
+        # Return to normal battle state and switch turns
+        self.state = BattleState.HOME
+        self.turn = TurnState.MONSTER_TURN
+        if self.monster and self.monster.is_alive():
+            self.start_monster_turn()
 
     def handle_flee(self) -> bool:
         """Handle hero's flee action.

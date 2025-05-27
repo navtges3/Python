@@ -833,7 +833,7 @@ class Game:
         battle_buttons = self.button_manager.get_buttons(GameState.BATTLE)
         
         # Combat buttons
-        combat_buttons: List[str] = ['Attack', 'Defend', 'Use Potion', 'Flee']
+        combat_buttons: List[str] = ['Attack', 'Defend', 'Potion', 'Flee']
         # Victory buttons
         victory_buttons: List[str] = ['Continue', 'Retreat']
         
@@ -876,12 +876,19 @@ class Game:
 
     def _draw_battle_log(self) -> None:
         """Draw the battle log on the screen."""
+        # Calculate battle log position
+        button_width = GameConstants.BUTTON_WIDTH + 40  # Button width plus margins
+        log_x = button_width  # Start after buttons
+        log_y = GameConstants.SCREEN_HEIGHT // 2  # Align with buttons
+        log_width = GameConstants.SCREEN_WIDTH - button_width - 20  # Remaining width minus margin
+        log_height = GameConstants.SCREEN_HEIGHT - log_y - 20  # Remaining height minus margin
+        
         # Draw battle log background
         log_rect = pygame.Rect(
-            10,  # x
-            GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 2,  # y
-            GameConstants.SCREEN_WIDTH - 20,  # width
-            GameConstants.SCREEN_HEIGHT // 2 - GameConstants.BUTTON_HEIGHT - 20  # height
+            log_x,  # x position after buttons
+            log_y,  # y position aligned with buttons
+            log_width,  # width fills remaining space
+            log_height  # height fills remaining space
         )
         pygame.draw.rect(self.screen, Colors.LIGHT_GRAY, log_rect)
         
@@ -891,7 +898,7 @@ class Game:
         max_lines = (log_rect.height - 20) // self.font.get_linesize()
         for log_entry in self.battle_log[-max_lines:]:
             text_surface = self.font.render(log_entry, True, Colors.BLACK)
-            self.screen.blit(text_surface, (20, log_rect.y + 10 + y_offset))
+            self.screen.blit(text_surface, (log_rect.x + 10, log_rect.y + 10 + y_offset))
             y_offset += self.font.get_linesize()
 
     def _setup_new_monster(self, monster: Optional[Monster]) -> Tuple[bool, Optional[Tooltip]]:
@@ -970,11 +977,12 @@ class Game:
             # Update button states after state changes
             self.battle_manager.update_button_states(self.button_manager)
             
-            # Handle events before drawing buttons
+            # Handle events
             for event in self.event_manager.process_events():
                 # Check for quit
-                self.game_state, self.running = self.event_manager.handle_quit_event(event, self.game_state)
-                if not self.running:
+                if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
+                    self.running = False
                     break
                     
                 # Handle keyboard input
@@ -983,6 +991,10 @@ class Game:
                         if self.event_manager.can_click_buttons():
                             self.event_manager.reset_button_delay()
                             self.show_esc_popup()
+                            # If we returned from popup and game state changed, exit this screen
+                            if self.game_state != GameState.BATTLE:
+                                self.running = False
+                                break
                 
                 # Handle button clicks
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click only
@@ -1016,7 +1028,7 @@ class Game:
                                     elif button_name == "Defend":
                                         self.battle_manager.handle_defend()
                                         self.event_manager.reset_button_delay()  # Add delay after defend
-                                    elif button_name == "Use Potion":
+                                    elif button_name == "Potion":  # Keep internal name as Potion
                                         self.battle_manager.handle_use_potion()
                                         self.event_manager.reset_button_delay()  # Add delay after using potion
                                     elif button_name == "Flee":
@@ -1034,6 +1046,10 @@ class Game:
                                                             break
                                             self.game_state = GameState.QUEST
                                             self.running = False
+                                    # Handle potion selection buttons
+                                    elif button_name in ["Health Potion", "Damage Potion", "Block Potion"]:
+                                        self.battle_manager.use_potion(button_name)
+                                        self.event_manager.reset_button_delay()  # Add delay after using potion
                                 
                                 # Handle Retreat button regardless of turn
                                 if button_name == "Retreat":
@@ -1052,11 +1068,11 @@ class Game:
                                             self.running = False
                                 break
             
-            # Draw battle buttons
-            self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
-            
-            # Draw battle log
+            # Draw battle log first
             self._draw_battle_log()
+            
+            # Draw battle buttons on top of log
+            self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
             
             # Draw turn indicator only during combat
             if self.battle_manager.state != BattleState.MONSTER_DEFEATED:
@@ -1285,7 +1301,7 @@ class Game:
                     self.battle_manager.handle_attack(self.battle_manager.monster)
                 elif button_name == "Defend":
                     self.battle_manager.handle_defend()
-                elif button_name == "Use Potion":
+                elif button_name == "Potion":
                     self.battle_manager.handle_use_potion()
                 elif button_name == "Flee":
                     if self.battle_manager.handle_flee():

@@ -277,15 +277,19 @@ class ButtonManager:
             Dictionary mapping button names to Button objects
         """
         # Calculate button positions
-        button_y = GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12
-        button_spacing = GameConstants.BUTTON_WIDTH + 10
+        button_x = 20  # Left margin for first column
+        button_y_start = GameConstants.SCREEN_HEIGHT // 2  # Start at middle of screen
+        button_spacing = GameConstants.BUTTON_HEIGHT + 10  # Vertical spacing between buttons
+        
+        # Calculate second column position for potion buttons
+        potion_x = button_x + GameConstants.BUTTON_WIDTH + 20  # Right of first column with margin
         
         # Create buttons dictionary
         buttons: Dict[str, Button] = {
             'Attack': TextButton(
                 self.button_sheet_red,
-                10,
-                button_y,
+                button_x,
+                button_y_start,  # First row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -294,28 +298,28 @@ class ButtonManager:
             ),
             'Defend': TextButton(
                 self.button_sheet_blue,
-                10 + button_spacing,
-                button_y,
+                button_x,
+                button_y_start + button_spacing,  # Second row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Defend',
                 self.font,
             ),
-            'Use Potion': TextButton(
+            'Potion': TextButton(
                 self.button_sheet_green,
-                10 + button_spacing * 2,
-                button_y,
+                button_x,
+                button_y_start + button_spacing * 2,  # Third row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Use Potion',
+                'Potions',
                 self.font,
             ),
             'Flee': TextButton(
                 self.button_sheet_yellow,
-                10 + button_spacing * 3,
-                button_y,
+                button_x,
+                button_y_start + button_spacing * 3,  # Fourth row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -324,8 +328,8 @@ class ButtonManager:
             ),
             'Continue': TextButton(
                 self.button_sheet_green,
-                10 + button_spacing * 2,
-                button_y,
+                button_x,
+                button_y_start + button_spacing * 2,  # Same row as Potion
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -334,12 +338,43 @@ class ButtonManager:
             ),
             'Retreat': TextButton(
                 self.button_sheet_red,
-                10 + button_spacing * 3,
-                button_y,
+                button_x,
+                button_y_start + button_spacing * 3,  # Same row as Flee
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Retreat',
+                self.font,
+            ),
+            # Add potion selection buttons in second column
+            'Health Potion': TextButton(
+                self.button_sheet_green,
+                potion_x,
+                button_y_start,  # First row
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Health Potion',
+                self.font,
+            ),
+            'Damage Potion': TextButton(
+                self.button_sheet_red,
+                potion_x,
+                button_y_start + button_spacing,  # Second row
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Damage Potion',
+                self.font,
+            ),
+            'Block Potion': TextButton(
+                self.button_sheet_blue,
+                potion_x,
+                button_y_start + button_spacing * 2,  # Third row
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Block Potion',
                 self.font,
             ),
         }
@@ -347,6 +382,11 @@ class ButtonManager:
         # Hide victory buttons initially
         buttons['Continue'].hide()
         buttons['Retreat'].hide()
+        
+        # Hide potion selection buttons initially
+        buttons['Health Potion'].hide()
+        buttons['Damage Potion'].hide()
+        buttons['Block Potion'].hide()
         
         return buttons
     
