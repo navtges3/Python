@@ -51,8 +51,16 @@ class Game:
         quest_button_sheet = pygame.image.load(resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
         self.button_manager = ButtonManager(self.font, button_sheet, quest_button_sheet)
         
+        # Create text box above the middle of the screen
+        text_box_width = 180  # Original 200 - 20 (10px on each side)
+        text_box_y = GameConstants.SCREEN_HEIGHT // 2 - 100  # 100px above the middle
         self.text_box = TextBox(
-            rect=pygame.Rect(100, 150, 200, 30),
+            rect=pygame.Rect(
+                (GameConstants.SCREEN_WIDTH - text_box_width) // 2,  # Centered horizontally
+                text_box_y,
+                text_box_width,  # Width
+                30   # Height
+            ),
             font=self.font,
             placeholder="Enter Hero Name",
         )
@@ -194,10 +202,29 @@ class Game:
 
         while self.popup_running:
             # Draw the current game screen in the background
+            self.screen.fill(Colors.WHITE)
+            
+            # Draw game state specific background
             if self.game_state == GameState.MAIN_GAME:
-                self.screen.fill(Colors.WHITE)
                 self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
                 self.button_manager.draw_buttons(self.screen, GameState.MAIN_GAME)
+            elif self.game_state == GameState.NEW_GAME:
+                self.text_box.draw(self.screen)
+                self.button_manager.draw_buttons(self.screen, GameState.NEW_GAME)
+            elif self.game_state == GameState.QUEST:
+                if self.button_manager.get_button(GameState.QUEST, "Available").is_toggled():
+                    self.button_manager.available_quests.draw(self.screen)
+                else:
+                    self.button_manager.completed_quests.draw(self.screen)
+                self.button_manager.draw_buttons(self.screen, GameState.QUEST)
+            elif self.game_state == GameState.BATTLE:
+                self.hero.draw(self.screen, self.font, 0, 25)
+                if self.battle_manager.monster:
+                    self.battle_manager.monster.draw(self.screen, self.font, GameConstants.SCREEN_WIDTH // 2, 25)
+                self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
+                self._draw_battle_log()
+            elif self.game_state == GameState.SHOP:
+                self.button_manager.draw_buttons(self.screen, GameState.SHOP)
             
             # Handle events first
             for event in self.event_manager.process_events():
@@ -387,27 +414,62 @@ class Game:
         self.text_box.text = ''  # Reset text box
         self.text_box.temp_text = ''  # Reset temporary text
 
-        knight = make_hero('Knight', 'Knight')
-        assassin = make_hero('Assassin', 'Assassin')
+        # Load character images
+        knight_image = pygame.image.load(resource_path('images/knight.png')).convert()
+        assassin_image = pygame.image.load(resource_path('images/assassin.png')).convert()
+        
+        # Scale images to be larger for display
+        character_size = (200, 200)  # Larger size for display
+        knight_image = pygame.transform.scale(knight_image, character_size)
+        assassin_image = pygame.transform.scale(assassin_image, character_size)
+
+        # Calculate positions for character images
+        image_y = GameConstants.SCREEN_HEIGHT // 4  # Quarter down the screen
+        knight_x = GameConstants.SCREEN_WIDTH // 4 - character_size[0] // 2  # Left quarter
+        assassin_x = (GameConstants.SCREEN_WIDTH * 3) // 4 - character_size[0] // 2  # Right quarter
 
         while self.running:
             self.screen.fill(Colors.WHITE)
             
+            # Draw character images
+            self.screen.blit(knight_image, (knight_x, image_y))
+            self.screen.blit(assassin_image, (assassin_x, image_y))
+            
             if self.button_manager.get_button(GameState.NEW_GAME, 'Knight').is_toggled():
                 hero_class = 'Knight'
+                # Draw selection highlight for Knight
+                pygame.draw.rect(self.screen, Colors.YELLOW, 
+                               (knight_x - 5, image_y - 5, 
+                                character_size[0] + 10, character_size[1] + 10), 
+                               3)  # 3px wide border
             elif self.button_manager.get_button(GameState.NEW_GAME, 'Assassin').is_toggled():
                 hero_class = 'Assassin'
+                # Draw selection highlight for Assassin
+                pygame.draw.rect(self.screen, Colors.YELLOW, 
+                               (assassin_x - 5, image_y - 5, 
+                                character_size[0] + 10, character_size[1] + 10), 
+                               3)  # 3px wide border
             else:
                 hero_class = ''
 
-            # Display current text from text box
-            hero_name = self.text_box.temp_text if self.text_box.active else self.text_box.text
-            draw_text(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, 
-                     GameConstants.SCREEN_WIDTH // 2 - self.font.size("Hero Name: ")[0], 
-                     GameConstants.SCREEN_HEIGHT // 2 + self.font.get_linesize())
-            draw_text(f"Hero Class: {hero_class}", self.font, Colors.BLACK, self.screen, 
-                     GameConstants.SCREEN_WIDTH // 2 - self.font.size("Hero Class: ")[0], 
-                     GameConstants.SCREEN_HEIGHT // 2 + self.font.get_linesize() * 2.5)
+            # Draw class labels
+            draw_text_centered("Knight", self.font, Colors.BLACK, self.screen,
+                             knight_x + character_size[0] // 2, image_y + character_size[1] + 10)
+            draw_text_centered("Assassin", self.font, Colors.BLACK, self.screen,
+                             assassin_x + character_size[0] // 2, image_y + character_size[1] + 10)
+
+            # Draw text box first
+            self.text_box.draw(self.screen)
+
+            # Display current text from text box and hero class below it
+            hero_name = self.text_box.text  # Use text instead of temp_text
+            name_y = self.text_box.rect.bottom + 20  # 20px below text box
+            class_y = name_y + 40  # 40px below name text
+            
+            draw_text_centered(f"Hero Name: {hero_name}", self.font, Colors.BLACK, self.screen, 
+                             GameConstants.SCREEN_WIDTH // 2, name_y)
+            draw_text_centered(f"Hero Class: {hero_class}", self.font, Colors.BLACK, self.screen, 
+                             GameConstants.SCREEN_WIDTH // 2, class_y)
 
             # Handle events
             for event in pygame.event.get():
@@ -420,6 +482,9 @@ class Game:
                         self.text_box.active = True
                     else:
                         self.text_box.active = False
+                        # When deactivating, update the permanent text with the temporary text
+                        if self.text_box.temp_text:
+                            self.text_box.text = self.text_box.temp_text
                         
                     # Handle button clicks
                     if event.button == 1 and self.event_manager.can_click_buttons():  # Left click only
@@ -464,8 +529,11 @@ class Game:
             self.update()
 
         if self.game_state == GameState.MAIN_GAME:
-            self.hero = knight if hero_class == "Knight" else assassin
-            self.hero.name = self.text_box.text
+            hero_name = self.text_box.text
+            if hero_class == "Knight":
+                self.hero = Knight(hero_name)  # Knight class handles image loading
+            else:
+                self.hero = Assassin(hero_name)  # Assassin class handles image loading
 
     def main_game(self) -> None:
         """Main game screen."""
@@ -661,12 +729,13 @@ class Game:
         # Victory buttons
         victory_buttons = ['Continue', 'Retreat']
         
-        # Lock/unlock appropriate buttons
+        # Show/hide appropriate buttons
         for name, button in battle_buttons.items():
             if name in combat_buttons:
                 if to_victory:
-                    button.lock()
+                    button.hide()
                 else:
+                    button.show()
                     # During combat, availability depends on turn
                     if self.battle_manager.turn == TurnState.HERO_TURN:
                         button.unlock()
@@ -674,8 +743,10 @@ class Game:
                         button.lock()
             elif name in victory_buttons:
                 if to_victory:
+                    button.show()
                     button.unlock()
                 else:
+                    button.hide()
                     button.lock()
 
     def _handle_monster_defeat(self) -> None:
@@ -729,12 +800,20 @@ class Game:
         
         if self.battle_manager is None:
             self.battle_manager = BattleManager(self.hero, self.battle_log)
+            # Ensure victory buttons are hidden at initialization
+            battle_buttons = self.button_manager.get_buttons(GameState.BATTLE)
+            for name in ['Continue', 'Retreat']:
+                if name in battle_buttons:
+                    battle_buttons[name].hide()
+                    battle_buttons[name].lock()
         
         # Spawn a new monster if there's no monster or if the current monster is dead
         if self.battle_manager.monster is None or not self.battle_manager.monster.is_alive():
             new_monster = self.current_quest.get_monster()
             if new_monster:
                 self.battle_manager.start_battle(new_monster)
+                # Show combat buttons, hide victory buttons
+                self._switch_battle_layout(False)
             else:
                 # No more monsters in the quest, return to quest screen
                 self.game_state = GameState.QUEST

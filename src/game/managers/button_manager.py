@@ -114,11 +114,21 @@ class ButtonManager:
         }
     
     def _create_new_game_buttons(self) -> Dict[str, Button]:
-        return {
+        # Calculate positions relative to screen height
+        action_row_y = GameConstants.SCREEN_HEIGHT // 2 + 100  # Action buttons below middle
+        
+        left_col_x = GameConstants.SCREEN_WIDTH // 4 - GameConstants.BUTTON_WIDTH // 2  # Left quarter of screen
+        right_col_x = (GameConstants.SCREEN_WIDTH * 3) // 4 - GameConstants.BUTTON_WIDTH // 2  # Right quarter of screen
+        
+        # Calculate positions for character buttons to match image positions
+        image_y = GameConstants.SCREEN_HEIGHT // 4  # Quarter down the screen
+        character_size = (200, 200)  # Same size as character images
+        
+        buttons = {
             'Back': TextButton(
                 self.button_sheet_red,
-                20,
-                80,
+                left_col_x,
+                action_row_y,
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -127,8 +137,8 @@ class ButtonManager:
             ),
             'Create Hero': TextButton(
                 self.button_sheet_green,
-                320,
-                80,
+                right_col_x,
+                action_row_y,
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -137,21 +147,27 @@ class ButtonManager:
             ),
             'Knight': Button(
                 self.button_sheet_yellow,
-                20,
-                20,
-                GameConstants.BUTTON_WIDTH, 
-                GameConstants.BUTTON_HEIGHT,
+                GameConstants.SCREEN_WIDTH // 4 - character_size[0] // 2,  # Match image x position
+                image_y,  # Match image y position
+                character_size[0],  # Match image width
+                character_size[1],  # Match image height
                 1,
             ),
             'Assassin': Button(
                 self.button_sheet_blue,
-                320,
-                20,
-                GameConstants.BUTTON_WIDTH, 
-                GameConstants.BUTTON_HEIGHT,
+                (GameConstants.SCREEN_WIDTH * 3) // 4 - character_size[0] // 2,  # Match image x position
+                image_y,  # Match image y position
+                character_size[0],  # Match image width
+                character_size[1],  # Match image height
                 1,
             ),
         }
+        
+        # Hide the character selection buttons (they'll be invisible but still clickable)
+        buttons['Knight'].hide()
+        buttons['Assassin'].hide()
+        
+        return buttons
     
     def _create_main_game_buttons(self) -> Dict[str, Button]:
         return {
@@ -305,9 +321,10 @@ class ButtonManager:
             ),
         }
 
-        # Lock victory buttons initially
+        # Lock and hide victory buttons initially
         for button in victory_buttons.values():
             button.lock()
+            button.hide()
 
         # Combine both layouts
         return {**combat_buttons, **victory_buttons}
@@ -399,16 +416,37 @@ class ButtonManager:
     def draw_buttons(self, surface: pygame.Surface, state: GameState) -> None:
         """Draw all buttons for a specific game state."""
         for button in self.buttons[state].values():
-            if not button.is_locked():  # Only draw unlocked buttons
-                button.draw(surface)
+            button.draw(surface)  # Button's draw method now handles visibility
 
     def handle_click(self, state: GameState, pos: tuple) -> Optional[str]:
         """Handle click events and return clicked button name if any."""
         for button_name, button in self.buttons[state].items():
-            if button.rect.collidepoint(pos) and not button.is_locked():
+            if button.rect.collidepoint(pos) and not button.is_locked() and button.is_visible():
                 if button.was_clicked:
                     return button_name
         return None
+
+    def show_button(self, state: GameState, button_name: str) -> None:
+        """Make a specific button visible."""
+        button = self.get_button(state, button_name)
+        if button:
+            button.show()
+
+    def hide_button(self, state: GameState, button_name: str) -> None:
+        """Make a specific button invisible."""
+        button = self.get_button(state, button_name)
+        if button:
+            button.hide()
+
+    def show_all_buttons(self, state: GameState) -> None:
+        """Make all buttons in a state visible."""
+        for button in self.buttons[state].values():
+            button.show()
+
+    def hide_all_buttons(self, state: GameState) -> None:
+        """Make all buttons in a state invisible."""
+        for button in self.buttons[state].values():
+            button.hide()
 
     def move_completed_quest(self, quest_button):
         """Move a completed quest from available to completed list."""

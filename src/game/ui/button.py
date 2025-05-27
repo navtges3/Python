@@ -27,6 +27,7 @@ class Button():
         self.was_clicked = False
         self.toggled = False
         self.locked = False
+        self.visible = True
 
     def lock(self):
         """Lock the button, preventing interaction."""
@@ -45,6 +46,18 @@ class Button():
     def is_locked(self) -> bool:
         """Check if the button is locked."""
         return self.locked
+
+    def hide(self):
+        """Make the button invisible."""
+        self.visible = False
+
+    def show(self):
+        """Make the button visible."""
+        self.visible = True
+
+    def is_visible(self) -> bool:
+        """Check if the button is visible."""
+        return self.visible
 
     def toggle(self) -> None:
         """Toggle the button state."""
@@ -71,7 +84,7 @@ class Button():
     
     def update_state(self) -> None:
         """Update the button's state based on mouse interaction."""
-        if self.locked:
+        if self.locked or not self.visible:
             return
 
         pos = pygame.mouse.get_pos()
@@ -95,10 +108,10 @@ class Button():
             self.was_clicked = False
     
     def draw(self, surface:pygame.Surface) -> None:
-        """Draw the button if a surface is provided, otherwise just update state."""
+        """Draw the button if a surface is provided and the button is visible, otherwise just update state."""
         self.update_state()
         
-        if surface is not None:
+        if surface is not None and self.visible:
             image = self.button_sheet.get_image(self.state, self.width, self.height, self.scale, Colors.BLACK)
             surface.blit(image, (self.rect.x, self.rect.y))
 
@@ -116,7 +129,7 @@ class TextButton(Button):
     def draw(self, surface):
         super().draw(surface)
 
-        if surface is not None:
+        if surface is not None and self.visible:
             if self.state == BUTTON_LOCKED:
                 surface.blit(self.locked_surface, self.text_rect)
             else:
