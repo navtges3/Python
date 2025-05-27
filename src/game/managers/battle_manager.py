@@ -1,7 +1,8 @@
-from src.game.core.constants import GameState
+from src.game.core.constants import GameState, Colors
 from src.game.entities.monster import Monster
 from src.game.entities.hero import Hero
 from src.game.entities.items import potion_dictionary
+from src.game.entities.ability import UtilityAbility, DefendAbility, AttackAbility
 from src.game.ui.tooltip import Tooltip
 from enum import Enum
 from src.game.managers.button_manager import ButtonManager
@@ -15,8 +16,9 @@ class TurnState(Enum):
 class BattleState(Enum):
     HOME = 0
     USE_ITEM = 1
-    RUN_AWAY = 2
-    MONSTER_DEFEATED = 3
+    USE_ABILITY = 2
+    RUN_AWAY = 3
+    MONSTER_DEFEATED = 4
 
 class BattleManager:
     def __init__(self, hero: Hero, battle_log: List[str]) -> None:
@@ -121,6 +123,17 @@ class BattleManager:
                     # Update potion selection buttons if they're showing
                     if self.showing_potions:
                         self._update_potion_button_states(button_manager)
+                    # Always hide ability buttons in home state
+                    self._toggle_ability_buttons(button_manager, False)
+                elif self.state == BattleState.USE_ABILITY:
+                    # Lock combat buttons
+                    for name in ['Attack', 'Defend', 'Potion', 'Flee']:
+                        button = button_manager.get_button(GameState.BATTLE, name)
+                        button.lock()
+                    # Show ability buttons
+                    self._toggle_ability_buttons(button_manager, True)
+                    # Hide potion buttons if they were showing
+                    self._toggle_potion_buttons(button_manager, False)
                 elif self.state == BattleState.USE_ITEM:
                     # Lock combat buttons except Potion
                     for name in ['Attack', 'Defend', 'Flee']:
@@ -129,6 +142,13 @@ class BattleManager:
                     # Show and update potion selection buttons
                     self._toggle_potion_buttons(button_manager, True)
                     self._update_potion_button_states(button_manager)
+                elif self.state == BattleState.USE_ABILITY:
+                    # Lock combat buttons except Ability buttons
+                    for name in ['Attack', 'Defend', 'Flee']:
+                        button = button_manager.get_button(GameState.BATTLE, name)
+                        button.lock()
+                    # Show ability buttons
+                    self._toggle_ability_buttons(button_manager, True)
 
     def get_potion_tooltip(self, potion_name: str) -> Optional[Tooltip]:
         """Get tooltip for a potion button.
@@ -171,6 +191,27 @@ class BattleManager:
                 button.unlock()
             else:
                 button.lock()
+
+    def _toggle_ability_buttons(self, button_manager: ButtonManager, show: bool) -> None:
+        """Show or hide ability selection buttons.
+        
+        Args:
+            button_manager: The button manager to update button states
+            show: Whether to show or hide the buttons
+        """
+        for button_name in button_manager.get_buttons(GameState.BATTLE):
+            if button_name.startswith("Ability_"):
+                button = button_manager.get_button(GameState.BATTLE, button_name)
+                if show:
+                    # Only show ability if hero has it
+                    ability_name = button_name.replace("Ability_", "")
+                    if any(ability.name == ability_name for ability in self.hero.abilities):
+                        button.show()
+                        button.unlock()
+                    else:
+                        button.hide()
+                else:
+                    button.hide()
 
     def handle_monster_attack(self) -> None:
         """Handle monster's attack action."""
@@ -285,3 +326,65 @@ class BattleManager:
             return False  # Not hero's turn
         self.state = BattleState.RUN_AWAY
         return True  # Successful flee
+
+    def handle_attack_click(self) -> None:
+        """Handle when the Attack button is clicked, showing ability buttons."""
+        if self.turn != TurnState.HERO_TURN or not self.button_manager:
+            return
+
+        # Toggle between showing and hiding ability buttons
+        if self.state == BattleState.USE_ABILITY:
+            self.state = BattleState.HOME
+            self._toggle_ability_buttons(self.button_manager, False)
+        else:
+            self.state = BattleState.USE_ABILITY
+            self._toggle_ability_buttons(self.button_manager, True)
+
+    def use_ability(self, ability_name: str) -> None:
+        """Use a specific ability on the current target.
+        
+        Args:
+            ability_name: Name of the ability to use
+        """
+        if self.turn != TurnState.HERO_TURN or self.state != BattleState.USE_ABILITY or not self.button_manager:
+            return
+
+        if self.monster and self.monster.is_alive():
+            success = self.hero.use_ability(ability_name, self.monster)
+            if success:
+                # Add battle log message based on ability type and effect
+                for ability in self.hero.abilities:
+                    if ability.name == ability_name:
+                        if hasattr(ability, "healing"):
+                            self.battle_log.append(f"{self.hero.name} used {ability_name} to heal for {ability.healing} HP!")
+                        elif hasattr(ability, "block_amount"):
+                            self.battle_log.append(f"{self.hero.name} used {ability_name} gaining {ability.block_amount} block!")
+                        # Attack abilities will log their effects through the hero's use_ability method
+                        break
+                        
+                # Hide ability buttons after use
+                self._toggle_ability_buttons(self.button_manager, False)
+                # Return to normal battle state and switch turns
+                self.state = BattleState.HOME
+                self.turn = TurnState.MONSTER_TURN
+                self.start_monster_turn()
+
+    def get_ability_tooltip(self, button_name: str) -> Optional[Tooltip]:
+        """Get tooltip for an ability button.
+        
+        Args:
+            button_name: Name of the button to get tooltip for
+            
+        Returns:
+            Tooltip object if ability exists, None otherwise
+        """
+        if self.button_manager:
+            ability_name = button_name.replace("Ability_", "")
+            for ability in self.hero.abilities:
+                if ability.name == ability_name:
+                    cooldown_text = f" (On cooldown: {ability.current_cooldown})" if ability.current_cooldown > 0 else ""
+                    energy_text = f"Energy Cost: {ability.energy_cost}"
+                    can_use = ability.can_use(self.hero) and self.hero.energy >= ability.energy_cost
+                    color = Colors.BLACK if can_use else Colors.RED
+                    return Tooltip(f"{ability.description}\n{energy_text}{cooldown_text}", self.button_manager.font, color)
+        return None

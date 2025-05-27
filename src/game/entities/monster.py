@@ -105,7 +105,7 @@ class Monster(Combatant):
         # Image
 
         draw_text(self.name, font, Colors.BLACK, surface, 
-                 monster_border.x + 20, monster_border.y + 10)
+                    monster_border.x + 20, monster_border.y + 10)
         monster_image = pygame.image.load(resource_path(f"images\\{self.image}")).convert()
         monster_image = pygame.transform.scale(monster_image, (100, 100))
         surface.blit(monster_image, (monster_border.x + 10, 
@@ -116,8 +116,8 @@ class Monster(Combatant):
         health_bar_x = monster_border.x + 15
         health_bar_y = monster_border.y + monster_image.get_height() + font.get_linesize() + 15
         draw_health_bar(surface, font, health_bar_x, health_bar_y, 
-                       health_bar_width, health_bar_height, 
-                       self.current_hp, self.max_hp)
+                        health_bar_width, health_bar_height, 
+                        self.current_hp, self.max_hp)
 
 class Goblin(Monster):
     """A class representing a Goblin monster."""

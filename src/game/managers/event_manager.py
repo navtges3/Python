@@ -147,4 +147,4 @@ class EventManager:
         Returns:
             bool: True if key is pressed, False otherwise
         """
-        return pygame.key.get_pressed()[key] 
+        return pygame.key.get_pressed()[key]

@@ -174,7 +174,7 @@ def draw_health_bar(surface: pygame.Surface, font: pygame.font.Font, x: int, y: 
 
 def draw_energy_bar(surface: pygame.Surface, font: pygame.font.Font, x: int, y: int, width: int, height: int, current: int, maximum: int) -> None:
     """Draw an energy bar with current/max values."""
-    pygame.draw.rect(surface, Colors.BLUE, (x, y, width, height))
+    pygame.draw.rect(surface, Colors.DARK_BLUE, (x, y, width, height))
     if current > 0:
         fill_width = int((current / maximum) * width)
         pygame.draw.rect(surface, Colors.LIGHT_BLUE, (x, y, fill_width, height))

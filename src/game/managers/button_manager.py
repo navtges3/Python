@@ -217,6 +217,7 @@ class ButtonManager:
         Returns:
             Dictionary mapping button names to Button objects
         """
+        print("Creating quest screen buttons") # DEBUG
         return {
             'Back': TextButton(
                 self.button_sheet_red,
@@ -269,7 +270,6 @@ class ButtonManager:
                 self.font,
             ),
         }
-    
     def _create_battle_buttons(self) -> Dict[str, Button]:
         """Create battle screen buttons.
         
@@ -281,8 +281,9 @@ class ButtonManager:
         button_y_start = GameConstants.SCREEN_HEIGHT // 2  # Start at middle of screen
         button_spacing = GameConstants.BUTTON_HEIGHT + 10  # Vertical spacing between buttons
         
-        # Calculate second column position for potion buttons
-        potion_x = button_x + GameConstants.BUTTON_WIDTH + 20  # Right of first column with margin
+        # Calculate positions for additional columns
+        ability_x = button_x + GameConstants.BUTTON_WIDTH + 20  # Second column
+        potion_x = ability_x + GameConstants.BUTTON_WIDTH + 20  # Third column
         
         # Create buttons dictionary
         buttons: Dict[str, Button] = {
@@ -387,6 +388,30 @@ class ButtonManager:
         buttons['Health Potion'].hide()
         buttons['Damage Potion'].hide()
         buttons['Block Potion'].hide()
+        
+        # Add ability buttons with text based on available abilities
+        # They'll be hidden by default and shown when Attack is clicked
+        ability_buttons = [
+            ('Power Attack', self.button_sheet_red),
+            ('Precise Strike', self.button_sheet_blue),
+            ('Critical Strike', self.button_sheet_yellow),
+            ('Guard', self.button_sheet_blue),
+            ('Shield Wall', self.button_sheet_blue),
+            ('Heal', self.button_sheet_green),
+        ]
+        
+        for i, (ability_name, button_sheet) in enumerate(ability_buttons):
+            buttons[f"Ability_{ability_name}"] = TextButton(
+                button_sheet,
+                ability_x,
+                button_y_start + (i * button_spacing),
+                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                ability_name,
+                self.font,
+            )
+            buttons[f"Ability_{ability_name}"].hide()  # Hide by default
         
         return buttons
     
@@ -516,6 +541,7 @@ class ButtonManager:
         """
         for name, button in self.buttons[state].items():
             if not button.is_locked() and button.rect.collidepoint(pos):
+                print(f"Button clicked: {name}")  # DEBUG
                 return name
         return None
 
