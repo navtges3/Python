@@ -5,6 +5,7 @@ from src.game.managers.event_manager import EventManager
 from src.game.entities.hero import Hero, Knight, Assassin
 from src.game.entities.monster import Monster
 from src.game.entities.items import *
+from src.game.entities.village import Village
 from src.game.core.constants import GameState, GameConstants, Colors
 from src.game.entities.quest import Quest, QuestButton, quest_list
 from src.game.utils.fileIO import save_file_exists, save_game, load_game, resource_path
@@ -38,6 +39,7 @@ class Game:
         self.popup_running: bool = False
         self.battle_manager: Optional[BattleManager] = None
         self.event_manager: EventManager = EventManager()
+        self.village: Village = Village("Heroville", 100, self.font)  # Initialize village with 100 health
         
         # Initialize the mixer for music
         pygame.mixer.init()
@@ -214,10 +216,10 @@ class Game:
             self.screen.fill(Colors.WHITE)
             
             # Draw game state specific background
-            if self.game_state == GameState.MAIN_GAME:
+            if self.game_state == GameState.VILLAGE:
                 if self.hero:
                     self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
-                self.button_manager.draw_buttons(self.screen, GameState.MAIN_GAME)
+                self.button_manager.draw_buttons(self.screen, GameState.VILLAGE)
             elif self.game_state == GameState.NEW_GAME:
                 self.text_box.draw(self.screen)
                 self.button_manager.draw_buttons(self.screen, GameState.NEW_GAME)
@@ -391,7 +393,7 @@ class Game:
                                 self.running = False
                             elif button_name == "Load Game":
                                 self.load_game()
-                                self.game_state = GameState.MAIN_GAME
+                                self.game_state = GameState.VILLAGE
                                 self.running = False
                             elif button_name == "Options":
                                 self.show_options_popup()
@@ -503,7 +505,7 @@ class Game:
                                     self.game_state = GameState.HOME
                                     self.running = False
                                 elif button_name == "Create Hero":
-                                    self.game_state = GameState.MAIN_GAME
+                                    self.game_state = GameState.VILLAGE
                                     self.running = False
                                 break
                 elif event.type == pygame.KEYDOWN:
@@ -525,23 +527,25 @@ class Game:
             self.text_box.draw(self.screen)
             self.update()
 
-        if self.game_state == GameState.MAIN_GAME:
+        if self.game_state == GameState.VILLAGE:
             hero_name = self.text_box.text
             if hero_class == "Knight":
                 self.hero = Knight(hero_name)  # Knight class handles image loading
             else:
                 self.hero = Assassin(hero_name)  # Assassin class handles image loading
 
-    def main_game(self) -> None:
-        """Main game screen."""
+    def village_screen(self) -> None:
+        """Main village screen where the player can see the village status and access other features."""
         self.running = True
         self.event_manager.reset_button_delay()  # Start delay timer
         
         while self.running:
             self.screen.fill(Colors.WHITE)
             
-            # Draw the hero
-            self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
+            # Draw the village and hero
+            self.village.draw(self.screen, GameConstants.SCREEN_WIDTH // 4, 50)  # Draw village at top quarter
+            if self.hero:
+                self.hero.draw(self.screen, self.font, 0, GameConstants.SCREEN_HEIGHT // 2)
 
             # Handle events
             for event in self.event_manager.process_events():
@@ -558,14 +562,14 @@ class Game:
                             self.event_manager.reset_button_delay()
                             self.show_esc_popup()
                             # If we returned from popup and game state changed, exit this screen
-                            if self.game_state != GameState.MAIN_GAME:
+                            if self.game_state != GameState.VILLAGE:
                                 self.running = False
                                 break
                 
                 # Handle button clicks
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     # Get main game buttons
-                    main_buttons = self.button_manager.get_buttons(GameState.MAIN_GAME)
+                    main_buttons = self.button_manager.get_buttons(GameState.VILLAGE)
                     
                     # Check each button
                     for button_name, button in main_buttons.items():
@@ -573,7 +577,7 @@ class Game:
                             if button_name == "Menu":
                                 self.show_esc_popup()
                                 # If we returned from popup and game state changed, exit this screen
-                                if self.game_state != GameState.MAIN_GAME:
+                                if self.game_state != GameState.VILLAGE:
                                     self.running = False
                                     break
                             elif button_name == "Quest":
@@ -585,12 +589,31 @@ class Game:
                             break
 
             # Draw Buttons
-            self.button_manager.draw_buttons(self.screen, GameState.MAIN_GAME)
+            self.button_manager.draw_buttons(self.screen, GameState.VILLAGE)
             self.update()
 
     def shop_screen(self) -> None:
         """Shop screen where the hero can buy items."""
         self.running = True
+        
+        # Calculate positions for item sections
+        section_width = GameConstants.SCREEN_WIDTH // 3
+        section_height = 150
+        y_start = 100
+        padding = 20
+
+        # Calculate clickable areas for each section
+        potion_rect = pygame.Rect(padding, y_start, section_width - padding * 2, section_height)
+        weapon_rect = pygame.Rect(section_width + padding, y_start, section_width - padding * 2, section_height)
+        armor_rect = pygame.Rect(section_width * 2 + padding, y_start, section_width - padding * 2, section_height)
+
+        # Calculate buy button area
+        buy_button_rect = pygame.Rect(
+            GameConstants.SCREEN_WIDTH // 2 - 100,
+            y_start + section_height + padding,
+            200,
+            40
+        )
         
         while self.running:
             self.screen.fill(Colors.WHITE)
@@ -606,18 +629,29 @@ class Game:
                         self.show_esc_popup()
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left click only
                     if self.event_manager.can_click_buttons():
-                        shop_buttons = self.button_manager.get_buttons(GameState.SHOP)
                         mouse_pos = pygame.mouse.get_pos()
                         
-                        for button_name, button in shop_buttons.items():
-                            if not button.is_locked() and button.rect.collidepoint(mouse_pos):
-                                self.event_manager.reset_button_delay()
-                                if button_name == "Leave":
-                                    self.game_state = GameState.MAIN_GAME
-                                    self.running = False
-                                break
+                        # Check for section clicks
+                        if potion_rect.collidepoint(mouse_pos):
+                            self.village.shop.card_selected(ShopConstants.POTION_CARD_KEY)
+                        elif weapon_rect.collidepoint(mouse_pos):
+                            self.village.shop.card_selected(ShopConstants.WEAPON_CARD_KEY)
+                        elif armor_rect.collidepoint(mouse_pos):
+                            self.village.shop.card_selected(ShopConstants.ARMOR_CARD_KEY)
+                        # Check for buy button click
+                        elif (buy_button_rect.collidepoint(mouse_pos) and 
+                            self.village.shop.card_selected_key is not None and 
+                            self.village.shop.can_buy_selected(self.hero)):
+                            self.village.shop.buy_item(self.hero)
+                        # Check for leave button click
+                        elif self.button_manager.get_button(GameState.SHOP, "Leave").rect.collidepoint(mouse_pos):
+                            self.game_state = GameState.VILLAGE
+                            self.running = False
             
-            # Draw shop buttons
+            # Draw shop interface
+            self.village.shop.draw(self.screen, self.hero)
+            
+            # Draw leave button
             self.button_manager.draw_buttons(self.screen, GameState.SHOP)
             self.update()
 
@@ -666,7 +700,7 @@ class Game:
                                     complete_button.toggle()
                                     available_button.reset_toggle()
                                 elif button_name == "Back":
-                                    self.game_state = GameState.MAIN_GAME
+                                    self.game_state = GameState.VILLAGE
                                     self.running = False
                                 elif button_name == "Start" and selected_quest:
                                     self.current_quest = selected_quest.quest
@@ -1120,7 +1154,7 @@ class Game:
                 self.running = False
             elif button_name == "Load Game":
                 self.load_game()
-                self.game_state = GameState.MAIN_GAME
+                self.game_state = GameState.VILLAGE
                 self.running = False
             elif button_name == "Options":
                 self.show_options_popup()
@@ -1141,10 +1175,10 @@ class Game:
                 self.game_state = GameState.HOME
                 self.running = False
             elif button_name == "Create Hero":
-                self.game_state = GameState.MAIN_GAME
+                self.game_state = GameState.VILLAGE
                 self.running = False
         
-        elif self.game_state == GameState.MAIN_GAME:
+        elif self.game_state == GameState.VILLAGE:
             if button_name == "Menu":
                 self.show_esc_popup()
             elif button_name == "Quest":
@@ -1156,12 +1190,12 @@ class Game:
                 
         elif self.game_state == GameState.SHOP:
             if button_name == "Leave":
-                self.game_state = GameState.MAIN_GAME
+                self.game_state = GameState.VILLAGE
                 self.running = False
                 
         elif self.game_state == GameState.QUEST:
             if button_name == "Back":
-                self.game_state = GameState.MAIN_GAME
+                self.game_state = GameState.VILLAGE
                 self.running = False
             elif button_name == "Start":
                 self.game_state = GameState.BATTLE

@@ -56,7 +56,7 @@ class ButtonManager:
         return {
             GameState.HOME:         self._create_home_buttons(),
             GameState.NEW_GAME:     self._create_new_game_buttons(),
-            GameState.MAIN_GAME:    self._create_main_game_buttons(),
+            GameState.VILLAGE:    self._create_main_game_buttons(),
             GameState.QUEST:        self._create_quest_buttons(),
             GameState.BATTLE:       self._create_battle_buttons(),
             GameState.SHOP:         self._create_shop_buttons(),

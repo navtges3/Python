@@ -23,35 +23,16 @@ class Shop:
         self.potion_key: str = random.choice(list(potion_dictionary.keys()))
         self.weapon_key: str = random.choice(list(weapon_dictionary.keys()))
         self.armor_key: str = random.choice(list(armor_dictionary.keys()))
-        self.card_selected_key: Optional[str] = ShopConstants.POTION_CARD_KEY
-        self.selected_price: int = potion_dictionary[self.potion_key].value
-        self.cards: CardDict = {
-            ShopConstants.POTION_CARD_KEY: Button(
-                ShopConstants.POTION_CARD_KEY, 
-                (GameConstants.SCREEN_WIDTH // 8, 25), 
-                (GameConstants.SCREEN_WIDTH // 16 * 3, GameConstants.SCREEN_HEIGHT // 3), 
-                font, Colors.BLACK
-            ),
-            ShopConstants.WEAPON_CARD_KEY: Button(
-                ShopConstants.WEAPON_CARD_KEY, 
-                (GameConstants.SCREEN_WIDTH // 32 * 13, 25), 
-                (GameConstants.SCREEN_WIDTH // 16 * 3, GameConstants.SCREEN_HEIGHT // 3), 
-                font, Colors.BLACK, Colors.RED
-            ),
-            ShopConstants.ARMOR_CARD_KEY: Button(
-                ShopConstants.ARMOR_CARD_KEY, 
-                (GameConstants.SCREEN_WIDTH // 16 * 11, 25), 
-                (GameConstants.SCREEN_WIDTH // 16 * 3, GameConstants.SCREEN_HEIGHT // 3), 
-                font, Colors.BLACK, Colors.BLUE
-            ),
-        }
+        self.card_selected_key: Optional[str] = None
+        self.selected_price: int = 0
+        self.font: pygame.font.Font = font
 
     def new_card(self, card_name: str) -> None:
         """
-        Change the card in the shop.
+        Change the item in the shop.
 
         Args:
-            card_name: Name of the card type to change
+            card_name: Name of the item type to change
         """
         if card_name == ShopConstants.POTION_CARD_KEY:
             self.potion_key = random.choice(list(potion_dictionary.keys()))
@@ -66,12 +47,11 @@ class Shop:
 
     def card_selected(self, card_name: str) -> None:
         """
-        Select a card in the shop.
+        Select an item in the shop.
 
         Args:
-            card_name: Name of the card to select
+            card_name: Name of the item type to select
         """
-        print(f"Selected card: {card_name}")
         if card_name == ShopConstants.POTION_CARD_KEY:
             self.selected_price = potion_dictionary[self.potion_key].value
         elif card_name == ShopConstants.WEAPON_CARD_KEY:
@@ -121,21 +101,99 @@ class Shop:
         else:
             print("Not enough gold to buy the item.")
 
-    def draw(self, surface: pygame.Surface) -> None:
+    def draw(self, surface: pygame.Surface, hero: Hero) -> None:
         """
         Draw the shop and its items.
 
         Args:
             surface: Pygame surface to draw on
+            hero: The hero who is shopping
         """
-        # Draw the shop background
-        potion_border = Colors.LIGHT_GREEN if self.card_selected_key == ShopConstants.POTION_CARD_KEY else Colors.BLACK
-        weapon_border = Colors.LIGHT_GREEN if self.card_selected_key == ShopConstants.WEAPON_CARD_KEY else Colors.BLACK
-        armor_border = Colors.LIGHT_GREEN if self.card_selected_key == ShopConstants.ARMOR_CARD_KEY else Colors.BLACK
+        # Draw shop title
+        draw_text_centered("Shop", self.font, Colors.BLACK, surface, 
+                          GameConstants.SCREEN_WIDTH // 2, 20)
 
-        draw_item(potion_dictionary[self.potion_key], self.cards[ShopConstants.POTION_CARD_KEY], surface, potion_border)
-        draw_item(weapon_dictionary[self.weapon_key], self.cards[ShopConstants.WEAPON_CARD_KEY], surface, weapon_border)
-        draw_item(armor_dictionary[self.armor_key], self.cards[ShopConstants.ARMOR_CARD_KEY], surface, armor_border)
+        # Draw hero's gold
+        draw_text_centered(f"Gold: {hero.gold}", self.font, Colors.GOLD, surface,
+                          GameConstants.SCREEN_WIDTH // 2, 50)
+
+        # Calculate positions for item sections
+        section_width = GameConstants.SCREEN_WIDTH // 3
+        section_height = 150
+        y_start = 100
+        padding = 20
+
+        # Draw Potions Section
+        potion_x = padding
+        self._draw_item_section(surface, potion_x, y_start, section_width - padding * 2, section_height,
+                                "Potions", potion_dictionary[self.potion_key],
+                                ShopConstants.POTION_CARD_KEY, hero)
+
+        # Draw Weapons Section
+        weapon_x = section_width + padding
+        self._draw_item_section(surface, weapon_x, y_start, section_width - padding * 2, section_height,
+                                "Weapons", weapon_dictionary[self.weapon_key],
+                                ShopConstants.WEAPON_CARD_KEY, hero)
+
+        # Draw Armor Section
+        armor_x = section_width * 2 + padding
+        self._draw_item_section(surface, armor_x, y_start, section_width - padding * 2, section_height,
+                                "Armor", armor_dictionary[self.armor_key],
+                                ShopConstants.ARMOR_CARD_KEY, hero)
+
+        # Draw Buy Button if item is selected
+        if self.card_selected_key is not None:
+            buy_button_rect = pygame.Rect(
+                GameConstants.SCREEN_WIDTH // 2 - 100,
+                y_start + section_height + padding,
+                200,
+                40
+            )
+            can_buy = self.can_buy_selected(hero)
+            button_color = Colors.GREEN if can_buy else Colors.GRAY
+            pygame.draw.rect(surface, button_color, buy_button_rect, border_radius=5)
+            draw_text_centered("Buy", self.font, Colors.WHITE, surface,
+                                buy_button_rect.centerx, buy_button_rect.centery)
+
+    def _draw_item_section(self, surface: pygame.Surface, x: int, y: int, width: int, height: int,
+                            title: str, item: Union[Item, Weapon, Armor], card_key: str, hero: Hero) -> None:
+        """
+        Draw a section for an item type in the shop.
+
+        Args:
+            surface: Pygame surface to draw on
+            x: X coordinate of the section
+            y: Y coordinate of the section
+            width: Width of the section
+            height: Height of the section
+            title: Title of the section
+            item: Item to display
+            card_key: Key identifying this item type
+            hero: The hero who is shopping
+        """
+        # Draw section background
+        rect = pygame.Rect(x, y, width, height)
+        is_selected = self.card_selected_key == card_key
+        border_color = Colors.LIGHT_GREEN if is_selected else Colors.BLACK
+        pygame.draw.rect(surface, Colors.WHITE, rect)
+        pygame.draw.rect(surface, border_color, rect, 2, border_radius=5)
+
+        # Draw section title
+        draw_text_centered(title, self.font, Colors.BLACK, surface,
+                            rect.centerx, rect.y + 20)
+
+        # Draw item name
+        draw_text_centered(item.name, self.font, Colors.BLACK, surface,
+                            rect.centerx, rect.y + 50)
+
+        # Draw item price
+        draw_text_centered(f"Price: {item.value} gold", self.font,
+                            Colors.GOLD if hero.gold >= item.value else Colors.RED,
+                            surface, rect.centerx, rect.y + 80)
+
+        # Draw item description (wrapped)
+        draw_wrapped_text(item.description, self.font, Colors.BLACK, surface,
+                            rect.x + 10, rect.y + 110, width - 20)
 
 class Village:
     """A class representing a village that can be damaged and has a shop."""

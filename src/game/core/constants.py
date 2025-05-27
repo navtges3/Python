@@ -5,7 +5,7 @@ class GameState(Enum):
     """Game states for managing different screens and transitions."""
     HOME = 1
     NEW_GAME = 2
-    MAIN_GAME = 3
+    VILLAGE = 3
     QUEST = 4
     BATTLE = 5
     SHOP = 6
