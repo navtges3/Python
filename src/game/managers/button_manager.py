@@ -37,6 +37,14 @@ class ButtonManager:
             100,  # button_height
             20  # button_spacing
         )
+
+        self.failed_quests = ScrollableButtons(
+            10, 70,  # x, y
+            GameConstants.SCREEN_WIDTH - 20,  # width
+            GameConstants.SCREEN_HEIGHT - 200,  # height
+            100,  # button_height
+            20  # button_spacing
+        )
         
         # Initialize available quests
         for quest in quest_list:
@@ -248,6 +256,16 @@ class ButtonManager:
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Complete',
+                self.font,
+            ),
+            'Failed': TextButton(
+                self.button_sheet_red,
+                GameConstants.BUTTON_WIDTH * 2 + 30,
+                10,
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Failed',
                 self.font,
             ),
         }
@@ -509,3 +527,24 @@ class ButtonManager:
         self.available_quests.remove_button(quest_button)
         # Add to completed quests
         self.completed_quests.add_button(quest_button)
+
+    def move_failed_quest(self, quest_button: QuestButton) -> None:
+        """Move a quest button from available to failed quests and apply penalty.
+        
+        Args:
+            quest_button: The quest button to move
+        """
+        # Remove from available quests
+        self.available_quests.remove_button(quest_button)
+        # Mark the quest as failed
+        quest_button.mark_as_failed()
+        # Add to failed quests
+        self.failed_quests.add_button(quest_button)
+        
+        # Apply the quest penalty
+        penalty_target, penalty_value = quest_button.quest.penalty
+        if penalty_target == "village":
+            from src.game.core.game import Game  # Import here to avoid circular import
+            if hasattr(Game, 'instance') and Game.instance and Game.instance.village:
+                Game.instance.village.health += penalty_value  # Penalty value is negative
+                Game.instance.battle_log.append(f"Village suffers {abs(penalty_value)} damage from quest failure!")

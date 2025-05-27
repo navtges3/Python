@@ -28,9 +28,11 @@ class Game:
         pygame.K_DELETE: "delete",
         pygame.K_TAB: "tab",
     }
+    instance = None  # Class variable to store the current game instance
 
     def __init__(self) -> None:
         """Initialize the game."""
+        Game.instance = self  # Store instance for access from other classes
         self.game_state: GameState = GameState.HOME
         self.battle_log: List[str] = []
         self.hero: Optional[Hero] = None
@@ -80,6 +82,7 @@ class Game:
 
     def quit(self) -> None:
         """Quit the game."""
+        Game.instance = None  # Clear the instance when quitting
         pygame.quit()
 
     def save_game(self) -> None:
@@ -659,6 +662,20 @@ class Game:
         """Quest screen where the player can select and start quests."""
         self.running = True
         showing_available: bool = True  # Track which quest list is being shown
+        showing_completed: bool = False  # Track if showing completed quests
+        showing_failed: bool = False  # Track if showing failed quests
+        
+        # Ensure Available tab is selected and others are reset when opening screen
+        quest_buttons = self.button_manager.get_buttons(GameState.QUEST)
+        available_button = quest_buttons.get("Available")
+        complete_button = quest_buttons.get("Complete")
+        failed_button = quest_buttons.get("Failed")
+        if available_button:
+            available_button.toggle()
+        if complete_button:
+            complete_button.reset_toggle()
+        if failed_button:
+            failed_button.reset_toggle()
         
         while self.running:
             self.screen.fill(Colors.WHITE)
@@ -668,6 +685,7 @@ class Game:
             start_button = quest_buttons.get("Start")
             available_button = quest_buttons.get("Available")
             complete_button = quest_buttons.get("Complete")
+            failed_button = quest_buttons.get("Failed")
             
             # Handle events
             for event in pygame.event.get():
@@ -682,8 +700,10 @@ class Game:
                     # Handle quest list scrolling and selection
                     if showing_available:
                         self.button_manager.available_quests.handle_event(event)
-                    else:
+                    elif showing_completed:
                         self.button_manager.completed_quests.handle_event(event)
+                    elif showing_failed:
+                        self.button_manager.failed_quests.handle_event(event)
                         
                     # Handle button clicks
                     if event.button == 1 and self.event_manager.can_click_buttons():  # Left click only
@@ -693,12 +713,25 @@ class Game:
                                 self.event_manager.reset_button_delay()
                                 if button_name == "Available":
                                     showing_available = True
+                                    showing_completed = False
+                                    showing_failed = False
                                     available_button.toggle()
                                     complete_button.reset_toggle()
+                                    failed_button.reset_toggle()
                                 elif button_name == "Complete":
                                     showing_available = False
+                                    showing_completed = True
+                                    showing_failed = False
                                     complete_button.toggle()
                                     available_button.reset_toggle()
+                                    failed_button.reset_toggle()
+                                elif button_name == "Failed":
+                                    showing_available = False
+                                    showing_completed = False
+                                    showing_failed = True
+                                    failed_button.toggle()
+                                    available_button.reset_toggle()
+                                    complete_button.reset_toggle()
                                 elif button_name == "Back":
                                     self.game_state = GameState.VILLAGE
                                     self.running = False
@@ -710,21 +743,28 @@ class Game:
                 elif event.type == pygame.MOUSEBUTTONUP or event.type == pygame.MOUSEMOTION:
                     if showing_available:
                         self.button_manager.available_quests.handle_event(event)
-                    else:
+                    elif showing_completed:
                         self.button_manager.completed_quests.handle_event(event)
+                    elif showing_failed:
+                        self.button_manager.failed_quests.handle_event(event)
                 elif event.type == pygame.MOUSEWHEEL:
                     if showing_available:
                         self.button_manager.available_quests.handle_event(event)
-                    else:
+                    elif showing_completed:
                         self.button_manager.completed_quests.handle_event(event)
+                    elif showing_failed:
+                        self.button_manager.failed_quests.handle_event(event)
             
             # Draw the appropriate quest list
             if showing_available:
                 self.button_manager.available_quests.draw(self.screen)
                 selected_quest = self.button_manager.available_quests.get_selected_button()
-            else:
+            elif showing_completed:
                 self.button_manager.completed_quests.draw(self.screen)
                 selected_quest = self.button_manager.completed_quests.get_selected_button()
+            else:  # showing_failed
+                self.button_manager.failed_quests.draw(self.screen)
+                selected_quest = self.button_manager.failed_quests.get_selected_button()
             
             # Update Start button state based on selection
             if selected_quest and showing_available and start_button.is_locked():
@@ -760,7 +800,11 @@ class Game:
         # Find the quest button in available quests
         for button in self.button_manager.available_quests.buttons:
             if button.quest == self.current_quest:
-                self.button_manager.move_completed_quest(button)
+                # Check if hero died or fled - quest failed
+                if not self.hero.is_alive() or self.game_state == GameState.QUEST:
+                    self.button_manager.move_failed_quest(button)
+                else:
+                    self.button_manager.move_completed_quest(button)
                 break
         
         # Reset battle state and buttons
@@ -768,9 +812,13 @@ class Game:
         self.battle_manager.turn = TurnState.HERO_TURN
         self._switch_battle_layout(False)
         
-        # Check if all quests are complete
+        # Check if all quests are complete or failed
         if len(self.button_manager.available_quests.buttons) == 0:
-            self.game_state = GameState.VICTORY
+            # Check if any quests were completed successfully
+            if len(self.button_manager.completed_quests.buttons) > 0:
+                self.game_state = GameState.VICTORY
+            else:
+                self.game_state = GameState.DEFEAT
             self.running = False
         else:
             self.game_state = GameState.QUEST
@@ -905,6 +953,15 @@ class Game:
             battle_result = self.battle_manager.update_battle_state()
             if battle_result is False:  # Hero defeated
                 print("Hero defeated!")
+                # Move current quest to failed quests
+                if self.current_quest:
+                    for button in self.button_manager.available_quests.buttons:
+                        if button.quest == self.current_quest:
+                            self.button_manager.move_failed_quest(button)
+                            # Check if village is defeated after applying penalty
+                            if self.village.health <= 0:
+                                self.game_state = GameState.DEFEAT
+                            break
                 self.game_state = GameState.DEFEAT
                 self.running = False
             elif battle_result is True:  # Monster defeated
@@ -965,14 +1022,34 @@ class Game:
                                     elif button_name == "Flee":
                                         if self.battle_manager.handle_flee():
                                             self.battle_log.append(f"{self.hero.name} flees from battle!")
+                                            # Mark quest as failed when fleeing
+                                            if self.current_quest:
+                                                for button in self.button_manager.available_quests.buttons:
+                                                    if button.quest == self.current_quest:
+                                                        self.button_manager.move_failed_quest(button)
+                                                        # Check if village is defeated after applying penalty
+                                                        if self.village.health <= 0:
+                                                            self.game_state = GameState.DEFEAT
+                                                            self.running = False
+                                                            break
                                             self.game_state = GameState.QUEST
                                             self.running = False
                                 
                                 # Handle Retreat button regardless of turn
                                 if button_name == "Retreat":
                                     self.battle_log.append(f"{self.hero.name} retreats to regroup!")
-                                    self.game_state = GameState.QUEST
-                                    self.running = False
+                                    # Mark quest as failed when retreating
+                                    if self.current_quest:
+                                        for button in self.button_manager.available_quests.buttons:
+                                            if button.quest == self.current_quest:
+                                                self.button_manager.move_failed_quest(button)
+                                                # Check if village is defeated after applying penalty
+                                                if self.village.health <= 0:
+                                                    self.game_state = GameState.DEFEAT
+                                                    self.running = False
+                                                    break
+                                            self.game_state = GameState.QUEST
+                                            self.running = False
                                 break
             
             # Draw battle buttons
@@ -1212,12 +1289,32 @@ class Game:
                     self.battle_manager.handle_use_potion()
                 elif button_name == "Flee":
                     if self.battle_manager.handle_flee():
-                        self.battle_log.append(f"{self.hero.name if self.hero else 'Hero'} flees from battle!")
+                        self.battle_log.append(f"{self.hero.name} flees from battle!")
+                        # Mark quest as failed when fleeing
+                        if self.current_quest:
+                            for button in self.button_manager.available_quests.buttons:
+                                if button.quest == self.current_quest:
+                                    self.button_manager.move_failed_quest(button)
+                                    # Check if village is defeated after applying penalty
+                                    if self.village.health <= 0:
+                                        self.game_state = GameState.DEFEAT
+                                        self.running = False
+                                        break
                         self.game_state = GameState.QUEST
                         self.running = False
             
             # Handle Retreat button regardless of turn
             if button_name == "Retreat":
-                self.battle_log.append(f"{self.hero.name if self.hero else 'Hero'} retreats to regroup!")
-                self.game_state = GameState.QUEST
-                self.running = False
+                self.battle_log.append(f"{self.hero.name} retreats to regroup!")
+                # Mark quest as failed when retreating
+                if self.current_quest:
+                    for button in self.button_manager.available_quests.buttons:
+                        if button.quest == self.current_quest:
+                            self.button_manager.move_failed_quest(button)
+                            # Check if village is defeated after applying penalty
+                            if self.village.health <= 0:
+                                self.game_state = GameState.DEFEAT
+                                self.running = False
+                                break
+                    self.game_state = GameState.QUEST
+                    self.running = False
