@@ -229,8 +229,9 @@ class Game:
             # Handle events first
             for event in self.event_manager.process_events():
                 # Check for quit
-                self.game_state, self.running = self.event_manager.handle_quit_event(event, self.game_state)
-                if not self.running:
+                if event.type == pygame.QUIT:
+                    self.game_state = GameState.EXIT
+                    self.running = False
                     self.popup_running = False
                     break
                     
@@ -262,10 +263,11 @@ class Game:
                             elif button_name == "Exit":
                                 if self.game_state != GameState.NEW_GAME:
                                     self.save_game()  # Save the game if we're not in new game state
+                                # Set states and break all loops immediately
                                 self.game_state = GameState.WELCOME
-                                self.popup_running = False
                                 self.running = False
-                                break
+                                self.popup_running = False
+                                return  # Exit immediately
             
             # Update and draw popup buttons (without processing clicks)
             pause_buttons = self.button_manager.get_buttons(GameState.PAUSE)
@@ -794,6 +796,26 @@ class Game:
             draw_wrapped_text(log_entry, self.font, Colors.BLACK, self.screen, log_x, log_y, max_width)
             log_y += self.font.get_linesize() * 2  # Double space between entries
 
+    def _setup_new_monster(self, monster: Monster) -> tuple[bool, Tooltip]:
+        """Set up a new monster battle with proper state management.
+        
+        Args:
+            monster: The new monster to battle
+            
+        Returns:
+            tuple containing:
+            - bool: True if monster was set up successfully, False if monster is None
+            - Tooltip: The tooltip to display for the new monster, or None if setup failed
+        """
+        if not monster:
+            return False, None
+            
+        self.battle_manager.start_battle(monster)
+        self._switch_battle_layout(False)
+        self.event_manager.reset_button_delay()
+        tooltip = Tooltip(f"Attack {monster.name} with your {self.hero.weapon.name}!", self.font)
+        return True, tooltip
+
     def battle_screen(self) -> None:
         """Battle screen where the hero fights a monster."""
         self.running = True
@@ -809,20 +831,18 @@ class Game:
                     battle_buttons[name].lock()
         
         # Spawn a new monster if there's no monster or if the current monster is dead
+        tooltip = None
         if self.battle_manager.monster is None or not self.battle_manager.monster.is_alive():
             new_monster = self.current_quest.get_monster()
-            if new_monster:
-                self.battle_manager.start_battle(new_monster)
-                # Show combat buttons, hide victory buttons, and reset button delay
-                self._switch_battle_layout(False)
-                self.event_manager.reset_button_delay()
-            else:
+            success, tooltip = self._setup_new_monster(new_monster)
+            if not success:
                 # No more monsters in the quest, return to quest screen
                 self.game_state = GameState.QUEST
                 self.running = False
                 return
         
-        tooltip = Tooltip(f"Attack {self.battle_manager.monster.name} with your {self.hero.weapon.name}!", self.font)
+        if not tooltip:
+            tooltip = Tooltip(f"Attack {self.battle_manager.monster.name} with your {self.hero.weapon.name}!", self.font)
 
         while self.running:
             # Draw the battle screen first
@@ -868,12 +888,9 @@ class Game:
                             if button_name == "Continue" and self.battle_manager.state == BattleState.MONSTER_DEFEATED:
                                 # Get next monster when Continue is pressed
                                 new_monster = self.current_quest.get_monster()
-                                if new_monster:
-                                    self.battle_manager.start_battle(new_monster)
-                                    # Switch back to combat layout and reset button delay
-                                    self._switch_battle_layout(False)
-                                    self.event_manager.reset_button_delay()
-                                    tooltip = Tooltip(f"Attack {self.battle_manager.monster.name} with your {self.hero.weapon.name}!", self.font)
+                                success, new_tooltip = self._setup_new_monster(new_monster)
+                                if success:
+                                    tooltip = new_tooltip
                                 else:
                                     # No more monsters in quest, return to quest screen
                                     self.game_state = GameState.QUEST
