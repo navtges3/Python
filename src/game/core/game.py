@@ -1080,12 +1080,20 @@ class Game:
                 draw_text_centered(turn_text, self.font, Colors.BLACK, self.screen, 
                                 GameConstants.SCREEN_WIDTH // 2, 10)
             
-            # Draw tooltip if hovering over attack button
+            # Draw tooltips if hovering over buttons
+            mouse_pos = pygame.mouse.get_pos()
             if self.battle_manager.state == BattleState.HOME and self.battle_manager.turn == TurnState.HERO_TURN:
-                mouse_pos = pygame.mouse.get_pos()
                 attack_button = self.button_manager.get_button(GameState.BATTLE, "Attack")
                 if attack_button and not attack_button.is_locked() and attack_button.rect.collidepoint(mouse_pos):
                     tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
+            
+            # Draw potion tooltips
+            if self.battle_manager.showing_potions:
+                for potion_name in ['Health Potion', 'Damage Potion', 'Block Potion']:
+                    button = self.button_manager.get_button(GameState.BATTLE, potion_name)
+                    if button and not button.is_locked() and button.rect.collidepoint(mouse_pos):
+                        if tooltip := self.battle_manager.get_potion_tooltip(potion_name):
+                            tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
 
             self.update()
 

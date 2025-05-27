@@ -1,6 +1,8 @@
 from src.game.core.constants import GameState
 from src.game.entities.monster import Monster
 from src.game.entities.hero import Hero
+from src.game.entities.items import potion_dictionary
+from src.game.ui.tooltip import Tooltip
 from enum import Enum
 from src.game.managers.button_manager import ButtonManager
 from typing import Optional, List
@@ -31,6 +33,7 @@ class BattleManager:
         self.turn: TurnState = TurnState.HERO_TURN  # Start with hero's turn
         self.showing_potions: bool = False  # Track if potion buttons are visible
         self.button_manager: Optional[ButtonManager] = None  # Store button manager reference
+        self.tooltip: Optional[Tooltip] = None  # Store current tooltip
 
     def start_battle(self, monster: Monster) -> None:
         """Initialize a new battle with a monster.
@@ -126,6 +129,20 @@ class BattleManager:
                     # Show and update potion selection buttons
                     self._toggle_potion_buttons(button_manager, True)
                     self._update_potion_button_states(button_manager)
+
+    def get_potion_tooltip(self, potion_name: str) -> Optional[Tooltip]:
+        """Get tooltip for a potion button.
+        
+        Args:
+            potion_name: Name of the potion to get tooltip for
+            
+        Returns:
+            Tooltip object if potion exists, None otherwise
+        """
+        if self.button_manager and potion_name in potion_dictionary:
+            potion = potion_dictionary[potion_name]
+            return Tooltip(f"{potion.description} (x{self.hero.potion_bag[potion_name]})", self.button_manager.font)
+        return None
 
     def _toggle_potion_buttons(self, button_manager: ButtonManager, show: bool) -> None:
         """Show or hide potion selection buttons.
