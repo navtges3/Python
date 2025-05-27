@@ -439,16 +439,16 @@ class Game:
                 hero_class = 'Knight'
                 # Draw selection highlight for Knight
                 pygame.draw.rect(self.screen, Colors.YELLOW, 
-                               (knight_x - 5, image_y - 5, 
+                                (knight_x - 5, image_y - 5, 
                                 character_size[0] + 10, character_size[1] + 10), 
-                               3)  # 3px wide border
+                                3)  # 3px wide border
             elif self.button_manager.get_button(GameState.NEW_GAME, 'Assassin').is_toggled():
                 hero_class = 'Assassin'
                 # Draw selection highlight for Assassin
                 pygame.draw.rect(self.screen, Colors.YELLOW, 
-                               (assassin_x - 5, image_y - 5, 
+                                (assassin_x - 5, image_y - 5, 
                                 character_size[0] + 10, character_size[1] + 10), 
-                               3)  # 3px wide border
+                                3)  # 3px wide border
             else:
                 hero_class = ''
 
