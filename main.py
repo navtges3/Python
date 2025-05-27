@@ -4,8 +4,8 @@ from src.game.core.game import Game
 def main() -> None:
     my_game = Game()
     while my_game.game_state != GameState.EXIT:
-        if my_game.game_state == GameState.WELCOME:
-            my_game.welcome_screen()
+        if my_game.game_state == GameState.HOME:
+            my_game.home_screen()
         elif my_game.game_state == GameState.NEW_GAME:
             my_game.new_game_screen()
         elif my_game.game_state == GameState.MAIN_GAME:

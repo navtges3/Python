@@ -3,6 +3,7 @@ from src.game.entities.monster import Monster
 from src.game.entities.hero import Hero
 from enum import Enum
 from src.game.managers.button_manager import ButtonManager
+from typing import Optional, List
 
 
 class TurnState(Enum):
@@ -16,22 +17,38 @@ class BattleState(Enum):
     MONSTER_DEFEATED = 3
 
 class BattleManager:
-    def __init__(self, hero: Hero, battle_log: list):
-        self.hero = hero
-        self.battle_log = battle_log
-        self.monster = None
-        self.state = BattleState.HOME
-        self.turn = TurnState.HERO_TURN  # Start with hero's turn
+    def __init__(self, hero: Hero, battle_log: List[str]) -> None:
+        """Initialize the battle manager.
+        
+        Args:
+            hero: The player's hero character
+            battle_log: List to store battle messages
+        """
+        self.hero: Hero = hero
+        self.battle_log: List[str] = battle_log
+        self.monster: Optional[Monster] = None
+        self.state: BattleState = BattleState.HOME
+        self.turn: TurnState = TurnState.HERO_TURN  # Start with hero's turn
 
-    def start_battle(self, monster: Monster):
-        """Initialize a new battle with a monster."""
+    def start_battle(self, monster: Monster) -> None:
+        """Initialize a new battle with a monster.
+        
+        Args:
+            monster: The monster to battle against
+        """
         self.monster = monster
         self.state = BattleState.HOME  # Reset to HOME state for new battle
         self.turn = TurnState.HERO_TURN
         self.battle_log.append(f"A {self.monster.name} appears!")
 
-    def update_battle_state(self):
-        """Update the battle state and check for victory/defeat conditions."""
+    def update_battle_state(self) -> Optional[bool]:
+        """Update the battle state and check for victory/defeat conditions.
+        
+        Returns:
+            True if monster was defeated
+            False if hero was defeated
+            None if battle continues
+        """
         # Only check for monster defeat if we're in an active battle
         if self.state != BattleState.MONSTER_DEFEATED:
             if self.hero.is_alive() and not self.monster.is_alive():
@@ -41,16 +58,22 @@ class BattleManager:
                 return False  # Hero defeated
         return None  # Battle continues
 
-    def handle_monster_defeat(self):
+    def handle_monster_defeat(self) -> None:
         """Handle monster defeat logic."""
+        if not self.monster:
+            return
         self.battle_log.append(f"{self.monster.name} has been defeated!")
         self.battle_log.append(f"{self.hero.name} gains {self.monster.experience} experience and {self.monster.gold} gold.")
         self.hero.gain_experience(self.monster.experience)
         self.hero.add_gold(self.monster.gold)
         self.state = BattleState.MONSTER_DEFEATED
 
-    def update_button_states(self, button_manager: ButtonManager):
-        """Update battle button states based on current turn and battle state."""
+    def update_button_states(self, button_manager: ButtonManager) -> None:
+        """Update battle button states based on current turn and battle state.
+        
+        Args:
+            button_manager: The button manager to update button states
+        """
         if self.state == BattleState.MONSTER_DEFEATED:
             # Lock combat buttons, unlock victory buttons
             for name in ['Attack', 'Defend', 'Use Potion', 'Flee']:
@@ -84,7 +107,7 @@ class BattleManager:
                     else:
                         use_potion_button.lock()
 
-    def handle_monster_attack(self):
+    def handle_monster_attack(self) -> None:
         """Handle monster's attack action."""
         if self.turn != TurnState.MONSTER_TURN:
             return  # Not monster's turn
@@ -107,13 +130,17 @@ class BattleManager:
             # Switch back to hero's turn
             self.turn = TurnState.HERO_TURN
 
-    def start_monster_turn(self):
+    def start_monster_turn(self) -> None:
         """Handle the monster's turn."""
         if self.monster and self.monster.is_alive():
             self.handle_monster_attack()
 
-    def handle_attack(self, monster: Monster):
-        """Handle hero's attack action."""
+    def handle_attack(self, monster: Monster) -> None:
+        """Handle hero's attack action.
+        
+        Args:
+            monster: The monster to attack
+        """
         if self.turn != TurnState.HERO_TURN:
             return  # Not hero's turn
             
@@ -135,7 +162,7 @@ class BattleManager:
         if monster.is_alive():
             self.start_monster_turn()
 
-    def handle_defend(self):
+    def handle_defend(self) -> None:
         """Handle hero's defend action."""
         if self.turn != TurnState.HERO_TURN:
             return  # Not hero's turn
@@ -148,15 +175,19 @@ class BattleManager:
         if self.monster and self.monster.is_alive():
             self.start_monster_turn()
 
-    def handle_use_potion(self):
+    def handle_use_potion(self) -> None:
         """Handle hero's potion use."""
         if self.turn != TurnState.HERO_TURN:
             return  # Not hero's turn
         self.state = BattleState.USE_ITEM
         # Note: Turn state doesn't change until potion is actually used
 
-    def handle_flee(self):
-        """Handle hero's flee action."""
+    def handle_flee(self) -> bool:
+        """Handle hero's flee action.
+        
+        Returns:
+            bool: True if flee was successful, False otherwise
+        """
         if self.turn != TurnState.HERO_TURN:
             return False  # Not hero's turn
         self.state = BattleState.RUN_AWAY

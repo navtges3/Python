@@ -1,31 +1,54 @@
 from random import randint
+from typing import Dict, Union, Optional, Tuple, Any
 from src.game.entities.items import Item, Armor, Weapon, weapon_dictionary, armor_dictionary
 from src.game.ui.ui_helpers import *
 from src.game.core.combatant import Combatant
 from src.game.utils.fileIO import resource_path
 import pygame
 
+# Type aliases
+PotionBag = Dict[str, int]
+HeroDict = Dict[str, Any]
+
 class Hero(Combatant):
     """Base class for all heroes in the game."""
 
-    def __init__(self, name:str="Hero", max_hp:int=10, image=None, weapon:Weapon=None, armor:Armor=None, gold:int=50, border_color:Colors=Colors.BLUE, class_name:str="Hero"):
-        """Initialize the hero with a name, health, weapon, armor, and gold."""
+    def __init__(self, name: str = "Hero", max_hp: int = 10, 
+                image: Optional[pygame.Surface] = None, 
+                weapon: Optional[Weapon] = None, 
+                armor: Optional[Armor] = None, 
+                gold: int = 50, 
+                border_color: Colors = Colors.BLUE, 
+                class_name: str = "Hero") -> None:
+        """
+        Initialize the hero with a name, health, weapon, armor, and gold.
+        
+        Args:
+            name: The hero's name
+            max_hp: Maximum hit points
+            image: Hero's sprite image
+            weapon: Hero's equipped weapon
+            armor: Hero's equipped armor
+            gold: Starting gold amount
+            border_color: Color of the hero's UI border
+            class_name: Name of the hero's class
+        """
         super().__init__(name, max_hp)
-        self.weapon = weapon
-        self.armor = armor
-        self.level = 1
-        self.experience = 0
-        self.gold = gold
-        self.potion_bag = {
+        self.weapon: Optional[Weapon] = weapon
+        self.armor: Optional[Armor] = armor
+        self.level: int = 1
+        self.experience: int = 0
+        self.gold: int = gold
+        self.potion_bag: PotionBag = {
             "Health Potion": 2,
             "Damage Potion": 1,
             "Block Potion": 1,
         }
-        self.potion_damage = 0
-        self.potion_block = 0
-        self.border_color = border_color
-        self.image = image
-        self.class_name = class_name
+        self.potion_damage: int = 0
+        self.potion_block: int = 0
+        self.border_color: Colors = border_color
+        self.image: Optional[pygame.Surface] = image
+        self.class_name: str = class_name
 
     def attack(self, target:Combatant) -> tuple[int, bool, bool]:
         """Attack a target and return the damage dealt along with miss/crit flags.
@@ -44,12 +67,24 @@ class Hero(Combatant):
         target.take_damage(damage)
         return damage, missed, crit
 
-    def take_damage(self, incoming_damage) -> None:
-        incoming_damage = self.armor.calculate_defence(incoming_damage)
+    def take_damage(self, incoming_damage: int) -> None:
+        """
+        Take damage after applying armor defense.
+        
+        Args:
+            incoming_damage: Amount of damage to take
+        """
+        if self.armor:
+            incoming_damage = self.armor.calculate_defence(incoming_damage)
         super().take_damage(incoming_damage)
 
-    def add_item(self, item:Item):
-        """Add an item to the hero's inventory."""
+    def add_item(self, item: Item) -> None:
+        """
+        Add an item to the hero's inventory.
+        
+        Args:
+            item: The item to add
+        """
         if isinstance(item, Weapon):
             self.weapon = item
             print(f"{self.name} equipped a {item.name}!")
@@ -62,16 +97,27 @@ class Hero(Combatant):
     def has_potions(self) -> bool:
         return any(amount > 0 for amount in self.potion_bag.values())
     
-    def add_potion(self, potion_name:str, amount:int):
-        """Add a potion to the hero's inventory."""
+    def add_potion(self, potion_name: str, amount: int) -> None:
+        """
+        Add a potion to the hero's inventory.
+        
+        Args:
+            potion_name: Name of the potion to add
+            amount: Number of potions to add
+        """
         if potion_name in self.potion_bag:
             self.potion_bag[potion_name] += amount
         else:
             self.potion_bag[potion_name] = amount
         print(f"{amount} {potion_name}(s) added to your inventory!")
 
-    def use_potion(self, potion_name:str):
-        """Use a potion from the hero's inventory."""
+    def use_potion(self, potion_name: str) -> None:
+        """
+        Use a potion from the hero's inventory.
+        
+        Args:
+            potion_name: Name of the potion to use
+        """
         if potion_name in self.potion_bag and self.potion_bag[potion_name] > 0:
             if potion_name == "Health Potion":
                 self.current_hp += 5
@@ -88,8 +134,13 @@ class Hero(Combatant):
         else:
             print(f"You don't have any {potion_name}(s) left!")
 
-    def add_gold(self, amount):
-        """Add gold to the hero's inventory."""
+    def add_gold(self, amount: int) -> None:
+        """
+        Add gold to the hero's inventory.
+        
+        Args:
+            amount: Amount of gold to add
+        """
         self.gold += amount
         print(f"You gained {amount} gold! Total gold: {self.gold}")
 
@@ -122,8 +173,13 @@ class Hero(Combatant):
         """Returns the name of the hero."""
         return self.name
     
-    def to_dict(self):
-        """Convert the hero object to a dictionary for saving."""
+    def to_dict(self) -> HeroDict:
+        """
+        Convert the hero object to a dictionary for saving.
+        
+        Returns:
+            Dictionary containing the hero's data
+        """
         return {
             "name": self.name,
             "class_name": self.class_name,
@@ -137,8 +193,13 @@ class Hero(Combatant):
             "potion_bag": self.potion_bag,
         }
     
-    def from_dict(self, data):
-        """Load the hero object from a dictionary."""
+    def from_dict(self, data: HeroDict) -> None:
+        """
+        Load the hero object from a dictionary.
+        
+        Args:
+            data: Dictionary containing hero data to load
+        """
         self.name = data["name"]
         self.class_name = data["class_name"]
         self.max_hp = data["max_hp"]
@@ -157,7 +218,17 @@ class Hero(Combatant):
 
 
     
-    def draw(self, surface, font, x:int=0, y:int=0) -> None:
+    def draw(self, surface: pygame.Surface, font: pygame.font.Font, 
+            x: int = 0, y: int = 0) -> None:
+        """
+        Draw the hero and their stats on the given surface.
+        
+        Args:
+            surface: Pygame surface to draw on
+            font: Font to use for text
+            x: X coordinate to draw at
+            y: Y coordinate to draw at
+        """
         # Border
         hero_border = pygame.Rect(x, y, GameConstants.SCREEN_WIDTH // 2, GameConstants.SCREEN_HEIGHT // 2 - 50)
 
@@ -201,8 +272,13 @@ class Hero(Combatant):
 class Assassin(Hero):
     """A class representing a Assassin hero."""
 
-    def __init__(self, name:str):
-        """Initialize the Assassin with random health and a dagger."""
+    def __init__(self, name: str) -> None:
+        """
+        Initialize the Assassin with random health and a dagger.
+        
+        Args:
+            name: The assassin's name
+        """
         image = pygame.image.load(resource_path("images/assassin.png")).convert()
         image = pygame.transform.scale(image, (100, 100))
         health = randint(7, 12)
@@ -213,8 +289,13 @@ class Assassin(Hero):
 class Knight(Hero):
     """A class representing a Knight hero."""
 
-    def __init__(self, name:str):
-        """Initialize the Knight with random health and a greatsword."""
+    def __init__(self, name: str) -> None:
+        """
+        Initialize the Knight with random health and a greatsword.
+        
+        Args:
+            name: The knight's name
+        """
         image = pygame.image.load(resource_path("images/knight.png")).convert()
         image = pygame.transform.scale(image, (100, 100))
         health = randint(10, 15)
@@ -222,8 +303,17 @@ class Knight(Hero):
         armor = armor_dictionary["Iron Chestplate"]
         super().__init__(name, health, image, weapon, armor, border_color=Colors.RED, class_name="Knight")
 
-def make_hero(hero_name:str, hero_class:str) -> Hero:
-    """Create a hero based on the given name and class."""
+def make_hero(hero_name: str, hero_class: str) -> Hero:
+    """
+    Create a hero based on the given name and class.
+    
+    Args:
+        hero_name: Name of the hero
+        hero_class: Class of the hero ("Assassin" or "Knight")
+        
+    Returns:
+        A new hero instance of the specified class
+    """
     the_hero = None
     if hero_class == "Assassin":
         the_hero = Assassin(hero_name)

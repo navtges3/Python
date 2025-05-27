@@ -1,26 +1,27 @@
 from random import random
+from typing import Dict, Union
 
 class Item:
     """
     Base class for all items in the game.
     """
-    def __init__(self, name:str, description:str, value:int=0):
+    def __init__(self, name: str, description: str, value: int = 0) -> None:
         """
         :param name:        The name of the item.
         :param description: Description of the item.
         :param value:       Value of the item in the shop.
         """
-        self.name = name
-        self.description = description
-        self.value = value
+        self.name: str = name
+        self.description: str = description
+        self.value: int = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Returns the name of the item."""
         return f"{self.name}: {self.description} (Value: {self.value})"
 
 class Weapon(Item):
     def __init__(self, name: str, description: str, value: int,
-                 damage: int, accuracy: float, crit_chance: float, crit_damage: float):
+                 damage: int, accuracy: float, crit_chance: float, crit_damage: float) -> None:
         """
         :param damage:      A flat number subtracted from incoming damage.
         :param accuracy:    Probability (0.0 to 1.0) to successfully attack.
@@ -28,10 +29,10 @@ class Weapon(Item):
         :param crit_damage: Multiplier applied when a critical hit occurs.
         """
         super().__init__(name, description, value)
-        self.damage = damage
-        self.accuracy = accuracy
-        self.crit_chance = crit_chance
-        self.crit_damage = crit_damage
+        self.damage: int = damage
+        self.accuracy: float = accuracy
+        self.crit_chance: float = crit_chance
+        self.crit_damage: float = crit_damage
 
     def calculate_damage(self) -> int:
         if random() > self.accuracy:
@@ -45,7 +46,7 @@ class Weapon(Item):
             effective_damage = self.damage
         return effective_damage
     
-    def __str__(self):
+    def __str__(self) -> str:
         base_info = super().__str__()
         stats = (f" Damage: {self.damage}, Accuracy: {self.accuracy:.0%} "
                  f"Crit Chance: {self.crit_chance:.0%}, Crit Damage: {self.crit_damage:.1}")
@@ -53,16 +54,16 @@ class Weapon(Item):
     
 class Armor(Item):
     def __init__(self, name: str, description: str, value: int,
-                 block: int, block_chance: float, dodge_chance: float):
+                 block: int, block_chance: float, dodge_chance: float) -> None:
         """
         :param block:           A flat number subtracted from incoming damage.
         :param block_chance:    Probability (0.0 to 1.0) to successfully block part of the damage.
         :param dodge_chance:    Probability (0.0 to 1.0) to completely avoid the attack.
         """
         super().__init__(name, description, value)
-        self.block = block
-        self.block_chance = block_chance
-        self.dodge_chance = dodge_chance
+        self.block: int = block
+        self.block_chance: float = block_chance
+        self.dodge_chance: float = dodge_chance
 
     def calculate_defence(self, incoming_damage: int) -> int:
         if random() < self.dodge_chance:
@@ -76,18 +77,23 @@ class Armor(Item):
             final_damage = incoming_damage
         return final_damage
     
-    def __str__(self):
+    def __str__(self) -> str:
         base_info = super().__str__()
         stats = (f" Block: {self.block}, Block Chance: {self.block_chance:.0%}, Dodge Chance: {self.dodge_chance:.0%}")
         return base_info + stats
 
-potion_dictionary = {
+# Dictionary type aliases
+PotionDict = Dict[str, Item]
+WeaponDict = Dict[str, Weapon]
+ArmorDict = Dict[str, Armor]
+
+potion_dictionary: PotionDict = {
     "Health Potion": Item("Health Potion", "Restores 10 health points", 10),
     "Damage Potion": Item("Damage Potion", "Increases damage by 5 for one turn", 10),
     "Block Potion": Item("Block Potion", "Increases block by 5 for one turn", 10),
 }
 
-weapon_dictionary = {
+weapon_dictionary: WeaponDict = {
     # Level 1 - Basic Starter Weapons
     "Rusty Sword":      Weapon("Rusty Sword",       "A worn-out blade barely holding together.",    value=15, damage=8, accuracy=0.75, crit_chance=0.1, crit_damage=1.5),
     "Wooden Club":      Weapon("Wooden Club",       "A simple club used for self-defense.",         value=20, damage=10, accuracy=0.80, crit_chance=0.05, crit_damage=1.4),
@@ -96,7 +102,7 @@ weapon_dictionary = {
     "Stone Axe":        Weapon("Stone Axe",         "A crude axe made of stone and wood.",          value=45, damage=16, accuracy=0.78, crit_chance=0.12, crit_damage=1.5),
 }
 
-armor_dictionary = {
+armor_dictionary: ArmorDict = {
     "Iron Chestplate":      Armor("Iron Chestplate",        "A sturdy chestplate made of iron.",                    15, 10, 0.25, 0.05),
     "Steel Greaves":        Armor("Steel Greaves",          "Protective leg armor crafted from hardened steel.",    12,  8, 0.20, 0.08),
     "Knight's Helm":        Armor("Knight's Helm",          "A reinforced helmet worn by seasoned knights.",        10,  6, 0.30, 0.02),

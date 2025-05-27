@@ -1,6 +1,7 @@
 import pygame
 from src.game.core.constants import Colors
 from src.game.ui.button import Button
+from typing import Union
 
 class ScrollableButtons:
     """A scrollable container that manages and displays buttons with scrollbar functionality."""
@@ -172,26 +173,35 @@ class ScrollableButtons:
         button.rect.width = self.rect.width - self.scrollbar_width
         self.buttons.append(button)
 
-    def remove_button(self, button_index: int) -> None:
-        """Remove a button from the scrollable area by index.
+    def remove_button(self, button_or_index: Union[Button, int]) -> None:
+        """Remove a button from the scrollable area.
         
         Args:
-            button_index: The index of the button to remove
+            button_or_index: Either the Button object to remove or its index
         """
-        if 0 <= button_index < len(self.buttons):
-            # Remove the button
-            self.buttons.pop(button_index)
+        if isinstance(button_or_index, int):
+            # Remove by index
+            if 0 <= button_or_index < len(self.buttons):
+                # Remove the button
+                self.buttons.pop(button_or_index)
+                
+                # Reset selected button if needed
+                if self.selected == button_or_index:
+                    self.selected = None
+                elif self.selected is not None and self.selected > button_or_index:
+                    self.selected -= 1
+        else:
+            # Remove by button object
+            try:
+                index = self.buttons.index(button_or_index)
+                self.remove_button(index)
+            except ValueError:
+                pass  # Button not found
             
-            # Reset selected button if needed
-            if self.selected == button_index:
-                self.selected = None
-            elif self.selected is not None and self.selected > button_index:
-                self.selected -= 1
-            
-            # Reposition remaining buttons
-            for i, button in enumerate(self.buttons):
-                button_y = i * (self.button_height + self.button_spacing)
-                button.rect.y = self.rect.y + button_y
+        # Reposition remaining buttons
+        for i, button in enumerate(self.buttons):
+            button_y = i * (self.button_height + self.button_spacing)
+            button.rect.y = self.rect.y + button_y
 
     def clear_buttons(self) -> None:
         """Remove all buttons from the scrollable area."""

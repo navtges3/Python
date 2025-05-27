@@ -54,7 +54,7 @@ class ButtonManager:
     def _initialize_buttons(self) -> Dict[GameState, Dict[str, Button]]:
         """Initialize all game buttons organized by game state."""
         return {
-            GameState.WELCOME:      self._create_welcome_buttons(),
+            GameState.HOME:         self._create_home_buttons(),
             GameState.NEW_GAME:     self._create_new_game_buttons(),
             GameState.MAIN_GAME:    self._create_main_game_buttons(),
             GameState.QUEST:        self._create_quest_buttons(),
@@ -64,8 +64,8 @@ class ButtonManager:
             GameState.OPTIONS:      self._create_options_buttons(),
         }
 
-    def _create_welcome_buttons(self) -> Dict[str, Button]:
-        """Create welcome screen buttons."""
+    def _create_home_buttons(self) -> Dict[str, Button]:
+        """Create home screen buttons."""
         return {
             'New Game': TextButton(
                 self.button_sheet_blue,
@@ -204,11 +204,16 @@ class ButtonManager:
         }
     
     def _create_quest_buttons(self) -> Dict[str, Button]:
+        """Create quest screen buttons.
+        
+        Returns:
+            Dictionary mapping button names to Button objects
+        """
         return {
             'Back': TextButton(
                 self.button_sheet_red,
-                10,
-                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12 - 10,
+                0,
+                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12,
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -217,16 +222,16 @@ class ButtonManager:
             ),
             'Start': TextButton(
                 self.button_sheet_green,
-                GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH - 10,
-                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12 - 10,
+                GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH,
+                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12,
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Start Quest',
+                'Start',
                 self.font,
             ),
             'Available': TextButton(
-                self.button_sheet_yellow,
+                self.button_sheet_blue,
                 10,
                 10,
                 GameConstants.BUTTON_WIDTH, 
@@ -236,8 +241,8 @@ class ButtonManager:
                 self.font,
             ),
             'Complete': TextButton(
-                self.button_sheet_green,
-                GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH - 10,
+                self.button_sheet_yellow,
+                GameConstants.BUTTON_WIDTH + 20,
                 10,
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
@@ -248,18 +253,22 @@ class ButtonManager:
         }
     
     def _create_battle_buttons(self) -> Dict[str, Button]:
-        """Create two sets of buttons for battle screen: combat and victory layouts."""
-        x_pos = 20  # 20 pixels from left edge
-        y_start = GameConstants.SCREEN_HEIGHT // 2
-        button_spacing = GameConstants.BUTTON_HEIGHT + 10  # 10 pixels between buttons
-
-        # Combat layout buttons
-        combat_buttons = {
+        """Create battle screen buttons.
+        
+        Returns:
+            Dictionary mapping button names to Button objects
+        """
+        # Calculate button positions
+        button_y = GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12
+        button_spacing = GameConstants.BUTTON_WIDTH + 10
+        
+        # Create buttons dictionary
+        buttons: Dict[str, Button] = {
             'Attack': TextButton(
                 self.button_sheet_red,
-                x_pos,
-                y_start,
-                GameConstants.BUTTON_WIDTH,
+                10,
+                button_y,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Attack',
@@ -267,9 +276,9 @@ class ButtonManager:
             ),
             'Defend': TextButton(
                 self.button_sheet_blue,
-                x_pos,
-                y_start + button_spacing,
-                GameConstants.BUTTON_WIDTH,
+                10 + button_spacing,
+                button_y,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Defend',
@@ -277,9 +286,9 @@ class ButtonManager:
             ),
             'Use Potion': TextButton(
                 self.button_sheet_green,
-                x_pos,
-                y_start + button_spacing * 2,
-                GameConstants.BUTTON_WIDTH,
+                10 + button_spacing * 2,
+                button_y,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Use Potion',
@@ -287,23 +296,19 @@ class ButtonManager:
             ),
             'Flee': TextButton(
                 self.button_sheet_yellow,
-                x_pos,
-                y_start + button_spacing * 3,
-                GameConstants.BUTTON_WIDTH,
+                10 + button_spacing * 3,
+                button_y,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Flee',
                 self.font,
             ),
-        }
-
-        # Victory layout buttons (positioned in the middle of the combat button area)
-        victory_buttons = {
             'Continue': TextButton(
                 self.button_sheet_green,
-                x_pos,
-                y_start + button_spacing,
-                GameConstants.BUTTON_WIDTH,
+                10 + button_spacing * 2,
+                button_y,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Continue',
@@ -311,41 +316,34 @@ class ButtonManager:
             ),
             'Retreat': TextButton(
                 self.button_sheet_red,
-                x_pos,
-                y_start + button_spacing * 2,
-                GameConstants.BUTTON_WIDTH,
+                10 + button_spacing * 3,
+                button_y,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Retreat',
                 self.font,
             ),
         }
-
-        # Lock and hide victory buttons initially
-        for button in victory_buttons.values():
-            button.lock()
-            button.hide()
-
-        # Combine both layouts
-        return {**combat_buttons, **victory_buttons}
+        
+        # Hide victory buttons initially
+        buttons['Continue'].hide()
+        buttons['Retreat'].hide()
+        
+        return buttons
     
     def _create_shop_buttons(self) -> Dict[str, Button]:
+        """Create shop screen buttons.
+        
+        Returns:
+            Dictionary mapping button names to Button objects
+        """
         return {
-            'Purchase': TextButton(
-                self.button_sheet_green,
-                GameConstants.SCREEN_WIDTH // 2 + 15,
-                GameConstants.SCREEN_HEIGHT // 2 + 20,
-                GameConstants.BUTTON_WIDTH,
-                GameConstants.BUTTON_HEIGHT,
-                1,
-                'Purchase',
-                self.font,
-            ),
             'Leave': TextButton(
                 self.button_sheet_red,
-                GameConstants.SCREEN_WIDTH // 2 + 15,
-                GameConstants.SCREEN_HEIGHT // 2 + 75,
-                GameConstants.BUTTON_WIDTH,
+                0,
+                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Leave',
@@ -354,24 +352,31 @@ class ButtonManager:
         }
     
     def _create_pause_buttons(self) -> Dict[str, Button]:
-        popup_x = (GameConstants.SCREEN_WIDTH - GameConstants.POPUP_WIDTH) // 2 + GameConstants.BUTTON_WIDTH // 2
-        popup_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2 + GameConstants.BUTTON_HEIGHT
+        """Create pause menu buttons.
+        
+        Returns:
+            Dictionary mapping button names to Button objects
+        """
+        # Calculate button positions
+        button_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2 + 50
+        button_spacing = 50
+        
         return {
             'Resume': TextButton(
                 self.button_sheet_green,
-                popup_x ,
-                popup_y,
-                GameConstants.BUTTON_WIDTH,
+                (GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH) // 2,
+                button_y,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Resume',
                 self.font,
             ),
             'Options': TextButton(
-                self.button_sheet_yellow,
-                popup_x,
-                popup_y + 70,
-                GameConstants.BUTTON_WIDTH,
+                self.button_sheet_blue,
+                (GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH) // 2,
+                button_y + button_spacing,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Options',
@@ -379,9 +384,9 @@ class ButtonManager:
             ),
             'Exit': TextButton(
                 self.button_sheet_red,
-                popup_x,
-                popup_y + 140,
-                GameConstants.BUTTON_WIDTH,
+                (GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH) // 2,
+                button_y + button_spacing * 2,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Exit',
@@ -390,14 +395,17 @@ class ButtonManager:
         }
     
     def _create_options_buttons(self) -> Dict[str, Button]:
-        popup_x = (GameConstants.SCREEN_WIDTH - GameConstants.POPUP_WIDTH) // 2 + GameConstants.BUTTON_WIDTH // 2
-        popup_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2 + GameConstants.BUTTON_HEIGHT
+        """Create options menu buttons.
+        
+        Returns:
+            Dictionary mapping button names to Button objects
+        """
         return {
             'Back': TextButton(
-                self.button_sheet_green,
-                popup_x,
-                popup_y + 140,
-                GameConstants.BUTTON_WIDTH,
+                self.button_sheet_red,
+                (GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH) // 2,
+                (GameConstants.SCREEN_HEIGHT + GameConstants.POPUP_HEIGHT) // 2 - 60,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Back',
@@ -406,52 +414,98 @@ class ButtonManager:
         }
 
     def get_buttons(self, state: GameState) -> Dict[str, Button]:
-        """Get all buttons for a specific game state."""
-        return self.buttons.get(state, {})
+        """Get all buttons for a given game state.
+        
+        Args:
+            state: The game state to get buttons for
+            
+        Returns:
+            Dictionary mapping button names to Button objects
+        """
+        return self.buttons[state]
 
     def get_button(self, state: GameState, button_name: str) -> Optional[Button]:
-        """Get a specific button by state and name."""
-        return self.buttons.get(state, {}).get(button_name)
+        """Get a specific button by name from a game state.
+        
+        Args:
+            state: The game state containing the button
+            button_name: The name of the button to get
+            
+        Returns:
+            The requested Button object, or None if not found
+        """
+        return self.buttons[state].get(button_name)
 
     def draw_buttons(self, surface: pygame.Surface, state: GameState) -> None:
-        """Draw all buttons for a specific game state."""
+        """Draw all buttons for a given game state.
+        
+        Args:
+            surface: The surface to draw the buttons on
+            state: The game state whose buttons to draw
+        """
         for button in self.buttons[state].values():
-            button.draw(surface)  # Button's draw method now handles visibility
+            button.draw(surface)
 
-    def handle_click(self, state: GameState, pos: tuple) -> Optional[str]:
-        """Handle click events and return clicked button name if any."""
-        for button_name, button in self.buttons[state].items():
-            if button.rect.collidepoint(pos) and not button.is_locked() and button.is_visible():
-                if button.was_clicked:
-                    return button_name
+    def handle_click(self, state: GameState, pos: tuple[int, int]) -> Optional[str]:
+        """Handle a click event for buttons in a game state.
+        
+        Args:
+            state: The game state whose buttons to check
+            pos: The (x, y) position of the click
+            
+        Returns:
+            The name of the clicked button, or None if no button was clicked
+        """
+        for name, button in self.buttons[state].items():
+            if not button.is_locked() and button.rect.collidepoint(pos):
+                return name
         return None
 
     def show_button(self, state: GameState, button_name: str) -> None:
-        """Make a specific button visible."""
-        button = self.get_button(state, button_name)
-        if button:
+        """Show a specific button.
+        
+        Args:
+            state: The game state containing the button
+            button_name: The name of the button to show
+        """
+        if button := self.buttons[state].get(button_name):
             button.show()
 
     def hide_button(self, state: GameState, button_name: str) -> None:
-        """Make a specific button invisible."""
-        button = self.get_button(state, button_name)
-        if button:
+        """Hide a specific button.
+        
+        Args:
+            state: The game state containing the button
+            button_name: The name of the button to hide
+        """
+        if button := self.buttons[state].get(button_name):
             button.hide()
 
     def show_all_buttons(self, state: GameState) -> None:
-        """Make all buttons in a state visible."""
+        """Show all buttons in a game state.
+        
+        Args:
+            state: The game state whose buttons to show
+        """
         for button in self.buttons[state].values():
             button.show()
 
     def hide_all_buttons(self, state: GameState) -> None:
-        """Make all buttons in a state invisible."""
+        """Hide all buttons in a game state.
+        
+        Args:
+            state: The game state whose buttons to hide
+        """
         for button in self.buttons[state].values():
             button.hide()
 
-    def move_completed_quest(self, quest_button):
-        """Move a completed quest from available to completed list."""
-        if quest_button in self.available_quests.buttons:
-            # Remove from available quests
-            self.available_quests.remove_button(self.available_quests.buttons.index(quest_button))
-            # Add to completed quests
-            self.completed_quests.add_button(quest_button)
+    def move_completed_quest(self, quest_button: QuestButton) -> None:
+        """Move a quest button from available to completed quests.
+        
+        Args:
+            quest_button: The quest button to move
+        """
+        # Remove from available quests
+        self.available_quests.remove_button(quest_button)
+        # Add to completed quests
+        self.completed_quests.add_button(quest_button)
