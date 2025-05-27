@@ -27,9 +27,22 @@ class Hero(Combatant):
         self.image = image
         self.class_name = class_name
 
-    def attack(self, target:Combatant) -> None:
+    def attack(self, target:Combatant) -> tuple[int, bool, bool]:
+        """Attack a target and return the damage dealt along with miss/crit flags.
+        
+        Returns:
+            tuple containing:
+            - damage dealt (int)
+            - whether the attack missed (bool)
+            - whether the attack was a critical hit (bool)
+        """
         damage = self.weapon.calculate_damage()
+        # A damage of 0 means the attack missed
+        missed = (damage == 0)
+        # If damage is greater than base weapon damage, it was a crit
+        crit = (damage > self.weapon.damage)
         target.take_damage(damage)
+        return damage, missed, crit
 
     def take_damage(self, incoming_damage) -> None:
         incoming_damage = self.armor.calculate_defence(incoming_damage)

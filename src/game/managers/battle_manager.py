@@ -117,8 +117,16 @@ class BattleManager:
         if self.turn != TurnState.HERO_TURN:
             return  # Not hero's turn
             
-        self.hero.attack(monster)
-        self.battle_log.append(f"{self.hero.name} attacks {monster.name} with {self.hero.weapon.name} for {self.hero.weapon.damage + self.hero.potion_damage} damage.")
+        damage, missed, crit = self.hero.attack(monster)
+        
+        # Add appropriate battle log message based on the attack result
+        if missed:
+            self.battle_log.append(f"{self.hero.name}'s attack with {self.hero.weapon.name} missed!")
+        else:
+            if crit:
+                self.battle_log.append(f"{self.hero.name} lands a critical hit with {self.hero.weapon.name}!")
+            self.battle_log.append(f"{self.hero.name} attacks {monster.name} for {damage + self.hero.potion_damage} damage.")
+            
         if self.hero.potion_damage > 0:
             self.hero.potion_damage = 0
             

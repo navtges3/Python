@@ -8,7 +8,7 @@ class EventManager:
     def __init__(self):
         """Initialize the event manager."""
         self.button_delay_timer = 0
-        self.BUTTON_DELAY = 500  # 500ms = 0.5 seconds
+        self.BUTTON_DELAY = 250  # 250ms = 0.25 seconds
         self.key_actions = {
             pygame.K_ESCAPE: "escape",
             pygame.K_BACKSPACE: "backspace",

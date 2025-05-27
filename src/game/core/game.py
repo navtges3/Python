@@ -758,8 +758,9 @@ class Game:
         self.hero.add_gold(self.battle_manager.monster.gold)
         self.current_quest.slay_monster(self.battle_manager.monster)
         
-        # Switch to victory layout
+        # Switch to victory layout and reset button delay
         self._switch_battle_layout(True)
+        self.event_manager.reset_button_delay()
         
         # Check if quest is complete
         if self.current_quest.is_complete():
@@ -812,8 +813,9 @@ class Game:
             new_monster = self.current_quest.get_monster()
             if new_monster:
                 self.battle_manager.start_battle(new_monster)
-                # Show combat buttons, hide victory buttons
+                # Show combat buttons, hide victory buttons, and reset button delay
                 self._switch_battle_layout(False)
+                self.event_manager.reset_button_delay()
             else:
                 # No more monsters in the quest, return to quest screen
                 self.game_state = GameState.QUEST
@@ -868,6 +870,9 @@ class Game:
                                 new_monster = self.current_quest.get_monster()
                                 if new_monster:
                                     self.battle_manager.start_battle(new_monster)
+                                    # Switch back to combat layout and reset button delay
+                                    self._switch_battle_layout(False)
+                                    self.event_manager.reset_button_delay()
                                     tooltip = Tooltip(f"Attack {self.battle_manager.monster.name} with your {self.hero.weapon.name}!", self.font)
                                 else:
                                     # No more monsters in quest, return to quest screen
@@ -875,8 +880,29 @@ class Game:
                                     self.running = False
                                 break
                             else:
-                                self._handle_button_click(button_name)
-                            break
+                                # Handle combat actions
+                                if self.battle_manager.turn == TurnState.HERO_TURN:
+                                    if button_name == "Attack":
+                                        self.battle_manager.handle_attack(self.battle_manager.monster)
+                                        self.event_manager.reset_button_delay()  # Add delay after attack
+                                    elif button_name == "Defend":
+                                        self.battle_manager.handle_defend()
+                                        self.event_manager.reset_button_delay()  # Add delay after defend
+                                    elif button_name == "Use Potion":
+                                        self.battle_manager.handle_use_potion()
+                                        self.event_manager.reset_button_delay()  # Add delay after using potion
+                                    elif button_name == "Flee":
+                                        if self.battle_manager.handle_flee():
+                                            self.battle_log.append(f"{self.hero.name} flees from battle!")
+                                            self.game_state = GameState.QUEST
+                                            self.running = False
+                                
+                                # Handle Retreat button regardless of turn
+                                if button_name == "Retreat":
+                                    self.battle_log.append(f"{self.hero.name} retreats to regroup!")
+                                    self.game_state = GameState.QUEST
+                                    self.running = False
+                                break
             
             # Draw battle buttons
             self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
