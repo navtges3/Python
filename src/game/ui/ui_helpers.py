@@ -172,6 +172,17 @@ def draw_health_bar(surface: pygame.Surface, font: pygame.font.Font, x: int, y: 
     pygame.draw.rect(surface, Colors.GREEN, health_fill_rect)
     draw_text_centered(f"{health_low}/{health_high}", font, Colors.BLACK, surface, x + width // 2, y + height // 2 + 2)
 
+def draw_energy_bar(surface: pygame.Surface, font: pygame.font.Font, x: int, y: int, width: int, height: int, current: int, maximum: int) -> None:
+    """Draw an energy bar with current/max values."""
+    pygame.draw.rect(surface, Colors.BLUE, (x, y, width, height))
+    if current > 0:
+        fill_width = int((current / maximum) * width)
+        pygame.draw.rect(surface, Colors.LIGHT_BLUE, (x, y, fill_width, height))
+    text = f"{current}/{maximum}"
+    text_surface = font.render(text, True, Colors.WHITE)
+    text_rect = text_surface.get_rect(center=(x + width//2, y + height//2))
+    surface.blit(text_surface, text_rect)
+
 class TextBox:
     """A text box that handles keyboard input with persistent text."""
     

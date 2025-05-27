@@ -23,19 +23,36 @@ class BattleActions(Enum):
 
 class Colors:
     """Color constants used throughout the game."""
+    # Base colors
     WHITE: Final[Tuple[int, int, int]] = (255, 255, 255)
     BLACK: Final[Tuple[int, int, int]] = (0, 0, 0)
-    GRAY: Final[Tuple[int, int, int]] = (200, 200, 200)
+    GRAY: Final[Tuple[int, int, int]] = (128, 128, 128)
     BLUE: Final[Tuple[int, int, int]] = (0, 0, 255)
     RED: Final[Tuple[int, int, int]] = (255, 0, 0)
     GREEN: Final[Tuple[int, int, int]] = (0, 255, 0)
     YELLOW: Final[Tuple[int, int, int]] = (255, 255, 0)
+    GOLD: Final[Tuple[int, int, int]] = (255, 215, 0)
+
+    # Light variants
     LIGHT_GRAY: Final[Tuple[int, int, int]] = (211, 211, 211)
     LIGHT_BLUE: Final[Tuple[int, int, int]] = (173, 216, 230)
     LIGHT_RED: Final[Tuple[int, int, int]] = (255, 182, 193)
     LIGHT_YELLOW: Final[Tuple[int, int, int]] = (255, 255, 224)
     LIGHT_GREEN: Final[Tuple[int, int, int]] = (144, 238, 144)
-    GOLD: Final[Tuple[int, int, int]] = (255, 215, 0)
+
+    # Dark variants
+    DARK_GRAY: Final[Tuple[int, int, int]] = (64, 64, 64)
+    DARK_BLUE: Final[Tuple[int, int, int]] = (0, 0, 139)
+    DARK_RED: Final[Tuple[int, int, int]] = (139, 0, 0)
+    DARK_GREEN: Final[Tuple[int, int, int]] = (0, 100, 0)
+    DARK_YELLOW: Final[Tuple[int, int, int]] = (204, 204, 0)
+    
+    # Additional dark theme colors
+    CHARCOAL: Final[Tuple[int, int, int]] = (54, 69, 79)
+    NAVY: Final[Tuple[int, int, int]] = (0, 0, 128)
+    BURGUNDY: Final[Tuple[int, int, int]] = (128, 0, 32)
+    FOREST: Final[Tuple[int, int, int]] = (34, 139, 34)
+    BRONZE: Final[Tuple[int, int, int]] = (205, 127, 50)
 
 class ShopConstants:
     """Constants for shop items and categories."""
