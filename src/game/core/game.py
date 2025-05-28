@@ -99,6 +99,7 @@ class Game:
         # Save quest lists
         available_quests: List[Dict[str, Any]] = []
         completed_quests: List[Dict[str, Any]] = []
+        failed_quests: List[Dict[str, Any]] = []
         
         # Save available quests
         for button in self.button_manager.available_quests.buttons:
@@ -115,10 +116,19 @@ class Game:
                 "monsters_slain": button.quest.monsters_slain
             }
             completed_quests.append(quest_data)
-            
+
+        # Save failed quests
+        for button in self.button_manager.failed_quests.buttons:
+            quest_data = {
+                "name": button.quest.name,
+                "monsters_slain": button.quest.monsters_slain
+            }
+            failed_quests.append(quest_data)
+
         save_data.update({
             "available_quests": available_quests,
-            "completed_quests": completed_quests
+            "completed_quests": completed_quests,
+            "failed_quests": failed_quests
         })
 
         save_game(save_data)
@@ -204,6 +214,38 @@ class Game:
                                 new_quest  # quest object
                             )
                             self.button_manager.completed_quests.add_button(quest_button)
+                            break
+
+            # Load failed quests and lock them
+            if "failed_quests" in save_data:
+                for quest_data in save_data["failed_quests"]:
+                    # Find the quest in quest_list by name
+                    for quest in quest_list:
+                        if quest.name == quest_data["name"]:
+                            # Create a new quest instance to avoid modifying the original
+                            new_quest = Quest(
+                                quest.name,
+                                quest.description,
+                                quest.monster_list.copy(),
+                                quest.reward,
+                                quest.penalty
+                            )
+                            # Update monsters slain
+                            new_quest.monsters_slain = quest_data["monsters_slain"]
+                            # Create new quest button and lock it
+                            quest_button: QuestButton = QuestButton(
+                                self.button_manager.quest_button_sheet,
+                                0,  # x position will be set by ScrollableButtons
+                                0,  # y position will be set by ScrollableButtons
+                                700,  # width
+                                100,  # height
+                                1,  # scale
+                                new_quest  # quest object
+                            )
+                            quest_button.lock()
+                            quest_button.failed = True
+                            # Add to failed quests list
+                            self.button_manager.failed_quests.add_button(quest_button)
                             break
 
     def show_esc_popup(self) -> None:
