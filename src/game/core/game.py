@@ -953,25 +953,23 @@ class Game:
             self.screen.blit(text_surface, (log_rect.x + 10, log_rect.y + 10 + y_offset))
             y_offset += self.font.get_linesize()
 
-    def _setup_new_monster(self, monster: Optional[Monster]) -> Tuple[bool, Optional[Tooltip]]:
+    def _setup_new_monster(self, monster: Optional[Monster]) -> bool:
         """Set up a new monster for battle.
         
         Args:
             monster: The monster to set up, or None if no monster available
             
         Returns:
-            Tuple containing:
-            - bool: True if setup was successful, False if no monster available
-            - Optional[Tooltip]: New tooltip for the monster, or None if setup failed
+            bool: True if setup was successful, False if no monster available
         """
         if not monster or not self.battle_manager:
-            return False, None
+            return False
             
         self.battle_manager.monster = monster
         self._switch_battle_layout(False)  # Switch to combat layout
         self.battle_log.append(f"A {monster.name} appears!")
         
-        return True, Tooltip(f"Attack {monster.name} with your {self.hero.weapon.name if self.hero else 'weapon'}!", self.font)
+        return True
 
     def battle_screen(self) -> None:
         """Battle screen where the hero fights a monster."""
@@ -1021,7 +1019,7 @@ class Game:
         if not self.battle_manager.monster or not self.battle_manager.monster.is_alive():
             if self.current_quest:
                 new_monster = self.current_quest.get_monster()
-                success, tooltip = self._setup_new_monster(new_monster)
+                success = self._setup_new_monster(new_monster)
                 if not success:
                     self.game_state = GameState.QUEST
                     self.running = False
@@ -1031,12 +1029,9 @@ class Game:
                 self.running = False
                 return
 
-        # Create tooltip if none exists
-        if not tooltip and self.battle_manager.monster:
-            tooltip = Tooltip(f"Attack {self.battle_manager.monster.name} with your {self.hero.weapon.name if self.hero else 'weapon'}!", self.font)
-
         # Main battle loop
         while self.running:
+            # Draw the battle screen first
             self.screen.fill(Colors.WHITE)
 
             # Draw combatants
@@ -1141,12 +1136,8 @@ class Game:
 
             # Draw tooltips
             mouse_pos = pygame.mouse.get_pos()
-            if tooltip and self.battle_manager.state == BattleState.HOME and self.battle_manager.turn == TurnState.HERO_TURN:
-                attack_button = self.button_manager.get_button(GameState.BATTLE, "Attack")
-                if attack_button and not attack_button.is_locked() and attack_button.rect.collidepoint(mouse_pos):
-                    tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
 
-            if self.battle_manager.showing_potions:
+            if self.battle_manager.state == BattleState.USE_ITEM:
                 for potion_name in ['Health Potion', 'Damage Potion', 'Block Potion']:
                     button = self.button_manager.get_button(GameState.BATTLE, potion_name)
                     if button and not button.is_locked() and button.rect.collidepoint(mouse_pos):

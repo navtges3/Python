@@ -92,8 +92,9 @@ class BattleManager:
             for name in ['Continue', 'Retreat']:
                 button = button_manager.get_button(GameState.BATTLE, name)
                 button.unlock()
-            # Hide potion buttons if they were showing
+            # Hide potion and ability buttons
             self._toggle_potion_buttons(button_manager, False)
+            self._toggle_ability_buttons(button_manager, False)
         else:
             # Lock victory buttons
             for name in ['Continue', 'Retreat']:
@@ -105,8 +106,9 @@ class BattleManager:
                 for name in ['Attack', 'Defend', 'Potion', 'Flee']:
                     button = button_manager.get_button(GameState.BATTLE, name)
                     button.lock()
-                # Hide potion buttons if they were showing
+                # Hide potion and ability buttons
                 self._toggle_potion_buttons(button_manager, False)
+                self._toggle_ability_buttons(button_manager, False)
                 self.start_monster_turn()
             else:  # Hero's turn
                 if self.state == BattleState.HOME:
@@ -120,35 +122,26 @@ class BattleManager:
                         potions_button.unlock()
                     else:
                         potions_button.lock()
-                    # Update potion selection buttons if they're showing
-                    if self.showing_potions:
-                        self._update_potion_button_states(button_manager)
-                    # Always hide ability buttons in home state
+                    # Hide both potion and ability buttons in home state
+                    self._toggle_potion_buttons(button_manager, False)
                     self._toggle_ability_buttons(button_manager, False)
                 elif self.state == BattleState.USE_ABILITY:
-                    # Lock combat buttons
-                    for name in ['Attack', 'Defend', 'Potion', 'Flee']:
+                    # Lock basic combat buttons except Attack
+                    for name in ['Defend', 'Potion', 'Flee']:
                         button = button_manager.get_button(GameState.BATTLE, name)
                         button.lock()
                     # Show ability buttons
                     self._toggle_ability_buttons(button_manager, True)
-                    # Hide potion buttons if they were showing
                     self._toggle_potion_buttons(button_manager, False)
                 elif self.state == BattleState.USE_ITEM:
-                    # Lock combat buttons except Potion
+                    # Lock basic combat buttons except Potion
                     for name in ['Attack', 'Defend', 'Flee']:
                         button = button_manager.get_button(GameState.BATTLE, name)
                         button.lock()
-                    # Show and update potion selection buttons
+                    # Show potion selection buttons
                     self._toggle_potion_buttons(button_manager, True)
-                    self._update_potion_button_states(button_manager)
-                elif self.state == BattleState.USE_ABILITY:
-                    # Lock combat buttons except Ability buttons
-                    for name in ['Attack', 'Defend', 'Flee']:
-                        button = button_manager.get_button(GameState.BATTLE, name)
-                        button.lock()
-                    # Show ability buttons
-                    self._toggle_ability_buttons(button_manager, True)
+                    self._toggle_ability_buttons(button_manager, False)
+
 
     def get_potion_tooltip(self, potion_name: str) -> Optional[Tooltip]:
         """Get tooltip for a potion button.
@@ -202,16 +195,14 @@ class BattleManager:
         for button_name in button_manager.get_buttons(GameState.BATTLE):
             if button_name.startswith("Ability_"):
                 button = button_manager.get_button(GameState.BATTLE, button_name)
-                if show:
-                    # Only show ability if hero has it
-                    ability_name = button_name.replace("Ability_", "")
-                    if any(ability.name == ability_name for ability in self.hero.abilities):
-                        button.show()
-                        button.unlock()
-                    else:
-                        button.hide()
+                # Only show ability if hero has it
+                ability_name = button_name.replace("Ability_", "")
+                if show and any(ability.name == ability_name for ability in self.hero.abilities):
+                    button.show()
+                    button.unlock()
                 else:
                     button.hide()
+                    button.lock()
 
     def handle_monster_attack(self) -> None:
         """Handle monster's attack action."""
@@ -242,31 +233,16 @@ class BattleManager:
             self.handle_monster_attack()
 
     def handle_attack(self, monster: Monster) -> None:
-        """Handle hero's attack action.
+        """Handle using an ability to attack the monster.
         
         Args:
             monster: The monster to attack
         """
         if self.turn != TurnState.HERO_TURN:
             return  # Not hero's turn
-            
-        damage, missed, crit = self.hero.attack(monster)
         
-        # Add appropriate battle log message based on the attack result
-        if missed:
-            self.battle_log.append(f"{self.hero.name}'s attack with {self.hero.weapon.name} missed!")
-        else:
-            if crit:
-                self.battle_log.append(f"{self.hero.name} lands a critical hit with {self.hero.weapon.name}!")
-            self.battle_log.append(f"{self.hero.name} attacks {monster.name} for {damage + self.hero.potion_damage} damage.")
-            
-        if self.hero.potion_damage > 0:
-            self.hero.potion_damage = 0
-            
-        # Switch to monster's turn
-        self.turn = TurnState.MONSTER_TURN
-        if monster.is_alive():
-            self.start_monster_turn()
+        # Instead of directly attacking, show ability buttons
+        self.handle_attack_click()
 
     def handle_defend(self) -> None:
         """Handle hero's defend action."""

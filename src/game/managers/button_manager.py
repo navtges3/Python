@@ -270,6 +270,7 @@ class ButtonManager:
                 self.font,
             ),
         }
+    
     def _create_battle_buttons(self) -> Dict[str, Button]:
         """Create battle screen buttons.
         
@@ -281,9 +282,8 @@ class ButtonManager:
         button_y_start = GameConstants.SCREEN_HEIGHT // 2  # Start at middle of screen
         button_spacing = GameConstants.BUTTON_HEIGHT + 10  # Vertical spacing between buttons
         
-        # Calculate positions for additional columns
-        ability_x = button_x + GameConstants.BUTTON_WIDTH + 20  # Second column
-        potion_x = ability_x + GameConstants.BUTTON_WIDTH + 20  # Third column
+        # Calculate second column position for potion buttons
+        potion_x = button_x + GameConstants.BUTTON_WIDTH + 20  # Right of first column with margin
         
         # Create buttons dictionary
         buttons: Dict[str, Button] = {
@@ -347,7 +347,6 @@ class ButtonManager:
                 'Retreat',
                 self.font,
             ),
-            # Add potion selection buttons in second column
             'Health Potion': TextButton(
                 self.button_sheet_green,
                 potion_x,
@@ -379,39 +378,33 @@ class ButtonManager:
                 self.font,
             ),
         }
-        
-        # Hide victory buttons initially
-        buttons['Continue'].hide()
-        buttons['Retreat'].hide()
-        
-        # Hide potion selection buttons initially
-        buttons['Health Potion'].hide()
-        buttons['Damage Potion'].hide()
-        buttons['Block Potion'].hide()
-        
-        # Add ability buttons with text based on available abilities
-        # They'll be hidden by default and shown when Attack is clicked
+
+        # Add ability buttons (they'll be hidden by default)
         ability_buttons = [
-            ('Power Attack', self.button_sheet_red),
-            ('Precise Strike', self.button_sheet_blue),
-            ('Critical Strike', self.button_sheet_yellow),
-            ('Guard', self.button_sheet_blue),
-            ('Shield Wall', self.button_sheet_blue),
-            ('Heal', self.button_sheet_green),
+            ('Ability_Power Attack', self.button_sheet_red),
+            ('Ability_Precise Strike', self.button_sheet_blue),
+            ('Ability_Critical Strike', self.button_sheet_yellow),
         ]
         
         for i, (ability_name, button_sheet) in enumerate(ability_buttons):
-            buttons[f"Ability_{ability_name}"] = TextButton(
+            buttons[ability_name] = TextButton(
                 button_sheet,
-                ability_x,
+                potion_x,
                 button_y_start + (i * button_spacing),
-                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                ability_name,
+                ability_name.replace('Ability_', ''),
                 self.font,
             )
-            buttons[f"Ability_{ability_name}"].hide()  # Hide by default
+            buttons[ability_name].hide()  # Hide by default
+
+        # Hide victory buttons and potion buttons initially
+        buttons['Continue'].hide()
+        buttons['Retreat'].hide()
+        buttons['Health Potion'].hide()
+        buttons['Damage Potion'].hide()
+        buttons['Block Potion'].hide()
         
         return buttons
     
