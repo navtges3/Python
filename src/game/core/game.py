@@ -33,16 +33,7 @@ class Game:
     def __init__(self) -> None:
         """Initialize the game."""
         Game.instance = self  # Store instance for access from other classes
-        self.game_state: GameState = GameState.HOME
-        self.battle_log: List[str] = []
-        self.hero: Optional[Hero] = None
-        self.current_quest: Optional[Quest] = None
-        self.running: bool = False
-        self.popup_running: bool = False
-        self.battle_manager: Optional[BattleManager] = None
-        self.event_manager: EventManager = EventManager()
-        self.village: Village = Village("Heroville", 100, self.font)  # Initialize village with 100 health
-        
+
         # Initialize the mixer for music
         pygame.mixer.init()
         # Load and play background music
@@ -55,7 +46,21 @@ class Game:
         pygame.display.set_caption('Village Defense')
         pygame.display.set_icon(pygame.image.load(resource_path('icon.ico')))
 
+        self.start()  # Initialize game state and managers
+
+    def start(self) -> None:
+        """Initialize or reset the game state and managers."""
+        self.game_state: GameState = GameState.HOME
+        self.battle_log: List[str] = []
+        self.hero: Optional[Hero] = None
+        self.current_quest: Optional[Quest] = None
+        self.running: bool = False
+        self.popup_running: bool = False
+        self.battle_manager: Optional[BattleManager] = None
+        self.event_manager: EventManager = EventManager()
+        self.village: Village = Village("Heroville", 100, self.font)  # Initialize village with 100 health
         self.screen_manager: ScreenManager = ScreenManager(self.screen, self.font)
+        
         # Load button sprite sheet
         button_sheet: pygame.Surface = pygame.image.load(resource_path('images\\buttons\\button_sheet_0.png')).convert_alpha()
         quest_button_sheet: pygame.Surface = pygame.image.load(resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
@@ -550,6 +555,12 @@ class Game:
                                     self.game_state = GameState.HOME
                                     self.running = False
                                 elif button_name == "Create Hero":
+                                    # Reset game state and managers for new game
+                                    self.start()
+                                    if hero_class == "Knight":
+                                        self.hero = Knight(hero_name)  # Knight class handles image loading
+                                    else:
+                                        self.hero = Assassin(hero_name)  # Assassin class handles image loading
                                     self.game_state = GameState.VILLAGE
                                     self.running = False
                                 break
@@ -885,7 +896,7 @@ class Game:
         battle_buttons = self.button_manager.get_buttons(GameState.BATTLE)
         
         # Combat buttons
-        combat_buttons: List[str] = ['Attack', 'Defend', 'Potion', 'Flee']
+        combat_buttons: List[str] = ['Attack', 'Rest', 'Potion', 'Flee']
         # Victory buttons
         victory_buttons: List[str] = ['Continue', 'Retreat']
         
@@ -991,7 +1002,7 @@ class Game:
                 battle_buttons[name].lock()
         
         # Set up combat buttons
-        combat_buttons = ['Attack', 'Defend', 'Flee']
+        combat_buttons = ['Attack', 'Rest', 'Flee']
         for name in combat_buttons:
             if name in battle_buttons:
                 button = battle_buttons[name]
@@ -1100,8 +1111,8 @@ class Game:
                                     if button_name == "Attack":
                                         self.battle_manager.handle_attack(self.battle_manager.monster)
                                         self.event_manager.reset_button_delay()
-                                    elif button_name == "Defend":
-                                        self.battle_manager.handle_defend()
+                                    elif button_name == "Rest":
+                                        self.battle_manager.handle_rest()
                                         self.event_manager.reset_button_delay()
                                     elif button_name == "Potion":
                                         self.battle_manager.handle_use_potion()
@@ -1365,8 +1376,8 @@ class Game:
             if self.battle_manager and self.battle_manager.turn == TurnState.HERO_TURN:
                 if button_name == "Attack":
                     self.battle_manager.handle_attack(self.battle_manager.monster)
-                elif button_name == "Defend":
-                    self.battle_manager.handle_defend()
+                elif button_name == "Rest":
+                    self.battle_manager.handle_rest()
                 elif button_name == "Potion":
                     self.battle_manager.handle_use_potion()
                 elif button_name == "Flee":

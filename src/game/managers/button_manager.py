@@ -297,24 +297,24 @@ class ButtonManager:
                 'Attack',
                 self.font,
             ),
-            'Defend': TextButton(
+            'Potion': TextButton(
                 self.button_sheet_blue,
                 button_x,
                 button_y_start + button_spacing,  # Second row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Defend',
+                'Potions',
                 self.font,
             ),
-            'Potion': TextButton(
+            'Rest': TextButton(
                 self.button_sheet_green,
                 button_x,
                 button_y_start + button_spacing * 2,  # Third row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Potions',
+                'Rest',
                 self.font,
             ),
             'Flee': TextButton(

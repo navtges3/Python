@@ -82,6 +82,16 @@ class Hero(Combatant):
             incoming_damage = self.armor.calculate_defence(incoming_damage)
         super().take_damage(incoming_damage)
 
+    def rest(self) -> None:
+        """
+        The hero gains health and restores all energy
+        """
+
+        self.energy = self.max_energy
+        self.current_hp += self.level * 5
+        if self.current_hp > self.max_hp:
+            self.current_hp = self.max_hp
+
     def add_item(self, item: Item) -> None:
         """
         Add an item to the hero's inventory.
