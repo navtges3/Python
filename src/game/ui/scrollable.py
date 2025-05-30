@@ -1,7 +1,7 @@
 import pygame
 from src.game.core.constants import Colors
 from src.game.ui.button import Button
-from typing import Union
+from typing import Union, Optional
 
 class ScrollableButtons:
     """A scrollable container that manages and displays buttons with scrollbar functionality."""
@@ -135,10 +135,12 @@ class ScrollableButtons:
         surface.set_clip(self.rect)
 
         # Draw buttons
+        visible_buttons = []
         for i, button in enumerate(self.buttons):
             button.rect.y = self.rect.y + i * (self.button_height + self.button_spacing) + self.scroll_offset
             if self.rect.colliderect(button.rect):
                 button.draw(surface)
+                visible_buttons.append(button)
 
         surface.set_clip(None)  # Reset clipping
 
@@ -160,7 +162,11 @@ class ScrollableButtons:
 
             # Draw handle
             pygame.draw.rect(surface, Colors.GRAY, self.scrollbar_handle_rect)
-
+            
+        # Draw tooltips last, without clipping
+        for button in visible_buttons:
+            button.draw_tooltip(surface)
+    
     def add_button(self, button: Button) -> None:
         """Add a button to the scrollable area.
         
@@ -168,9 +174,16 @@ class ScrollableButtons:
             button: The Button instance to add
         """
         button_y = len(self.buttons) * (self.button_height + self.button_spacing)
+        
+        # Update button position
         button.rect.x = self.rect.x
         button.rect.y = self.rect.y + button_y
-        button.rect.width = self.rect.width - self.scrollbar_width
+        
+        # Update button width but preserve height
+        old_height = button.rect.height  # Remember original height
+        button.rect.width = self.rect.width - self.scrollbar_width - 4  # Add small padding
+        button.rect.height = old_height  # Restore original height
+        
         self.buttons.append(button)
 
     def remove_button(self, button_or_index: Union[Button, int]) -> None:
@@ -217,4 +230,33 @@ class ScrollableButtons:
         """
         if self.selected is not None and 0 <= self.selected < len(self.buttons):
             return self.buttons[self.selected]
+        return None
+    
+    def handle_click(self, mouse_pos: tuple[int, int]) -> Optional[str]:
+        """Check if any button was clicked and return its text.
+        
+        Args:
+            mouse_pos: Current mouse position (x, y)
+            
+        Returns:
+            The text of the clicked button, or None if no button was clicked
+        """
+        # Only check for clicks if mouse is in the container
+        if not self.rect.collidepoint(mouse_pos):
+            return None
+            
+        # Check each button
+        for i, button in enumerate(self.buttons):
+            # Calculate the button's actual position with scroll offset
+            actual_y = self.rect.y + i * (self.button_height + self.button_spacing) + self.scroll_offset
+            actual_rect = pygame.Rect(
+                self.rect.x,
+                actual_y,
+                self.rect.width - self.scrollbar_width,
+                self.button_height
+            )
+            
+            if actual_rect.collidepoint(mouse_pos) and not button.is_locked():
+                return button.text
+                
         return None

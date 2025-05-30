@@ -21,7 +21,7 @@ class Item:
 
 class Weapon(Item):
     def __init__(self, name: str, description: str, value: int,
-                 damage: int, accuracy: float, crit_chance: float, crit_damage: float) -> None:
+                damage: int, accuracy: float, crit_chance: float, crit_damage: float) -> None:
         """
         :param damage:      A flat number subtracted from incoming damage.
         :param accuracy:    Probability (0.0 to 1.0) to successfully attack.
@@ -49,12 +49,12 @@ class Weapon(Item):
     def __str__(self) -> str:
         base_info = super().__str__()
         stats = (f" Damage: {self.damage}, Accuracy: {self.accuracy:.0%} "
-                 f"Crit Chance: {self.crit_chance:.0%}, Crit Damage: {self.crit_damage:.1}")
+                f"Crit Chance: {self.crit_chance:.0%}, Crit Damage: {self.crit_damage:.1}")
         return base_info + stats
     
 class Armor(Item):
     def __init__(self, name: str, description: str, value: int,
-                 block: int, block_chance: float, dodge_chance: float) -> None:
+                block: int, block_chance: float, dodge_chance: float) -> None:
         """
         :param block:           A flat number subtracted from incoming damage.
         :param block_chance:    Probability (0.0 to 1.0) to successfully block part of the damage.

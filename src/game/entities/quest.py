@@ -119,8 +119,14 @@ class QuestButton(Button):
         super().__init__(button_sheet, x, y, width, height, scale)
         self.quest: Quest = quest
         self.selected: bool = False
+        self.failed: bool = False
         if self.quest.is_complete():
             self.toggle()  # Set to selected state if quest is complete
+
+    def mark_as_failed(self) -> None:
+        """Mark the quest as failed and lock it."""
+        self.failed = True
+        self.lock()  # Lock the button when failed
 
     def draw(self, surface: Optional[pygame.Surface]) -> None:
         """
@@ -142,26 +148,45 @@ class QuestButton(Button):
             surface.blit(image, (self.rect.x, self.rect.y))
             
             # Draw quest information
-            draw_text(self.quest.name, pygame.font.Font(None, 24), Colors.BLACK, 
+            name_color = Colors.RED if self.failed else Colors.BLACK
+            draw_text(self.quest.name, pygame.font.Font(None, 24), name_color, 
                         surface, self.rect.x + 10, self.rect.y + 10)
+            
+            # Draw reward/penalty with appropriate colors
+            reward_color = Colors.GRAY if self.failed else Colors.GREEN
+            penalty_color = Colors.GRAY if self.failed else Colors.RED
             draw_text(self.quest.reward.name, pygame.font.Font(None, 24), 
-                        Colors.GREEN, surface, self.rect.x + 10, self.rect.y + 40)
+                        reward_color, surface, self.rect.x + 10, self.rect.y + 40)
             draw_text(str(self.quest.penalty), pygame.font.Font(None, 24), 
-                        Colors.RED, surface, self.rect.x + 10, self.rect.y + 70)
+                        penalty_color, surface, self.rect.x + 10, self.rect.y + 70)
 
+            # Draw description and progress with appropriate color
+            desc_color = Colors.GRAY if self.failed else Colors.BLACK
             draw_wrapped_text(self.quest.description, pygame.font.Font(None, 24), 
-                            Colors.BLACK, surface, 
+                            desc_color, surface, 
                             self.rect.x + self.rect.width // 3, 
                             self.rect.y + 10, self.rect.width // 3 + 50)
 
+            # Draw progress with appropriate color
+            progress_color = Colors.GRAY if self.failed else Colors.BLACK
             output_text = ""
             for key in self.quest.monster_list.keys():
                 output_text += f"{key}: {self.quest.monsters_slain[key]}/{self.quest.monster_list[key]}\n"
 
             draw_multiple_lines(output_text, pygame.font.Font(None, 24), 
-                                Colors.BLACK, surface, 
+                                progress_color, surface, 
                                 self.rect.x + self.rect.width // 4 * 3 + 25, 
                                 self.rect.y + 10)
+
+            # If failed, draw "FAILED" text overlay
+            if self.failed:
+                failed_font = pygame.font.Font(None, 48)  # Larger font for FAILED text
+                failed_text = failed_font.render("FAILED", True, Colors.RED)
+                failed_rect = failed_text.get_rect()
+                # Position the text in the center-right of the button
+                failed_rect.center = (self.rect.centerx + self.rect.width // 4, 
+                                    self.rect.centery)
+                surface.blit(failed_text, failed_rect)
 
 # Type hint for the quest list
 quest_list: Set[Quest] = {

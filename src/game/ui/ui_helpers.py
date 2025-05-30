@@ -145,7 +145,7 @@ def draw_multiple_lines(text: str, font: pygame.font.Font, color: Tuple[int, int
     """
     lines: List[str] = text.split("\n")
     for i, line in enumerate(lines):
-        draw_text(line, font, color, surface, x, y + i * 30)
+        draw_text(line, font, color, surface, x, y + i * font.get_linesize())
 
 def draw_health_bar(surface: pygame.Surface, font: pygame.font.Font, x: int, y: int, width: int, height: int, health_low: int, health_high: int) -> None:
     """
@@ -171,6 +171,19 @@ def draw_health_bar(surface: pygame.Surface, font: pygame.font.Font, x: int, y: 
     health_fill_rect: pygame.Rect = pygame.Rect(x, y, width * health_percentage, height)
     pygame.draw.rect(surface, Colors.GREEN, health_fill_rect)
     draw_text_centered(f"{health_low}/{health_high}", font, Colors.BLACK, surface, x + width // 2, y + height // 2 + 2)
+
+def draw_energy_bar(surface: pygame.Surface, font: pygame.font.Font, x: int, y: int, width: int, height: int, current: int, maximum: int) -> None:
+    """Draw an energy bar with current/max values."""
+    pygame.draw.rect(surface, Colors.DARK_BLUE, (x, y, width, height))
+    if current > 0:
+        fill_width = int((current / maximum) * width)
+        if maximum > 0:
+            fill_width = int((current / maximum) * width)
+            pygame.draw.rect(surface, Colors.LIGHT_BLUE, (x, y, fill_width, height))
+    text = f"{current}/{maximum}"
+    text_surface = font.render(text, True, Colors.WHITE)
+    text_rect = text_surface.get_rect(center=(x + width//2, y + height//2))
+    surface.blit(text_surface, text_rect)
 
 class TextBox:
     """A text box that handles keyboard input with persistent text."""

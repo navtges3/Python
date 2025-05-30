@@ -5,6 +5,7 @@ from src.game.ui.spritesheet import SpriteSheet
 from src.game.core.constants import GameState, GameConstants, Colors
 from src.game.ui.scrollable import ScrollableButtons
 from src.game.entities.quest import QuestButton, quest_list
+from src.game.entities.ability import Ability, AttackAbility, DefendAbility
 
 class ButtonManager:
     """Manages button creation and organization for different game states."""
@@ -37,6 +38,14 @@ class ButtonManager:
             100,  # button_height
             20  # button_spacing
         )
+
+        self.failed_quests = ScrollableButtons(
+            10, 70,  # x, y
+            GameConstants.SCREEN_WIDTH - 20,  # width
+            GameConstants.SCREEN_HEIGHT - 200,  # height
+            100,  # button_height
+            20  # button_spacing
+        )
         
         # Initialize available quests
         for quest in quest_list:
@@ -51,12 +60,20 @@ class ButtonManager:
             )
             self.available_quests.add_button(quest_button)
 
+        self.hero_ability_buttons = ScrollableButtons(
+            GameConstants.BUTTON_WIDTH + 40,
+            GameConstants.SCREEN_HEIGHT // 2,
+            GameConstants.BUTTON_WIDTH + 15,
+            GameConstants.SCREEN_HEIGHT // 2,
+            GameConstants.BUTTON_HEIGHT,
+        )
+
     def _initialize_buttons(self) -> Dict[GameState, Dict[str, Button]]:
         """Initialize all game buttons organized by game state."""
         return {
             GameState.HOME:         self._create_home_buttons(),
             GameState.NEW_GAME:     self._create_new_game_buttons(),
-            GameState.MAIN_GAME:    self._create_main_game_buttons(),
+            GameState.VILLAGE:      self._create_main_game_buttons(),
             GameState.QUEST:        self._create_quest_buttons(),
             GameState.BATTLE:       self._create_battle_buttons(),
             GameState.SHOP:         self._create_shop_buttons(),
@@ -209,6 +226,7 @@ class ButtonManager:
         Returns:
             Dictionary mapping button names to Button objects
         """
+        print("Creating quest screen buttons") # DEBUG
         return {
             'Back': TextButton(
                 self.button_sheet_red,
@@ -250,6 +268,16 @@ class ButtonManager:
                 'Complete',
                 self.font,
             ),
+            'Failed': TextButton(
+                self.button_sheet_red,
+                GameConstants.BUTTON_WIDTH * 2 + 30,
+                10,
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Failed',
+                self.font,
+            ),
         }
     
     def _create_battle_buttons(self) -> Dict[str, Button]:
@@ -259,45 +287,49 @@ class ButtonManager:
             Dictionary mapping button names to Button objects
         """
         # Calculate button positions
-        button_y = GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12
-        button_spacing = GameConstants.BUTTON_WIDTH + 10
+        button_x = 20  # Left margin for first column
+        button_y_start = GameConstants.SCREEN_HEIGHT // 2  # Start at middle of screen
+        button_spacing = GameConstants.BUTTON_HEIGHT + 10  # Vertical spacing between buttons
+        
+        # Calculate second column position for potion buttons
+        potion_x = button_x + GameConstants.BUTTON_WIDTH + 20  # Right of first column with margin
         
         # Create buttons dictionary
         buttons: Dict[str, Button] = {
-            'Attack': TextButton(
+            'Ability': TextButton(
                 self.button_sheet_red,
-                10,
-                button_y,
+                button_x,
+                button_y_start,  # First row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Attack',
+                'Ability',
                 self.font,
             ),
-            'Defend': TextButton(
+            'Potion': TextButton(
                 self.button_sheet_blue,
-                10 + button_spacing,
-                button_y,
+                button_x,
+                button_y_start + button_spacing,  # Second row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Defend',
+                'Potions',
                 self.font,
             ),
-            'Use Potion': TextButton(
+            'Rest': TextButton(
                 self.button_sheet_green,
-                10 + button_spacing * 2,
-                button_y,
+                button_x,
+                button_y_start + button_spacing * 2,  # Third row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Use Potion',
+                'Rest',
                 self.font,
             ),
             'Flee': TextButton(
                 self.button_sheet_yellow,
-                10 + button_spacing * 3,
-                button_y,
+                button_x,
+                button_y_start + button_spacing * 3,  # Fourth row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -306,8 +338,8 @@ class ButtonManager:
             ),
             'Continue': TextButton(
                 self.button_sheet_green,
-                10 + button_spacing * 2,
-                button_y,
+                button_x,
+                button_y_start + button_spacing * 2,  # Same row as Potion
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
@@ -316,19 +348,59 @@ class ButtonManager:
             ),
             'Retreat': TextButton(
                 self.button_sheet_red,
-                10 + button_spacing * 3,
-                button_y,
+                button_x,
+                button_y_start + button_spacing * 3,  # Same row as Flee
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Retreat',
                 self.font,
             ),
+            'Health Potion': TextButton(
+                self.button_sheet_green,
+                potion_x,
+                button_y_start,  # First row
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Health Potion',
+                self.font,
+            ),
+            'Damage Potion': TextButton(
+                self.button_sheet_red,
+                potion_x,
+                button_y_start + button_spacing,  # Second row
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Damage Potion',
+                self.font,
+            ),
+            'Block Potion': TextButton(
+                self.button_sheet_blue,
+                potion_x,
+                button_y_start + button_spacing * 2,  # Third row
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Block Potion',
+                self.font,
+            ),
         }
-        
-        # Hide victory buttons initially
+
+        # Add tooltips to potion buttons
+        from src.game.entities.items import potion_dictionary
+        for potion_name in ['Health Potion', 'Damage Potion', 'Block Potion']:
+            if potion_name in buttons and potion_name in potion_dictionary:
+                potion = potion_dictionary[potion_name]
+                buttons[potion_name].set_tooltip(potion.description, self.font)
+
+        # Hide victory buttons and potion buttons initially
         buttons['Continue'].hide()
         buttons['Retreat'].hide()
+        buttons['Health Potion'].hide()
+        buttons['Damage Potion'].hide()
+        buttons['Block Potion'].hide()
         
         return buttons
     
@@ -458,6 +530,7 @@ class ButtonManager:
         """
         for name, button in self.buttons[state].items():
             if not button.is_locked() and button.rect.collidepoint(pos):
+                print(f"Button clicked: {name}")  # DEBUG
                 return name
         return None
 
@@ -509,3 +582,57 @@ class ButtonManager:
         self.available_quests.remove_button(quest_button)
         # Add to completed quests
         self.completed_quests.add_button(quest_button)
+
+    def move_failed_quest(self, quest_button: QuestButton) -> None:
+        """Move a quest button from available to failed quests and apply penalty.
+        
+        Args:
+            quest_button: The quest button to move
+        """
+        # Remove from available quests
+        self.available_quests.remove_button(quest_button)
+        # Mark the quest as failed
+        quest_button.mark_as_failed()
+        # Add to failed quests
+        self.failed_quests.add_button(quest_button)
+        
+        # Apply the quest penalty
+        penalty_target, penalty_value = quest_button.quest.penalty
+        if penalty_target == "village":
+            from src.game.core.game import Game  # Import here to avoid circular import
+            if hasattr(Game, 'instance') and Game.instance and Game.instance.village:
+                Game.instance.village.health += penalty_value  # Penalty value is negative
+                Game.instance.battle_log.append(f"Village suffers {abs(penalty_value)} damage from quest failure!")
+
+    def add_hero_ability_button(self, ability: Ability) -> None:
+        """Add a hero ability button to the scrollable area.
+        
+        Args:
+            ability: The ability to add
+        """
+        if ability:
+            # Choose button color based on ability type
+            if isinstance(ability, AttackAbility):
+                button_sheet = self.button_sheet_red
+            elif isinstance(ability, DefendAbility):
+                button_sheet = self.button_sheet_blue
+            else:
+                button_sheet = self.button_sheet_gray
+
+            button = TextButton(
+                button_sheet,
+                0,  # x position will be set by ScrollableButtons
+                0,  # y position will be set by ScrollableButtons
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                ability.name,
+                self.font,
+                Colors.BLACK
+            )
+            button.set_tooltip(f"{ability.description}\nEnergy Cost: {ability.energy_cost}", self.font)
+            self.hero_ability_buttons.add_button(button)
+
+    def clear_hero_ability_buttons(self) -> None:
+        """Clear all hero ability buttons from the scrollable area."""
+        self.hero_ability_buttons.buttons.clear()

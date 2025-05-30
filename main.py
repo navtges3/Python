@@ -8,8 +8,8 @@ def main() -> None:
             my_game.home_screen()
         elif my_game.game_state == GameState.NEW_GAME:
             my_game.new_game_screen()
-        elif my_game.game_state == GameState.MAIN_GAME:
-            my_game.main_game()
+        elif my_game.game_state == GameState.VILLAGE:
+            my_game.village_screen()
         elif my_game.game_state == GameState.QUEST:
             my_game.quest_screen()
         elif my_game.game_state == GameState.BATTLE:
