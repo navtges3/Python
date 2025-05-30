@@ -158,35 +158,3 @@ class DefendAbility(Ability):
         effect.block = self.block_amount
         effect.duration = self.duration
         return effect
-
-class UtilityAbility(Ability):
-    """An ability that provides utility effects like healing or buffs."""
-    
-    def __init__(self,
-                name: str,
-                description: str,
-                healing: int,
-                cooldown: int,
-                energy_cost: int) -> None:
-        """
-        Initialize a utility ability.
-        
-        Args:
-            healing: Amount of healing provided
-        """
-        super().__init__(name, description, cooldown, energy_cost)
-        self.healing: int = healing
-        
-    def use(self, user: Combatant, target: Optional[Combatant] = None) -> AbilityEffect:
-        """Use the utility ability."""
-        effect = super().use(user, target)
-        effect.healing = self.healing
-        
-        # Apply healing to the target (or self if no target)
-        target_to_heal = target if target else user
-        target_to_heal.current_hp = min(
-            target_to_heal.current_hp + effect.healing,
-            target_to_heal.max_hp
-        )
-        
-        return effect

@@ -2,7 +2,7 @@ from src.game.core.constants import GameState, Colors
 from src.game.entities.monster import Monster
 from src.game.entities.hero import Hero
 from src.game.entities.items import potion_dictionary
-from src.game.entities.ability import UtilityAbility, DefendAbility, AttackAbility
+from src.game.entities.ability import DefendAbility, AttackAbility
 from src.game.ui.tooltip import Tooltip
 from enum import Enum
 from src.game.managers.button_manager import ButtonManager

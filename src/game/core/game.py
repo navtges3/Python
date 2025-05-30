@@ -986,7 +986,6 @@ class Game:
         """Battle screen where the hero fights a monster."""
         self.running = True
         self.event_manager.reset_button_delay()
-        tooltip: Optional[Tooltip] = None
 
         # Initialize battle manager if needed
         if self.battle_manager is None:
@@ -1025,6 +1024,11 @@ class Game:
             if name in battle_buttons:
                 battle_buttons[name].hide()
                 battle_buttons[name].lock()
+
+        # Add ability buttons for hero
+        self.button_manager.clear_hero_ability_buttons()
+        for ability in self.hero.abilities:
+            self.button_manager.add_hero_ability_button(ability)
 
         # Set up monster if needed
         if not self.battle_manager.monster or not self.battle_manager.monster.is_alive():

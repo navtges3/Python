@@ -160,7 +160,7 @@ class ScrollableButtons:
 
             # Draw handle
             pygame.draw.rect(surface, Colors.GRAY, self.scrollbar_handle_rect)
-
+    
     def add_button(self, button: Button) -> None:
         """Add a button to the scrollable area.
         
@@ -168,9 +168,16 @@ class ScrollableButtons:
             button: The Button instance to add
         """
         button_y = len(self.buttons) * (self.button_height + self.button_spacing)
+        
+        # Update button position
         button.rect.x = self.rect.x
         button.rect.y = self.rect.y + button_y
-        button.rect.width = self.rect.width - self.scrollbar_width
+        
+        # Update button width but preserve height
+        old_height = button.rect.height  # Remember original height
+        button.rect.width = self.rect.width - self.scrollbar_width - 4  # Add small padding
+        button.rect.height = old_height  # Restore original height
+        
         self.buttons.append(button)
 
     def remove_button(self, button_or_index: Union[Button, int]) -> None:

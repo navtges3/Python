@@ -3,6 +3,16 @@ from src.game.entities.ability import Ability, AttackAbility, DefendAbility
 
 # Dictionary containing all attack abilities
 attack_abilities: Dict[str, Ability] = {
+    "Strike": AttackAbility(
+        name="Strike",
+        description="A basic attack that deals moderate damage",
+        damage_multiplier=1.0,
+        accuracy_modifier=1.0,
+        crit_chance_modifier=1.0,
+        crit_damage_modifier=1.0,
+        cooldown=1,
+        energy_cost=1
+    ),
     "Precise Strike": AttackAbility(
         name="Precise Strike",
         description="A precise attack with increased accuracy",

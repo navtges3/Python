@@ -1,7 +1,8 @@
 from random import randint
 from typing import Dict, Union, Optional, Tuple, Any, List
 from src.game.entities.items import Item, Armor, Weapon, weapon_dictionary, armor_dictionary
-from src.game.entities.ability import Ability, ability_dictionary
+from src.game.entities.ability import Ability
+from src.game.entities.ability_dictionaries import attack_abilities, defense_abilities
 from src.game.ui.ui_helpers import *
 from src.game.core.combatant import Combatant
 from src.game.utils.fileIO import resource_path
@@ -188,7 +189,6 @@ class Hero(Combatant):
     def __str__(self):
         """Returns the name of the hero."""
         return self.name
-    
     def add_ability(self, ability_name: str) -> None:
         """
         Add an ability to the hero's ability list.
@@ -196,15 +196,20 @@ class Hero(Combatant):
         Args:
             ability_name: Name of the ability to add
         """
-        if ability_name in ability_dictionary:
-            ability = ability_dictionary[ability_name]
-            if ability not in self.abilities:
-                self.abilities.append(ability)
-                print(f"{self.name} learned {ability_name}!")
-            else:
-                print(f"{self.name} already knows {ability_name}!")
+        # Check both attack and defense dictionaries
+        if ability_name in attack_abilities:
+            ability = attack_abilities[ability_name]
+        elif ability_name in defense_abilities:
+            ability = defense_abilities[ability_name]
         else:
             print(f"Unknown ability: {ability_name}")
+            return
+
+        if ability not in self.abilities:
+            self.abilities.append(ability)
+            print(f"{self.name} learned {ability_name}!")
+        else:
+            print(f"{self.name} already knows {ability_name}!")
 
     def remove_ability(self, ability_name: str) -> None:
         """

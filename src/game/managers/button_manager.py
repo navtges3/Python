@@ -5,6 +5,7 @@ from src.game.ui.spritesheet import SpriteSheet
 from src.game.core.constants import GameState, GameConstants, Colors
 from src.game.ui.scrollable import ScrollableButtons
 from src.game.entities.quest import QuestButton, quest_list
+from src.game.entities.ability import Ability, AttackAbility, DefendAbility
 
 class ButtonManager:
     """Manages button creation and organization for different game states."""
@@ -596,15 +597,34 @@ class ButtonManager:
                 Game.instance.village.health += penalty_value  # Penalty value is negative
                 Game.instance.battle_log.append(f"Village suffers {abs(penalty_value)} damage from quest failure!")
 
-    def add_hero_ability_button(self, button: Button) -> None:
+    def add_hero_ability_button(self, ability: Ability) -> None:
         """Add a hero ability button to the scrollable area.
         
         Args:
-            button: The Button instance to add
+            ability: The ability to add
         """
-        self.hero_ability_buttons.append(button)
+        if ability:
+            if isinstance(ability, AttackAbility):
+                button_sheet = self.button_sheet_red
+            elif isinstance(ability, DefendAbility):
+                button_sheet = self.button_sheet_blue
+            else:
+                button_sheet = self.button_sheet_gray
+            button: TextButton = TextButton(
+                button_sheet,
+                0,  # x position will be set by ScrollableButtons
+                0,  # y position will be set by ScrollableButtons
+                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                ability.name,
+                self.font,
+                Colors.BLACK  # Add text color parameter
+            )
+            button.set_tooltip(ability.description, self.font)
+            self.hero_ability_buttons.add_button(button)
 
     def clear_hero_ability_buttons(self) -> None:
         """Clear all hero ability buttons from the scrollable area.
         """
-        self.hero_ability_buttons.clear()
+        self.hero_ability_buttons.clear_buttons()
