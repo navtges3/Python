@@ -633,6 +633,8 @@ class Game:
                             elif button_name == "Shop":
                                 self.game_state = GameState.SHOP
                                 self.running = False
+                            elif button_name == "Rest":
+                                self.hero.rest()
                             break
 
             # Draw Buttons
