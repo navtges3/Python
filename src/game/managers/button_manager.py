@@ -287,14 +287,14 @@ class ButtonManager:
         
         # Create buttons dictionary
         buttons: Dict[str, Button] = {
-            'Attack': TextButton(
+            'Ability': TextButton(
                 self.button_sheet_red,
                 button_x,
                 button_y_start,  # First row
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
                 1,
-                'Attack',
+                'Ability',
                 self.font,
             ),
             'Potion': TextButton(

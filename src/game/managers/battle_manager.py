@@ -86,7 +86,7 @@ class BattleManager:
         
         if self.state == BattleState.MONSTER_DEFEATED:
             # Lock combat buttons, unlock victory buttons
-            for name in ['Attack', 'Rest', 'Potion', 'Flee']:
+            for name in ['Ability', 'Rest', 'Potion', 'Flee']:
                 button = button_manager.get_button(GameState.BATTLE, name)
                 button.lock()
             for name in ['Continue', 'Retreat']:
@@ -103,7 +103,7 @@ class BattleManager:
                 
             if self.turn == TurnState.MONSTER_TURN:
                 # Lock all hero action buttons during monster's turn
-                for name in ['Attack', 'Rest', 'Potion', 'Flee']:
+                for name in ['Ability', 'Rest', 'Potion', 'Flee']:
                     button = button_manager.get_button(GameState.BATTLE, name)
                     button.lock()
                 # Hide potion and ability buttons
@@ -113,7 +113,7 @@ class BattleManager:
             else:  # Hero's turn
                 if self.state == BattleState.HOME:
                     # Unlock basic combat buttons
-                    for name in ['Attack', 'Rest', 'Flee']:
+                    for name in ['Ability', 'Rest', 'Flee']:
                         button = button_manager.get_button(GameState.BATTLE, name)
                         button.unlock()
                     # Handle potion button separately
@@ -126,7 +126,7 @@ class BattleManager:
                     self._toggle_potion_buttons(button_manager, False)
                     self._toggle_ability_buttons(button_manager, False)
                 elif self.state == BattleState.USE_ABILITY:
-                    # Lock basic combat buttons except Attack
+                    # Lock basic combat buttons except Ability
                     for name in ['Rest', 'Potion', 'Flee']:
                         button = button_manager.get_button(GameState.BATTLE, name)
                         button.lock()
@@ -135,7 +135,7 @@ class BattleManager:
                     self._toggle_potion_buttons(button_manager, False)
                 elif self.state == BattleState.USE_ITEM:
                     # Lock basic combat buttons except Potion
-                    for name in ['Attack', 'Rest', 'Flee']:
+                    for name in ['Ability', 'Rest', 'Flee']:
                         button = button_manager.get_button(GameState.BATTLE, name)
                         button.lock()
                     # Show potion selection buttons
@@ -232,7 +232,7 @@ class BattleManager:
         if self.monster and self.monster.is_alive():
             self.handle_monster_attack()
 
-    def handle_attack(self, monster: Monster) -> None:
+    def handle_ability(self) -> None:
         """Handle using an ability to attack the monster.
         
         Args:
@@ -242,7 +242,7 @@ class BattleManager:
             return  # Not hero's turn
         
         # Instead of directly attacking, show ability buttons
-        self.handle_attack_click()
+        self.handle_ability_click()
 
     def handle_rest(self) -> None:
         """Handle hero's Rest action."""
@@ -297,8 +297,8 @@ class BattleManager:
         self.state = BattleState.RUN_AWAY
         return True  # Successful flee
 
-    def handle_attack_click(self) -> None:
-        """Handle when the Attack button is clicked, showing ability buttons."""
+    def handle_ability_click(self) -> None:
+        """Handle when the Ability button is clicked, showing ability buttons."""
         if self.turn != TurnState.HERO_TURN or not self.button_manager:
             return
 

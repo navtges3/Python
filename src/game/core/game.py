@@ -896,7 +896,7 @@ class Game:
         battle_buttons = self.button_manager.get_buttons(GameState.BATTLE)
         
         # Combat buttons
-        combat_buttons: List[str] = ['Attack', 'Rest', 'Potion', 'Flee']
+        combat_buttons: List[str] = ['Ability', 'Rest', 'Potion', 'Flee']
         # Victory buttons
         victory_buttons: List[str] = ['Continue', 'Retreat']
         
@@ -1002,7 +1002,7 @@ class Game:
                 battle_buttons[name].lock()
         
         # Set up combat buttons
-        combat_buttons = ['Attack', 'Rest', 'Flee']
+        combat_buttons = ['Ability', 'Rest', 'Flee']
         for name in combat_buttons:
             if name in battle_buttons:
                 button = battle_buttons[name]
@@ -1108,8 +1108,8 @@ class Game:
 
                                 # Handle combat actions during hero's turn
                                 if self.battle_manager.turn == TurnState.HERO_TURN:
-                                    if button_name == "Attack":
-                                        self.battle_manager.handle_attack(self.battle_manager.monster)
+                                    if button_name == "Ability":
+                                        self.battle_manager.handle_ability()
                                         self.event_manager.reset_button_delay()
                                     elif button_name == "Rest":
                                         self.battle_manager.handle_rest()
@@ -1374,8 +1374,8 @@ class Game:
                 
             # Only process battle actions during hero's turn if battle manager exists
             if self.battle_manager and self.battle_manager.turn == TurnState.HERO_TURN:
-                if button_name == "Attack":
-                    self.battle_manager.handle_attack(self.battle_manager.monster)
+                if button_name == "Ability":
+                    self.battle_manager.handle_ability(self.battle_manager.monster)
                 elif button_name == "Rest":
                     self.battle_manager.handle_rest()
                 elif button_name == "Potion":
