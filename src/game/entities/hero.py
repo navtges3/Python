@@ -184,9 +184,9 @@ class Hero(Combatant):
 
     def level_up(self):
         """Level up the hero."""
-        self.current_hp += 5
-        if self.current_hp > self.max_hp:
-            self.max_hp = self.current_hp
+        self.max_hp += 5
+        self.current_hp = self.max_hp
+        self.energy = min(self.energy + 2, self.max_energy)
         self.level += 1
         print(self.name + " has leveled up!")
 

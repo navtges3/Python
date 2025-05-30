@@ -73,7 +73,7 @@ class ButtonManager:
         return {
             GameState.HOME:         self._create_home_buttons(),
             GameState.NEW_GAME:     self._create_new_game_buttons(),
-            GameState.VILLAGE:      self._create_main_game_buttons(),
+            GameState.VILLAGE:      self._create_village_buttons(),
             GameState.QUEST:        self._create_quest_buttons(),
             GameState.BATTLE:       self._create_battle_buttons(),
             GameState.SHOP:         self._create_shop_buttons(),
@@ -186,7 +186,7 @@ class ButtonManager:
         
         return buttons
     
-    def _create_main_game_buttons(self) -> Dict[str, Button]:
+    def _create_village_buttons(self) -> Dict[str, Button]:
         return {
             'Menu': TextButton(
                 self.button_sheet_red,
@@ -200,7 +200,7 @@ class ButtonManager:
             ),
             'Quest': TextButton(
                 self.button_sheet_blue,
-                GameConstants.SCREEN_WIDTH // 3,
+                GameConstants.SCREEN_WIDTH // 4,
                 GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12,
                 GameConstants.BUTTON_WIDTH, 
                 GameConstants.BUTTON_HEIGHT,
@@ -210,12 +210,22 @@ class ButtonManager:
             ),
             'Shop': TextButton(
                 self.button_sheet_yellow,
-                GameConstants.SCREEN_WIDTH // 3 * 2,
+                GameConstants.SCREEN_WIDTH // 2,
                 GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12,
-                GameConstants.BUTTON_WIDTH, 
+                GameConstants.BUTTON_WIDTH,
                 GameConstants.BUTTON_HEIGHT,
                 1,
                 'Shop',
+                self.font,
+            ),
+            'Rest': TextButton(
+                self.button_sheet_green,
+                GameConstants.SCREEN_WIDTH // 4 * 3,
+                GameConstants.SCREEN_HEIGHT - GameConstants.SCREEN_HEIGHT // 12,
+                GameConstants.BUTTON_WIDTH,
+                GameConstants.BUTTON_HEIGHT,
+                1,
+                'Rest',
                 self.font,
             ),
         }
