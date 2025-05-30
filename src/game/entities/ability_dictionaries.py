@@ -10,7 +10,7 @@ attack_abilities: Dict[str, Ability] = {
         accuracy_modifier=1.0,
         crit_chance_modifier=1.0,
         crit_damage_modifier=1.0,
-        cooldown=1,
+        cooldown=0,
         energy_cost=1
     ),
     "Precise Strike": AttackAbility(

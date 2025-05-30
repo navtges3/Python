@@ -55,6 +55,8 @@ class Hero(Combatant):
         self.energy: int = 10
         self.max_energy: int = 10
 
+        self.add_ability("Strike")  # Default ability for all heroes
+
         # TODO Change Hero Abilities to be three lists of Attack Defense and Utility abilities
 
     def attack(self, target:Combatant) -> tuple[int, bool, bool]:
@@ -94,6 +96,8 @@ class Hero(Combatant):
         self.current_hp += self.level * 5
         if self.current_hp > self.max_hp:
             self.current_hp = self.max_hp
+
+        self.update_abilities()
 
     def add_item(self, item: Item) -> None:
         """
@@ -329,6 +333,8 @@ class Hero(Combatant):
         else:
             self.image = pygame.image.load(resource_path("images/assassin.png")).convert()
         self.image = pygame.transform.scale(self.image, (100, 100))
+
+        self.add_ability("Strike")
 
     def draw(self, surface: pygame.Surface, font: pygame.font.Font, 
             x: int = 0, y: int = 0) -> None:

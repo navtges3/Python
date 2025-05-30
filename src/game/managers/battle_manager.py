@@ -214,6 +214,7 @@ class BattleManager:
         """Handle the monster's turn."""
         if self.monster and self.monster.is_alive():
             self.handle_monster_attack()
+
     def handle_ability(self, ability_name: Optional[str] = None) -> None:
         """Handle using an ability to attack the monster.
         
@@ -245,6 +246,14 @@ class BattleManager:
             return  # Not hero's turn
         print("The Hero rests restoring his energy")
         self.hero.rest()
+        self.battle_log.append(f"{self.hero.name} rests to restore energy.")
+
+        # Return to normal battle state and switch turns
+        self.state = BattleState.HOME
+        self.turn = TurnState.MONSTER_TURN
+        
+        if self.monster and self.monster.is_alive():
+            self.start_monster_turn()
 
     def handle_use_potion(self) -> None:
         """Handle hero's potion use."""
@@ -303,34 +312,52 @@ class BattleManager:
         if self.turn != TurnState.HERO_TURN or self.state != BattleState.USE_ABILITY or not self.button_manager:
             return
 
-        if self.monster and self.monster.is_alive():
-            success = self.hero.use_ability(ability_name, self.monster)
-            if success:
-                # Log the ability use and any effects
-                for ability in self.hero.abilities:
-                    if ability.name == ability_name:
-                        # Check if the ability was used on cooldown or without enough energy
-                        if not ability.can_use(self.hero):
-                            self.battle_log.append(f"{ability_name} is still on cooldown!")
-                            return
-                        if self.hero.energy < ability.energy_cost:
-                            self.battle_log.append(f"Not enough energy to use {ability_name}!")
-                            return
-                        break
-                
-                # Hide ability buttons after successful use
-                self._toggle_ability_buttons(self.button_manager, False)
-                
-                # Return to normal battle state and switch turns
-                self.state = BattleState.HOME
-                self.turn = TurnState.MONSTER_TURN
-                
-                # Start monster turn if it's still alive
-                if self.monster.is_alive():
-                    self.start_monster_turn()
-            else:
-                # Log failure (e.g. not enough energy, on cooldown)
-                self.battle_log.append(f"{self.hero.name} cannot use {ability_name}!")
+        if self.monster and self.monster.is_alive():            # Find the ability first to check requirements
+            target_ability = None
+            for ability in self.hero.abilities:
+                if ability.name == ability_name:
+                    if not ability.can_use(self.hero):
+                        self.battle_log.append(f"{ability_name} is still on cooldown!")
+                        return
+                    if self.hero.energy < ability.energy_cost:
+                        self.battle_log.append(f"Not enough energy to use {ability_name}!")
+                        return
+                    target_ability = ability
+                    break
+            
+            if not target_ability:
+                self.battle_log.append(f"{self.hero.name} doesn't know {ability_name}!")
+                return
+                    
+            # Now try to use the ability
+            effect = target_ability.use(self.hero, self.monster)
+            self.hero.energy -= target_ability.energy_cost
+            
+            # Log appropriate message based on the effect
+            if hasattr(effect, 'missed') and effect.missed:
+                self.battle_log.append(f"{self.hero.name}'s {ability_name} missed!")
+            elif hasattr(effect, 'critical') and effect.critical:
+                self.battle_log.append(f"{self.hero.name}'s {ability_name} landed a critical hit for {effect.damage} damage!")
+            elif effect.damage > 0:
+                self.battle_log.append(f"{self.hero.name} used {ability_name} dealing {effect.damage} damage!")
+            elif effect.healing > 0:
+                self.battle_log.append(f"{self.hero.name} used {ability_name} restoring {effect.healing} health!")
+            elif effect.block > 0:
+                self.battle_log.append(f"{self.hero.name} used {ability_name} gaining {effect.block} block!")
+            
+            # Hide ability buttons after successful use
+            self._toggle_ability_buttons(self.button_manager, False)
+
+            # Update ability cooldowns at the end of the heros turn
+            self.hero.update_abilities()
+            
+            # Return to normal battle state and switch turns
+            self.state = BattleState.HOME
+            self.turn = TurnState.MONSTER_TURN
+            
+            # Start monster turn if it's still alive
+            if self.monster.is_alive():
+                self.start_monster_turn()
 
     def _toggle_ability_buttons(self, button_manager: ButtonManager, show: bool) -> None:
         """Show or hide ability selection buttons.

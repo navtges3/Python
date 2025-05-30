@@ -2,7 +2,7 @@ from src.game.managers.battle_manager import BattleManager, TurnState, BattleSta
 from src.game.managers.screen_manager import ScreenManager
 from src.game.managers.button_manager import ButtonManager
 from src.game.managers.event_manager import EventManager
-from src.game.entities.hero import Hero, Knight, Assassin
+from src.game.entities.hero import Hero, Knight, Assassin, make_hero
 from src.game.entities.monster import Monster
 from src.game.entities.items import *
 from src.game.entities.village import Village
@@ -557,10 +557,8 @@ class Game:
                                 elif button_name == "Create Hero":
                                     # Reset game state and managers for new game
                                     self.start()
-                                    if hero_class == "Knight":
-                                        self.hero = Knight(hero_name)  # Knight class handles image loading
-                                    else:
-                                        self.hero = Assassin(hero_name)  # Assassin class handles image loading
+                                    # Use make_hero which properly handles name assignment
+                                    self.hero = make_hero(hero_name, hero_class)
                                     self.game_state = GameState.VILLAGE
                                     self.running = False
                                 break
@@ -582,13 +580,6 @@ class Game:
             self.button_manager.draw_buttons(self.screen, GameState.NEW_GAME)
             self.text_box.draw(self.screen)
             self.update()
-
-        if self.game_state == GameState.VILLAGE:
-            hero_name = self.text_box.text
-            if hero_class == "Knight":
-                self.hero = Knight(hero_name)  # Knight class handles image loading
-            else:
-                self.hero = Assassin(hero_name)  # Assassin class handles image loading
 
     def village_screen(self) -> None:
         """Main village screen where the player can see the village status and access other features."""
