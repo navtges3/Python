@@ -379,6 +379,8 @@ class ButtonManager:
             ),
         }
 
+        # TODO Change ability and potion buttons to be handled by a scrollable area
+        
         # Add ability buttons (they'll be hidden by default)
         ability_buttons = [
             ('Ability_Power Attack', self.button_sheet_red),

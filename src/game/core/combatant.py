@@ -1,5 +1,6 @@
 class Combatant:
     """Base class for all combatants in the game."""
+    # TODO after upgrading hero and monster have Combatant absorb similarities
     
     def __init__(self, name: str, max_hp: int) -> None:
         """Initialize a combatant.

@@ -54,6 +54,8 @@ class Hero(Combatant):
         self.energy: int = 10
         self.max_energy: int = 10
 
+        # TODO Change Hero Abilities to be three lists of Attack Defense and Utility abilities
+
     def attack(self, target:Combatant) -> tuple[int, bool, bool]:
         """Attack a target and return the damage dealt along with miss/crit flags.
         

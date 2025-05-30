@@ -310,6 +310,8 @@ class BattleManager:
             self.state = BattleState.USE_ABILITY
             self._toggle_ability_buttons(self.button_manager, True)
 
+    # TODO Add functionality for attack abilities
+    
     def use_ability(self, ability_name: str) -> None:
         """Use a specific ability on the current target.
         

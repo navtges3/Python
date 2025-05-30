@@ -12,9 +12,10 @@ MonsterDict = Dict[str, Union[str, int]]
 #Base class for all monsters
 class Monster(Combatant):
     """A base class for all monsters in the game."""
-
+    # TODO update monsters to use weapons and abilities
+    
     def __init__(self, name_or_data: Union[str, MonsterDict], max_hp: int = 10, 
-                 damage: int = 1, gold: int = 10, image: str = "goblin_image.jpg") -> None:
+                damage: int = 1, gold: int = 10, image: str = "goblin_image.jpg") -> None:
         """
         Initialize the monster with either individual parameters or a data dictionary.
 
