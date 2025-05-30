@@ -1139,6 +1139,10 @@ class Game:
             self._draw_battle_log()
             self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
 
+            if self.battle_manager:
+                if self.battle_manager.state == BattleState.USE_ABILITY:
+                    self.button_manager.hero_ability_buttons.draw(self.screen)
+
             # Draw turn indicator during combat
             if self.battle_manager.state != BattleState.MONSTER_DEFEATED:
                 turn_text = "Monster's Turn" if self.battle_manager.turn == TurnState.MONSTER_TURN else "Your Turn"

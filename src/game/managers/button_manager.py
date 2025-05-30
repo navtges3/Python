@@ -59,12 +59,20 @@ class ButtonManager:
             )
             self.available_quests.add_button(quest_button)
 
+        self.hero_ability_buttons = ScrollableButtons(
+            GameConstants.BUTTON_WIDTH + 40,
+            GameConstants.SCREEN_HEIGHT // 2,
+            GameConstants.BUTTON_WIDTH + 15,
+            GameConstants.SCREEN_HEIGHT // 2,
+            GameConstants.BUTTON_HEIGHT,
+        )
+
     def _initialize_buttons(self) -> Dict[GameState, Dict[str, Button]]:
         """Initialize all game buttons organized by game state."""
         return {
             GameState.HOME:         self._create_home_buttons(),
             GameState.NEW_GAME:     self._create_new_game_buttons(),
-            GameState.VILLAGE:    self._create_main_game_buttons(),
+            GameState.VILLAGE:      self._create_main_game_buttons(),
             GameState.QUEST:        self._create_quest_buttons(),
             GameState.BATTLE:       self._create_battle_buttons(),
             GameState.SHOP:         self._create_shop_buttons(),
@@ -379,28 +387,6 @@ class ButtonManager:
             ),
         }
 
-        # TODO Change ability and potion buttons to be handled by a scrollable area
-        
-        # Add ability buttons (they'll be hidden by default)
-        ability_buttons = [
-            ('Ability_Power Attack', self.button_sheet_red),
-            ('Ability_Precise Strike', self.button_sheet_blue),
-            ('Ability_Critical Strike', self.button_sheet_yellow),
-        ]
-        
-        for i, (ability_name, button_sheet) in enumerate(ability_buttons):
-            buttons[ability_name] = TextButton(
-                button_sheet,
-                potion_x,
-                button_y_start + (i * button_spacing),
-                GameConstants.BUTTON_WIDTH, 
-                GameConstants.BUTTON_HEIGHT,
-                1,
-                ability_name.replace('Ability_', ''),
-                self.font,
-            )
-            buttons[ability_name].hide()  # Hide by default
-
         # Hide victory buttons and potion buttons initially
         buttons['Continue'].hide()
         buttons['Retreat'].hide()
@@ -609,3 +595,16 @@ class ButtonManager:
             if hasattr(Game, 'instance') and Game.instance and Game.instance.village:
                 Game.instance.village.health += penalty_value  # Penalty value is negative
                 Game.instance.battle_log.append(f"Village suffers {abs(penalty_value)} damage from quest failure!")
+
+    def add_hero_ability_button(self, button: Button) -> None:
+        """Add a hero ability button to the scrollable area.
+        
+        Args:
+            button: The Button instance to add
+        """
+        self.hero_ability_buttons.append(button)
+
+    def clear_hero_ability_buttons(self) -> None:
+        """Clear all hero ability buttons from the scrollable area.
+        """
+        self.hero_ability_buttons.clear()

@@ -94,7 +94,6 @@ class BattleManager:
                 button.unlock()
             # Hide potion and ability buttons
             self._toggle_potion_buttons(button_manager, False)
-            self._toggle_ability_buttons(button_manager, False)
         else:
             # Lock victory buttons
             for name in ['Continue', 'Retreat']:
@@ -108,7 +107,6 @@ class BattleManager:
                     button.lock()
                 # Hide potion and ability buttons
                 self._toggle_potion_buttons(button_manager, False)
-                self._toggle_ability_buttons(button_manager, False)
                 self.start_monster_turn()
             else:  # Hero's turn
                 if self.state == BattleState.HOME:
@@ -124,14 +122,12 @@ class BattleManager:
                         potions_button.lock()
                     # Hide both potion and ability buttons in home state
                     self._toggle_potion_buttons(button_manager, False)
-                    self._toggle_ability_buttons(button_manager, False)
                 elif self.state == BattleState.USE_ABILITY:
                     # Lock basic combat buttons except Ability
                     for name in ['Rest', 'Potion', 'Flee']:
                         button = button_manager.get_button(GameState.BATTLE, name)
                         button.lock()
                     # Show ability buttons
-                    self._toggle_ability_buttons(button_manager, True)
                     self._toggle_potion_buttons(button_manager, False)
                 elif self.state == BattleState.USE_ITEM:
                     # Lock basic combat buttons except Potion
@@ -140,7 +136,6 @@ class BattleManager:
                         button.lock()
                     # Show potion selection buttons
                     self._toggle_potion_buttons(button_manager, True)
-                    self._toggle_ability_buttons(button_manager, False)
 
 
     def get_potion_tooltip(self, potion_name: str) -> Optional[Tooltip]:
@@ -185,25 +180,6 @@ class BattleManager:
             else:
                 button.lock()
 
-    def _toggle_ability_buttons(self, button_manager: ButtonManager, show: bool) -> None:
-        """Show or hide ability selection buttons.
-        
-        Args:
-            button_manager: The button manager to update button states
-            show: Whether to show or hide the buttons
-        """
-        for button_name in button_manager.get_buttons(GameState.BATTLE):
-            if button_name.startswith("Ability_"):
-                button = button_manager.get_button(GameState.BATTLE, button_name)
-                # Only show ability if hero has it
-                ability_name = button_name.replace("Ability_", "")
-                if show and any(ability.name == ability_name for ability in self.hero.abilities):
-                    button.show()
-                    button.unlock()
-                else:
-                    button.hide()
-                    button.lock()
-
     def handle_monster_attack(self) -> None:
         """Handle monster's attack action."""
         if self.turn != TurnState.MONSTER_TURN:
@@ -241,8 +217,10 @@ class BattleManager:
         if self.turn != TurnState.HERO_TURN:
             return  # Not hero's turn
         
-        # Instead of directly attacking, show ability buttons
-        self.handle_ability_click()
+        if self.state == BattleState.HOME:
+            self.state = BattleState.USE_ABILITY
+        elif self.state == BattleState.USE_ABILITY:
+            self.state = BattleState.HOME
 
     def handle_rest(self) -> None:
         """Handle hero's Rest action."""
@@ -296,21 +274,6 @@ class BattleManager:
             return False  # Not hero's turn
         self.state = BattleState.RUN_AWAY
         return True  # Successful flee
-
-    def handle_ability_click(self) -> None:
-        """Handle when the Ability button is clicked, showing ability buttons."""
-        if self.turn != TurnState.HERO_TURN or not self.button_manager:
-            return
-
-        # Toggle between showing and hiding ability buttons
-        if self.state == BattleState.USE_ABILITY:
-            self.state = BattleState.HOME
-            self._toggle_ability_buttons(self.button_manager, False)
-        else:
-            self.state = BattleState.USE_ABILITY
-            self._toggle_ability_buttons(self.button_manager, True)
-
-    # TODO Add functionality for attack abilities
     
     def use_ability(self, ability_name: str) -> None:
         """Use a specific ability on the current target.
