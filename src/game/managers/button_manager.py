@@ -388,6 +388,13 @@ class ButtonManager:
             ),
         }
 
+        # Add tooltips to potion buttons
+        from src.game.entities.items import potion_dictionary
+        for potion_name in ['Health Potion', 'Damage Potion', 'Block Potion']:
+            if potion_name in buttons and potion_name in potion_dictionary:
+                potion = potion_dictionary[potion_name]
+                buttons[potion_name].set_tooltip(potion.description, self.font)
+
         # Hide victory buttons and potion buttons initially
         buttons['Continue'].hide()
         buttons['Retreat'].hide()
@@ -604,13 +611,15 @@ class ButtonManager:
             ability: The ability to add
         """
         if ability:
+            # Choose button color based on ability type
             if isinstance(ability, AttackAbility):
                 button_sheet = self.button_sheet_red
             elif isinstance(ability, DefendAbility):
                 button_sheet = self.button_sheet_blue
             else:
                 button_sheet = self.button_sheet_gray
-            button: TextButton = TextButton(
+
+            button = TextButton(
                 button_sheet,
                 0,  # x position will be set by ScrollableButtons
                 0,  # y position will be set by ScrollableButtons
@@ -619,12 +628,11 @@ class ButtonManager:
                 1,
                 ability.name,
                 self.font,
-                Colors.BLACK  # Add text color parameter
+                Colors.BLACK
             )
-            button.set_tooltip(ability.description, self.font)
+            button.set_tooltip(f"{ability.description}\nEnergy Cost: {ability.energy_cost}", self.font)
             self.hero_ability_buttons.add_button(button)
 
     def clear_hero_ability_buttons(self) -> None:
-        """Clear all hero ability buttons from the scrollable area.
-        """
-        self.hero_ability_buttons.clear_buttons()
+        """Clear all hero ability buttons from the scrollable area."""
+        self.hero_ability_buttons.buttons.clear()

@@ -1,7 +1,7 @@
 import pygame
 from src.game.core.constants import Colors
 from src.game.ui.button import Button
-from typing import Union
+from typing import Union, Optional
 
 class ScrollableButtons:
     """A scrollable container that manages and displays buttons with scrollbar functionality."""
@@ -230,4 +230,33 @@ class ScrollableButtons:
         """
         if self.selected is not None and 0 <= self.selected < len(self.buttons):
             return self.buttons[self.selected]
+        return None
+    
+    def handle_click(self, mouse_pos: tuple[int, int]) -> Optional[str]:
+        """Check if any button was clicked and return its text.
+        
+        Args:
+            mouse_pos: Current mouse position (x, y)
+            
+        Returns:
+            The text of the clicked button, or None if no button was clicked
+        """
+        # Only check for clicks if mouse is in the container
+        if not self.rect.collidepoint(mouse_pos):
+            return None
+            
+        # Check each button
+        for i, button in enumerate(self.buttons):
+            # Calculate the button's actual position with scroll offset
+            actual_y = self.rect.y + i * (self.button_height + self.button_spacing) + self.scroll_offset
+            actual_rect = pygame.Rect(
+                self.rect.x,
+                actual_y,
+                self.rect.width - self.scrollbar_width,
+                self.button_height
+            )
+            
+            if actual_rect.collidepoint(mouse_pos) and not button.is_locked():
+                return button.text
+                
         return None

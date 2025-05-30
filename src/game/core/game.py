@@ -1088,20 +1088,27 @@ class Game:
                         self.show_esc_popup()
                         if self.game_state != GameState.BATTLE:
                             self.running = False
-                            break
-
-                # Handle button clicks
+                            break                # Handle button clicks
                 if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     if self.event_manager.can_click_buttons():
                         mouse_pos = pygame.mouse.get_pos()
+                        
+                        # Check for ability button clicks when in ability selection mode
+                        if self.battle_manager.state == BattleState.USE_ABILITY:
+                            clicked_ability = self.button_manager.hero_ability_buttons.handle_click(mouse_pos)
+                            if clicked_ability:
+                                self.battle_manager.use_ability(clicked_ability)
+                                self.event_manager.reset_button_delay()
+                                continue
+                        
+                        # Handle other battle buttons
                         for button_name, button in battle_buttons.items():
                             if self.event_manager.handle_button_click(event, button.rect, button.is_locked()):
                                 if button_name == "Continue" and self.battle_manager.state == BattleState.MONSTER_DEFEATED:
                                     # Get next monster
                                     new_monster = self.current_quest.get_monster()
-                                    success, new_tooltip = self._setup_new_monster(new_monster)
+                                    success = self._setup_new_monster(new_monster)
                                     if success:
-                                        tooltip = new_tooltip
                                         self.battle_manager.state = BattleState.HOME
                                         self.battle_manager.turn = TurnState.HERO_TURN
                                         self._switch_battle_layout(False)
@@ -1125,10 +1132,6 @@ class Game:
                                         if self.battle_manager.handle_flee():
                                             self.battle_log.append(f"{self.hero.name} flees from battle!")
                                             self._handle_quest_failure()
-                                    elif button_name.startswith("Ability_"):
-                                        ability_name = button_name.replace("Ability_", "")
-                                        self.battle_manager.use_ability(ability_name)
-                                        self.event_manager.reset_button_delay()
                                     elif button_name in ["Health Potion", "Damage Potion", "Block Potion"]:
                                         self.battle_manager.use_potion(button_name)
                                         self.event_manager.reset_button_delay()
@@ -1141,33 +1144,32 @@ class Game:
 
             # Draw UI elements
             self._draw_battle_log()
-            self.button_manager.draw_buttons(self.screen, GameState.BATTLE)
-
+            self.button_manager.draw_buttons(self.screen, GameState.BATTLE)            # Draw ability buttons if needed
             if self.battle_manager:
                 if self.battle_manager.state == BattleState.USE_ABILITY:
                     self.button_manager.hero_ability_buttons.draw(self.screen)
-
+                    
             # Draw turn indicator during combat
             if self.battle_manager.state != BattleState.MONSTER_DEFEATED:
                 turn_text = "Monster's Turn" if self.battle_manager.turn == TurnState.MONSTER_TURN else "Your Turn"
                 draw_text_centered(turn_text, self.font, Colors.BLACK, self.screen, 
                                 GameConstants.SCREEN_WIDTH // 2, 10)
-
-            # Draw tooltips
+            
+            # Get current mouse position for tooltips
             mouse_pos = pygame.mouse.get_pos()
-
-            if self.battle_manager.state == BattleState.USE_ITEM:
-                for potion_name in ['Health Potion', 'Damage Potion', 'Block Potion']:
-                    button = self.button_manager.get_button(GameState.BATTLE, potion_name)
-                    if button and not button.is_locked() and button.rect.collidepoint(mouse_pos):
-                        if potion_tooltip := self.battle_manager.get_potion_tooltip(potion_name):
-                            potion_tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
-
+            
+            # Draw tooltips based on current state
             if self.battle_manager.state == BattleState.USE_ABILITY:
                 for button_name, button in battle_buttons.items():
                     if button_name.startswith("Ability_") and not button.is_locked() and button.rect.collidepoint(mouse_pos):
-                        if ability_tooltip := self.battle_manager.get_ability_tooltip(button_name):
+                        ability_tooltip = self.battle_manager.get_ability_tooltip(button_name)
+                        if ability_tooltip:
                             ability_tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
+            elif self.battle_manager.state == BattleState.USE_ITEM:
+                for button_name, button in battle_buttons.items():
+                    if button_name in ["Health Potion", "Damage Potion", "Block Potion"] and not button.is_locked() and button.rect.collidepoint(mouse_pos):
+                        if potion_tooltip := self.battle_manager.get_potion_tooltip(button_name):
+                            potion_tooltip.draw(self.screen, mouse_pos[0] + 10, mouse_pos[1])
 
             self.update()
 
