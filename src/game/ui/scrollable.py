@@ -135,10 +135,12 @@ class ScrollableButtons:
         surface.set_clip(self.rect)
 
         # Draw buttons
+        visible_buttons = []
         for i, button in enumerate(self.buttons):
             button.rect.y = self.rect.y + i * (self.button_height + self.button_spacing) + self.scroll_offset
             if self.rect.colliderect(button.rect):
                 button.draw(surface)
+                visible_buttons.append(button)
 
         surface.set_clip(None)  # Reset clipping
 
@@ -160,6 +162,10 @@ class ScrollableButtons:
 
             # Draw handle
             pygame.draw.rect(surface, Colors.GRAY, self.scrollbar_handle_rect)
+            
+        # Draw tooltips last, without clipping
+        for button in visible_buttons:
+            button.draw_tooltip(surface)
     
     def add_button(self, button: Button) -> None:
         """Add a button to the scrollable area.

@@ -143,7 +143,6 @@ class Button:
     def draw(self, surface: Optional[pygame.Surface]) -> None:
         """
         Draw the button if a surface is provided and the button is visible.
-        Also draws the tooltip if the mouse is hovering over the button.
         
         Args:
             surface: Optional pygame surface to draw on
@@ -153,18 +152,25 @@ class Button:
         if surface is not None and self.visible:
             image = self.button_sheet.get_image(self.state, self.width, self.height, self.scale, Colors.BLACK)
             surface.blit(image, (self.rect.x, self.rect.y))
-            
-            # Draw tooltip if it exists and mouse is over the button
-            if self.tooltip and self.rect.collidepoint(pygame.mouse.get_pos()):
-                mouse_x, mouse_y = pygame.mouse.get_pos()
-                # Position tooltip above the mouse cursor
-                tooltip_y = mouse_y - self.tooltip.height - 5
-                # Center tooltip horizontally on mouse cursor
-                tooltip_x = mouse_x - (self.tooltip.width // 2)
-                # Keep tooltip inside screen bounds (assuming surface is screen)
-                tooltip_x = max(5, min(surface.get_width() - self.tooltip.width - 5, tooltip_x))
-                tooltip_y = max(5, tooltip_y)
-                self.tooltip.draw(surface, tooltip_x, tooltip_y)
+
+    def draw_tooltip(self, surface: Optional[pygame.Surface]) -> None:
+        """
+        Draw the tooltip if the mouse is hovering over the button.
+        Should be called after all other drawing is complete.
+        
+        Args:
+            surface: Optional pygame surface to draw on
+        """
+        if surface is not None and self.visible and self.tooltip and self.rect.collidepoint(pygame.mouse.get_pos()):
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            # Position tooltip above the mouse cursor
+            tooltip_y = mouse_y - self.tooltip.height - 5
+            # Center tooltip horizontally on mouse cursor
+            tooltip_x = mouse_x - (self.tooltip.width // 2)
+            # Keep tooltip inside screen bounds (assuming surface is screen)
+            tooltip_x = max(5, min(surface.get_width() - self.tooltip.width - 5, tooltip_x))
+            tooltip_y = max(5, tooltip_y)
+            self.tooltip.draw(surface, tooltip_x, tooltip_y)
 
     def set_tooltip(self, text: str, font: pygame.font.Font, text_color: pygame.Color = pygame.Color('black'), padding: int = 5) -> None:
         """
