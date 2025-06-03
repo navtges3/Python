@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 
 # Button states
 BUTTON_DEFUALT = 0
-BUTTON_CLICKED = 1
+BUTTON_HOVER = 1
 BUTTON_LOCKED  = 2
 BUTTON_SELECTED = 3
 
@@ -41,7 +41,6 @@ class Button:
         self.state: int = BUTTON_DEFUALT
         self.max_state: int = self.button_sheet.sheet.get_width() // self.width
         self.was_pressed: bool = False
-        self.was_clicked: bool = False
         self.toggled: bool = False
         self.locked: bool = False
         self.visible: bool = True
@@ -110,7 +109,6 @@ class Button:
     
     def reset_click(self) -> None:
         """Reset the button's clicked state to default."""
-        self.was_clicked = False
         self.was_pressed = False
         if not self.locked:
             self.state = BUTTON_DEFUALT
@@ -119,26 +117,31 @@ class Button:
         """Update the button's state based on mouse interaction."""
         if self.locked or not self.visible:
             return
+        
+        if self.toggled:
+            # If toggled, maintain selected state
+            self.state = BUTTON_SELECTED
+            self.was_pressed = False
+            return
 
         pos = pygame.mouse.get_pos()
         mouse_pressed = pygame.mouse.get_pressed()[0]  # Left mouse button only
-
         if self.rect.collidepoint(pos):
-            if mouse_pressed and not self.was_pressed and (self.state == BUTTON_DEFUALT or self.state == BUTTON_SELECTED):
-                self.state = BUTTON_CLICKED
+            if mouse_pressed and self.state != BUTTON_SELECTED:
+                self.state = BUTTON_SELECTED
                 self.was_pressed = True
-                self.was_clicked = False
-            elif not mouse_pressed and self.was_pressed:
-                if self.state == BUTTON_CLICKED:
-                    self.was_clicked = True
-                self.state = BUTTON_SELECTED if self.toggled else BUTTON_DEFUALT
+            elif mouse_pressed and self.state == BUTTON_SELECTED:
+                self.state = BUTTON_DEFUALT
+                self.was_pressed = False
+            if self.state != BUTTON_SELECTED:
+                # Show hover state if not selected
+                self.state = BUTTON_HOVER
                 self.was_pressed = False
         else:
             # Reset button state when mouse leaves the button area
             if not self.toggled:
                 self.state = BUTTON_DEFUALT
             self.was_pressed = False
-            self.was_clicked = False
     
     def draw(self, surface: Optional[pygame.Surface]) -> None:
         """

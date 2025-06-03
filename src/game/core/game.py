@@ -1272,7 +1272,7 @@ class Game:
         buttons = self.button_manager.get_buttons(self.game_state)
         for button in buttons.values():
             button.draw(None)  # Update button state without drawing
-            if button.was_clicked:
+            if button.was_pressed:
                 for button_name, btn in buttons.items():
                     if btn == button:
                         self._handle_button_click(button_name)
