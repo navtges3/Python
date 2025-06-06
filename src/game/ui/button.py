@@ -10,44 +10,21 @@ BUTTON_HOVER = 1
 BUTTON_LOCKED  = 2
 BUTTON_SELECTED = 3
 
-# Button colors
-BUTTON_GRAY   = 0
-BUTTON_RED    = 1
-BUTTON_GREEN  = 2
-BUTTON_BLUE   = 3
-BUTTON_YELLOW = 4
+class Button():
+    def __init__(self, button_sheet: SpriteSheet, x: int, y: int, frame_width: int, frame_height: int, scale: float):
+        self.frame_width = frame_width
+        self.frame_height = frame_height
+        self.button_sheet = button_sheet
+        self.scale = scale
+        self.rect = pygame.rect.Rect((x, y), (int(frame_width * scale), int(frame_height * scale)))
 
-class Button:
-    """A class representing an interactive button with different states."""
+        self.clicked = False
+        self.locked = False
+        self.visible = True
+        self.state = BUTTON_DEFUALT
 
-    def __init__(self, button_sheet: SpriteSheet, x: int, y: int, 
-                width: int, height: int, scale: float) -> None:
-        """
-        Initialize a new button.
-
-        Args:
-            button_sheet: Spritesheet containing button graphics
-            x: X coordinate of the button
-            y: Y coordinate of the button
-            width: Width of the button
-            height: Height of the button
-            scale: Scale factor for the button
-        """
-        self.button_sheet: SpriteSheet = button_sheet
-        self.width: int = width
-        self.height: int = height
-        self.scale: float = scale
-        self.rect: pygame.Rect = pygame.rect.Rect((x, y), (width, height))
-
-        self.toggled: bool = False
-
-        self.state: int = BUTTON_DEFUALT
-        self.max_state: int = self.button_sheet.sheet.get_width() // self.width
-        self.was_pressed: bool = False
-        self.locked: bool = False
-        self.visible: bool = True
         self.tooltip: Optional[Tooltip] = None
-
+    
     def lock(self) -> None:
         """Lock the button, preventing interaction."""
         if not self.locked:
@@ -87,68 +64,25 @@ class Button:
             True if the button is visible, False otherwise
         """
         return self.visible
-
-    def toggle(self) -> None:
-        """Toggle the button state between selected and default."""
-        self.toggled = not self.toggled
-        if not self.locked:
-            self.state = BUTTON_SELECTED if self.toggled else BUTTON_DEFUALT
-
-    def reset_toggle(self) -> None:
-        """Reset the toggle state to default."""
-        self.toggled = False
-        if not self.locked:
-            self.state = BUTTON_DEFUALT
-
-    def is_toggled(self) -> bool:
-        """
-        Check if the button is toggled.
-        
-        Returns:
-            True if the button is toggled, False otherwise
-        """
-        return self.toggled
     
-    def reset_click(self) -> None:
-        """Reset the button's clicked state to default."""
-        self.was_pressed = False
-        if not self.locked:
-            self.state = BUTTON_DEFUALT
-    
-    def update_state(self) -> None:
-        """Update the button's state based on mouse interaction."""
-        if self.locked:
-            return
-
-        pos = pygame.mouse.get_pos()
-        mouse_pressed = pygame.mouse.get_pressed()[0]  # Left mouse button only
-        if self.rect.collidepoint(pos):
-            if mouse_pressed:
-                self.was_pressed = True
-            elif self.was_pressed and not mouse_pressed:
-                self.was_pressed = False
-                self.toggle()
-            else:
-                if not self.toggled:
-                    self.state = BUTTON_HOVER
-        else:
-            if not self.toggled:
-                self.state = BUTTON_DEFUALT
-            self.was_pressed = False
-    
-    def draw(self, surface: Optional[pygame.Surface]) -> None:
+    def draw(self, surface: Optional[pygame.Surface]):
         """
         Draw the button if a surface is provided and the button is visible.
         
         Args:
             surface: Optional pygame surface to draw on
         """
-        self.update_state()
-        
-        if surface is not None and self.visible:
-            image = self.button_sheet.get_image(self.state, self.width, self.height, self.scale, Colors.BLACK)
-            surface.blit(image, (self.rect.x, self.rect.y))
+        mouse_pos = pygame.mouse.get_pos()
 
+        if self.state == BUTTON_DEFUALT and self.rect.collidepoint(mouse_pos):
+            self.state = BUTTON_HOVER
+        elif self.state == BUTTON_HOVER and not self.rect.collidepoint(mouse_pos):
+            self.state = BUTTON_DEFUALT
+
+        if surface is not None and self.visible:
+            image = self.button_sheet.get_image(self.state, self.frame_width, self.frame_height, self.scale, Colors.BLACK)
+            surface.blit(image, (self.rect.x, self.rect.y))
+    
     def draw_tooltip(self, surface: Optional[pygame.Surface]) -> None:
         """
         Draw the tooltip if the mouse is hovering over the button.
@@ -183,7 +117,7 @@ class Button:
 class TextButton(Button):
     """A button that displays text on top of the button graphic."""
 
-    def __init__(self, button_sheet: SpriteSheet, x: int, y: int, width: int, height: int, scale: float,
+    def __init__(self, button_sheet: SpriteSheet, x: int, y: int, frame_width: int, frame_height: int, scale: float,
                 text: str, font: pygame.font.Font, text_color: Tuple[int, int, int] = Colors.BLACK) -> None:
         """
         Initialize a new text button.
@@ -199,7 +133,7 @@ class TextButton(Button):
             font: Font to use for the text
             text_color: RGB color tuple for the text
         """
-        super().__init__(button_sheet, x, y, width, height, scale)
+        super().__init__(button_sheet, x, y, frame_width, frame_height, scale)
         self.text: str = text
         self.font: pygame.font.Font = font
         self.text_color: Tuple[int, int, int] = text_color

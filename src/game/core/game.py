@@ -261,8 +261,6 @@ class Game:
         if exit_button:
             exit_button.update_text(exit_text)
         pause_buttons = self.button_manager.get_buttons(GameState.PAUSE).items()
-        for button_name, button in pause_buttons:
-            button.reset_toggle()
 
         while self.popup_running:
             
@@ -327,8 +325,6 @@ class Game:
         volume_rect = pygame.Rect(volume_x, volume_y, 300, 20)
 
         option_buttons = self.button_manager.get_buttons(GameState.OPTIONS).items()
-        for button_name, button in option_buttons:
-            button.reset_toggle()
         
         while self.popup_running:
             # Handle events
@@ -398,8 +394,6 @@ class Game:
         """Display and handle the home screen."""
         self.running = True
         home_buttons = self.button_manager.get_buttons(GameState.HOME)
-        for button_name, button in home_buttons.items():
-            button.reset_toggle()
 
         while self.running:
             # Handle events
@@ -407,36 +401,33 @@ class Game:
                 if event.type == pygame.QUIT:
                     self.game_state = GameState.EXIT
                     self.running = False
-
-            for button_name, button in home_buttons.items():
-                if button.is_toggled():
-                    if button_name == "New Game":
-                        self.game_state = GameState.NEW_GAME
-                        self.running = False
-                    elif button_name == "Load Game":
-                        self.load_game()
-                        self.game_state = GameState.VILLAGE
-                        self.running = False
-                    elif button_name == "Options":
-                        self.show_options_popup()
-                        button.reset_toggle()
-                    elif button_name == "Exit Game":
-                        self.game_state = GameState.EXIT
-                        self.running = False
-                    break
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    for button_name, button in home_buttons.items():
+                        if self.event_manager.handle_button_click(event, button.rect, button.locked):
+                            if button_name == "New Game":
+                                self.game_state = GameState.NEW_GAME
+                                self.running = False
+                            elif button_name == "Load Game":
+                                self.load_game()
+                                self.game_state = GameState.VILLAGE
+                                self.running = False
+                            elif button_name == "Options":
+                                self.show_options_popup()
+                            elif button_name == "Exit Game":
+                                self.game_state = GameState.EXIT
+                                self.running = False
+                            break
 
             self.screen.fill(Colors.WHITE)
             # Draw all home screen buttons
-            self.button_manager.draw_buttons(self.screen, GameState.HOME)
-            
+            self.button_manager.draw_buttons(self.screen, GameState.HOME)                
+
             self.update()
 
     def new_game_screen(self) -> None:
         """New game screen for creating a hero."""
         self.running = True
         new_game_buttons = self.button_manager.get_buttons(GameState.NEW_GAME)
-        for button_name, button in new_game_buttons.items():
-            button.reset_toggle()
         hero_class: str = ''
         self.text_box.text = ''  # Reset text box
         self.text_box.temp_text = ''  # Reset temporary text
@@ -558,8 +549,6 @@ class Game:
         """Main village screen where the player can see the village status and access other features."""
         self.running = True
         main_buttons = self.button_manager.get_buttons(GameState.VILLAGE)
-        for button_name, button in main_buttons.items():
-            button.reset_toggle()
         self.event_manager.reset_button_delay()  # Start delay timer
         
         while self.running:
@@ -684,9 +673,6 @@ class Game:
         complete_button = quest_buttons.get("Complete")
         failed_button = quest_buttons.get("Failed")
         start_button = quest_buttons.get("Start")
-        available_button.toggle()
-        complete_button.reset_toggle()
-        failed_button.reset_toggle()
 
         # Initialize battle manager if it doesn't exist
         if self.battle_manager is None and self.hero:
@@ -715,20 +701,14 @@ class Game:
                                     showing_available = True
                                     showing_completed = False
                                     showing_failed = False
-                                    complete_button.reset_toggle()
-                                    failed_button.reset_toggle()
                                 elif button_name == "Complete":
                                     showing_available = False
                                     showing_completed = True
                                     showing_failed = False
-                                    available_button.reset_toggle()
-                                    failed_button.reset_toggle()
                                 elif button_name == "Failed":
                                     showing_available = False
                                     showing_completed = False
                                     showing_failed = True
-                                    available_button.reset_toggle()
-                                    complete_button.reset_toggle()
                                 # Handle action buttons
                                 elif button_name == "Start" and selected_quest:
                                     self.current_quest = selected_quest.quest

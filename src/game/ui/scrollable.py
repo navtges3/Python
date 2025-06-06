@@ -139,7 +139,8 @@ class ScrollableButtons:
         for i, button in enumerate(self.buttons):
             button.rect.y = self.rect.y + i * (self.button_height + self.button_spacing) + self.scroll_offset
             if self.rect.colliderect(button.rect):
-                button.draw(surface)
+                if button.draw(surface):
+                    self.selected = i
                 visible_buttons.append(button)
 
         surface.set_clip(None)  # Reset clipping
