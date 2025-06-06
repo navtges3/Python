@@ -1,5 +1,6 @@
 import pygame
 from src.game.core.constants import GameState
+from src.game.ui.button import Button
 from typing import Tuple, Optional, List, Dict, Any
 
 class EventManager:
@@ -46,7 +47,7 @@ class EventManager:
                 return event.unicode
         return None
         
-    def handle_button_click(self, event: pygame.event.Event, button_rect: pygame.Rect, is_locked: bool) -> bool:
+    def handle_button_click(self, event: pygame.event.Event, button: Button) -> bool:
         """Check if a button was clicked.
         Args:
             event: The pygame event
@@ -59,8 +60,8 @@ class EventManager:
         if (event.type == pygame.MOUSEBUTTONDOWN and 
             event.button == 1 and  # Left click only
             self.can_click_buttons() and
-            not is_locked and
-            button_rect.collidepoint(event.pos)):
+            not button.is_locked() and
+            button.rect.collidepoint(event.pos)):
             self.reset_button_delay()
             return True
         return False

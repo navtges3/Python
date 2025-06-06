@@ -18,26 +18,23 @@ class Button():
         self.scale = scale
         self.rect = pygame.rect.Rect((x, y), (int(frame_width * scale), int(frame_height * scale)))
 
-        self.clicked = False
-        self.locked = False
         self.visible = True
         self.state = BUTTON_DEFUALT
 
         self.tooltip: Optional[Tooltip] = None
     
+    def reset(self) -> None:
+        """Reset the button, set state to BUTTON_DEFAULT"""
+        self.state = BUTTON_DEFUALT
+
     def lock(self) -> None:
         """Lock the button, preventing interaction."""
-        if not self.locked:
-            self.state = BUTTON_LOCKED
-            self.locked = True
-            self.toggled = False
+        self.state = BUTTON_LOCKED
 
     def unlock(self) -> None:
         """Unlock the button, allowing interaction."""
-        if self.locked:
+        if self.is_locked():
             self.state = BUTTON_DEFUALT
-            self.locked = False
-            self.toggled = False
 
     def is_locked(self) -> bool:
         """
@@ -46,7 +43,25 @@ class Button():
         Returns:
             True if the button is locked, False otherwise
         """
-        return self.locked
+        return self.state == BUTTON_LOCKED
+    
+    def select(self) -> None:
+        """Set the button state to selected"""
+        if not self.is_locked():
+            self.state = BUTTON_SELECTED
+
+    def deselect(self) -> None:
+        """Set the button state to default"""
+        if self.is_selected():
+            self.state = BUTTON_DEFUALT
+
+    def is_selected(self) -> bool:
+        """Check if the button is selected
+        
+        Returns:
+            True if the button is selected, False otherwise
+        """
+        return self.state == BUTTON_SELECTED
 
     def hide(self) -> None:
         """Make the button invisible."""
