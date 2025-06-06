@@ -110,10 +110,6 @@ class EventManager:
             mouse_x = event.pos[0]
             volume = (mouse_x - volume_x) / 300
             return max(0, min(1, volume))  # Clamp between 0 and 1
-        elif event.type == pygame.MOUSEMOTION and volume_rect.collidepoint(event.pos):
-            mouse_x = event.pos[0]
-            volume = (mouse_x - volume_x) / 300
-            return max(0, min(1, volume))  # Clamp between 0 and 1
         return None
         
     def handle_popup_events(self, event: pygame.event.Event) -> bool:

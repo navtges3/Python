@@ -38,10 +38,12 @@ class Button:
         self.height: int = height
         self.scale: float = scale
         self.rect: pygame.Rect = pygame.rect.Rect((x, y), (width, height))
+
+        self.toggled: bool = False
+
         self.state: int = BUTTON_DEFUALT
         self.max_state: int = self.button_sheet.sheet.get_width() // self.width
         self.was_pressed: bool = False
-        self.toggled: bool = False
         self.locked: bool = False
         self.visible: bool = True
         self.tooltip: Optional[Tooltip] = None
@@ -115,30 +117,21 @@ class Button:
     
     def update_state(self) -> None:
         """Update the button's state based on mouse interaction."""
-        if self.locked or not self.visible:
-            return
-        
-        if self.toggled:
-            # If toggled, maintain selected state
-            self.state = BUTTON_SELECTED
-            self.was_pressed = False
+        if self.locked:
             return
 
         pos = pygame.mouse.get_pos()
         mouse_pressed = pygame.mouse.get_pressed()[0]  # Left mouse button only
         if self.rect.collidepoint(pos):
-            if mouse_pressed and self.state != BUTTON_SELECTED:
-                self.state = BUTTON_SELECTED
+            if mouse_pressed:
                 self.was_pressed = True
-            elif mouse_pressed and self.state == BUTTON_SELECTED:
-                self.state = BUTTON_DEFUALT
+            elif self.was_pressed and not mouse_pressed:
                 self.was_pressed = False
-            if self.state != BUTTON_SELECTED:
-                # Show hover state if not selected
-                self.state = BUTTON_HOVER
-                self.was_pressed = False
+                self.toggle()
+            else:
+                if not self.toggled:
+                    self.state = BUTTON_HOVER
         else:
-            # Reset button state when mouse leaves the button area
             if not self.toggled:
                 self.state = BUTTON_DEFUALT
             self.was_pressed = False

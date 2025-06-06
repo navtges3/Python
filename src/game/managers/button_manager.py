@@ -442,7 +442,6 @@ class ButtonManager:
         # Calculate button positions
         button_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2 + 50
         button_spacing = 50
-        
         return {
             'Resume': TextButton(
                 self.button_sheet_green,
@@ -482,8 +481,7 @@ class ButtonManager:
         Returns:
             Dictionary mapping button names to Button objects
         """
-        return {
-            'Back': TextButton(
+        return {            'Back': TextButton(
                 self.button_sheet_red,
                 (GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH) // 2,
                 (GameConstants.SCREEN_HEIGHT + GameConstants.POPUP_HEIGHT) // 2 - 60,
