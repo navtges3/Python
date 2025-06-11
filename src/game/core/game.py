@@ -62,9 +62,7 @@ class Game:
         self.screen_manager: ScreenManager = ScreenManager(self.screen, self.font)
         
         # Load button sprite sheet
-        button_sheet: pygame.Surface = pygame.image.load(resource_path('images\\buttons\\button_sheet_0.png')).convert_alpha()
-        quest_button_sheet: pygame.Surface = pygame.image.load(resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
-        self.button_manager: ButtonManager = ButtonManager(self.font, button_sheet, quest_button_sheet)
+        self.button_manager: ButtonManager = ButtonManager(self.font)
         
         # Create text box above the middle of the screen
         text_box_width: int = 180  # Original 200 - 20 (10px on each side)
@@ -425,20 +423,6 @@ class Game:
         self.text_box.text = ''  # Reset text box
         self.text_box.temp_text = ''  # Reset temporary text
 
-        # Load character images
-        knight_image = pygame.image.load(resource_path('images/knight.png')).convert()
-        assassin_image = pygame.image.load(resource_path('images/assassin.png')).convert()
-        
-        # Scale images to be larger for display
-        character_size = (200, 200)  # Larger size for display
-        knight_image = pygame.transform.scale(knight_image, character_size)
-        assassin_image = pygame.transform.scale(assassin_image, character_size)
-
-        # Calculate positions for character images
-        image_y = GameConstants.SCREEN_HEIGHT // 4  # Quarter down the screen
-        knight_x = GameConstants.SCREEN_WIDTH // 4 - character_size[0] // 2  # Left quarter
-        assassin_x = (GameConstants.SCREEN_WIDTH * 3) // 4 - character_size[0] // 2  # Right quarter
-
         while self.running:
             # Handle events
             for event in pygame.event.get():
@@ -487,32 +471,18 @@ class Game:
             # Draw Background
             self.screen.fill(Colors.WHITE)
 
-            # Draw character images
-            self.screen.blit(knight_image, (knight_x, image_y))
-            self.screen.blit(assassin_image, (assassin_x, image_y))
-            
             if knight_button.is_selected():
                 hero_class = 'Knight'
-                # Draw selection highlight for Knight
-                pygame.draw.rect(self.screen, Colors.YELLOW, 
-                                (knight_x - 5, image_y - 5, 
-                                character_size[0] + 10, character_size[1] + 10), 
-                                3)  # 3px wide border
             elif assassin_button.is_selected():
                 hero_class = 'Assassin'
-                # Draw selection highlight for Assassin
-                pygame.draw.rect(self.screen, Colors.YELLOW, 
-                                (assassin_x - 5, image_y - 5, 
-                                character_size[0] + 10, character_size[1] + 10), 
-                                3)  # 3px wide border
             else:
                 hero_class = ''
 
             # Draw class labels
             draw_text_centered("Knight", self.font, Colors.BLACK, self.screen,
-                             knight_x + character_size[0] // 2, image_y + character_size[1] + 10)
+                            knight_button.rect.centerx, knight_button.rect.bottomleft[1] + 10)
             draw_text_centered("Assassin", self.font, Colors.BLACK, self.screen,
-                             assassin_x + character_size[0] // 2, image_y + character_size[1] + 10)
+                            assassin_button.rect.centerx, assassin_button.rect.bottomleft[1] + 10)
 
             # Draw text box first
             self.text_box.draw(self.screen)
