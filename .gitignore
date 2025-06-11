@@ -1,5 +1,12 @@
 savefile.json
 sandbox.py
+GameInstaller.iss
+installer/
+
+# Game development specific
+# Uncomment these if you don't want to track game assets
+# images/
+# music/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -28,6 +35,9 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Build scripts
+build_all.bat
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

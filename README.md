@@ -5,3 +5,17 @@ If you would like to try my latest update, please download the executable file `
 
 Thanks,
 Nick
+
+## Building the Game
+
+1. Build the game with PyInstaller:
+```batch
+python build.py
+```
+
+2. Compile the installer with Inno Setup:
+```batch
+"C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "GameInstaller.iss"
+```
+
+The installer will be created in `installer/VillageDefenseSetup.exe`
