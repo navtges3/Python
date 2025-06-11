@@ -1,5 +1,6 @@
 from typing import Dict, Optional
 import pygame
+from src.game.utils.fileIO import resource_path
 from src.game.ui.button import Button, TextButton
 from src.game.ui.spritesheet import SpriteSheet
 from src.game.core.constants import GameState, GameConstants, Colors
@@ -9,18 +10,31 @@ from src.game.entities.ability import Ability, AttackAbility, DefendAbility
 
 class ButtonManager:
     """Manages button creation and organization for different game states."""
+
     
-    def __init__(self, font: pygame.font.Font, button_sheet: pygame.Surface, quest_button_sheet: pygame.Surface):
+    
+    def __init__(self, font: pygame.font.Font):
         self.font = font
+
+        button_images: pygame.Surface = pygame.image.load(resource_path('images\\buttons\\button_sheet_0.png')).convert_alpha()
+        quest_button_images: pygame.Surface = pygame.image.load(resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
+        assassin_button_images: pygame.Surface = pygame.image.load(resource_path('images\\assassin_sheet.png')).convert_alpha()
+        knight_button_images: pygame.Surface = pygame.image.load(resource_path('images\\knight_sheet.png')).convert_alpha()
+
         # Split the 800x250 button sheet into 5 rows of 800x50
-        self.button_sheet_gray      = SpriteSheet(button_sheet.subsurface((0, 0, 800, 50)))
-        self.button_sheet_red       = SpriteSheet(button_sheet.subsurface((0, 50, 800, 50)))
-        self.button_sheet_green     = SpriteSheet(button_sheet.subsurface((0, 100, 800, 50)))
-        self.button_sheet_blue      = SpriteSheet(button_sheet.subsurface((0, 150, 800, 50)))
-        self.button_sheet_yellow    = SpriteSheet(button_sheet.subsurface((0, 200, 800, 50)))
+        self.button_sheet_gray      = SpriteSheet(button_images.subsurface((0, 0, 800, 50)))
+        self.button_sheet_red       = SpriteSheet(button_images.subsurface((0, 50, 800, 50)))
+        self.button_sheet_green     = SpriteSheet(button_images.subsurface((0, 100, 800, 50)))
+        self.button_sheet_blue      = SpriteSheet(button_images.subsurface((0, 150, 800, 50)))
+        self.button_sheet_yellow    = SpriteSheet(button_images.subsurface((0, 200, 800, 50)))
+
+        self.quest_button_sheet = SpriteSheet(quest_button_images)
+        self.assassin_button_sheet = SpriteSheet(assassin_button_images)
+        self.knight_button_sheet = SpriteSheet(knight_button_images)
+
         self.buttons: Dict[GameState, Dict[str, Button]] = self._initialize_buttons()
 
-        self.quest_button_sheet = SpriteSheet(quest_button_sheet)
+        
         
         # Initialize quest containers
         self.available_quests = ScrollableButtons(
@@ -139,7 +153,8 @@ class ButtonManager:
         
         # Calculate positions for character buttons to match image positions
         image_y = GameConstants.SCREEN_HEIGHT // 4  # Quarter down the screen
-        character_size = (200, 200)  # Same size as character images
+        character_size = (32, 32)  # Same size as character images
+        character_scale = 6.25
         
         buttons = {
             'Back': TextButton(
@@ -163,26 +178,22 @@ class ButtonManager:
                 self.font,
             ),
             'Knight': Button(
-                self.button_sheet_yellow,
-                GameConstants.SCREEN_WIDTH // 4 - character_size[0] // 2,  # Match image x position
+                self.knight_button_sheet,
+                GameConstants.SCREEN_WIDTH // 4 - (character_size[0] * character_scale) // 2,  # Match image x position
                 image_y,  # Match image y position
                 character_size[0],  # Match image width
                 character_size[1],  # Match image height
-                1,
+                character_scale,
             ),
             'Assassin': Button(
-                self.button_sheet_blue,
-                (GameConstants.SCREEN_WIDTH * 3) // 4 - character_size[0] // 2,  # Match image x position
+                self.assassin_button_sheet,
+                (GameConstants.SCREEN_WIDTH * 3) // 4 - (character_size[0] * character_scale) // 2,  # Match image x position
                 image_y,  # Match image y position
                 character_size[0],  # Match image width
                 character_size[1],  # Match image height
-                1,
+                character_scale,
             ),
         }
-        
-        # Hide the character selection buttons (they'll be invisible but still clickable)
-        buttons['Knight'].hide()
-        buttons['Assassin'].hide()
         
         return buttons
     
@@ -441,8 +452,7 @@ class ButtonManager:
         """
         # Calculate button positions
         button_y = (GameConstants.SCREEN_HEIGHT - GameConstants.POPUP_HEIGHT) // 2 + 50
-        button_spacing = 50
-        
+        button_spacing = GameConstants.BUTTON_HEIGHT + 10
         return {
             'Resume': TextButton(
                 self.button_sheet_green,
@@ -482,8 +492,7 @@ class ButtonManager:
         Returns:
             Dictionary mapping button names to Button objects
         """
-        return {
-            'Back': TextButton(
+        return {            'Back': TextButton(
                 self.button_sheet_red,
                 (GameConstants.SCREEN_WIDTH - GameConstants.BUTTON_WIDTH) // 2,
                 (GameConstants.SCREEN_HEIGHT + GameConstants.POPUP_HEIGHT) // 2 - 60,

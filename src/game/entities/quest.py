@@ -121,7 +121,7 @@ class QuestButton(Button):
         self.selected: bool = False
         self.failed: bool = False
         if self.quest.is_complete():
-            self.toggle()  # Set to selected state if quest is complete
+            self.select()  # Set to selected state if quest is complete
 
     def mark_as_failed(self) -> None:
         """Mark the quest as failed and lock it."""
@@ -135,16 +135,10 @@ class QuestButton(Button):
         Args:
             surface: Optional pygame surface to draw on
         """
-        # Check if quest completion state changed
-        if self.quest.is_complete() and not self.is_toggled():
-            self.toggle()
-        
-        self.update_state()
-        
         if surface is not None:
             # Draw the base button
-            image = self.button_sheet.get_image(self.state, self.width, 
-                                                self.height, self.scale, Colors.BLACK)
+            image = self.button_sheet.get_image(self.state, self.frame_width, 
+                                                self.frame_height, self.scale, Colors.BLACK)
             surface.blit(image, (self.rect.x, self.rect.y))
             
             # Draw quest information

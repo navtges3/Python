@@ -84,15 +84,15 @@ class ScrollableButtons:
                     if actual_rect.collidepoint(event.pos):
                         if self.selected is None:
                             self.selected = i
-                            button.toggle()
-                        elif button.is_toggled():
+                            button.select()
+                        elif button.is_selected():
                             self.selected = None
-                            button.toggle()
+                            button.deselect()
                         else:
                             if self.selected is not None and 0 <= self.selected < len(self.buttons):
-                                self.buttons[self.selected].toggle()
+                                self.buttons[self.selected].deselect()
                             self.selected = i
-                            button.toggle()
+                            button.select()
                         break  # Exit loop after handling the click
         elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:  # Left mouse button only
             self.dragging_scrollbar = False
@@ -139,7 +139,8 @@ class ScrollableButtons:
         for i, button in enumerate(self.buttons):
             button.rect.y = self.rect.y + i * (self.button_height + self.button_spacing) + self.scroll_offset
             if self.rect.colliderect(button.rect):
-                button.draw(surface)
+                if button.draw(surface):
+                    self.selected = i
                 visible_buttons.append(button)
 
         surface.set_clip(None)  # Reset clipping
