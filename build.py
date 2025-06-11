@@ -7,9 +7,10 @@ output_name = "VillageDefense"  # Name of the output executable
 
 # PyInstaller options
 options = [
-    "--onefile",  # Bundle everything into one executable
+    # Using onedir (default) mode instead of onefile
     "--noconsole",  # Hide the console window (useful for GUI apps)
     "--icon=icon.ico",  # Path to your game icon
+    "--noupx",  # Avoid using UPX compression to prevent antivirus false positives
     "--name", output_name,  # Name of the output executable
     "--add-data", "icon.ico;.",  # Include the icon file (adjust as needed)
     "--add-data", "images;images",  # Include images folder (adjust as needed)

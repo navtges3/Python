@@ -1,5 +1,13 @@
 savefile.json
 sandbox.py
+GameInstaller.iss
+installer/
+*.spec
+
+# Game development specific
+# Uncomment these if you don't want to track game assets
+# images/
+# music/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
