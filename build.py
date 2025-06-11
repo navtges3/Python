@@ -13,8 +13,8 @@ options = [
     "--noupx",  # Avoid using UPX compression to prevent antivirus false positives
     "--name", output_name,  # Name of the output executable
     "--add-data", "icon.ico;.",  # Include the icon file (adjust as needed)
-    "--add-data", "images;images",  # Include images folder (adjust as needed)
-    "--add-data", "music;music",  # Include sounds folder (adjust as needed)
+    "--add-data", "src/game/assets/images;src/game/assets/images",  # Include images folder with full path structure
+    "--add-data", "src/game/assets/music;src/game/assets/music",  # Include music folder with full path structure
 ]
 
 # Build the command
