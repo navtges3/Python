@@ -425,7 +425,7 @@ class Assassin(Hero):
         Args:
             name: The assassin's name
         """
-        image = pygame.image.load(resource_path("images/assassin.png")).convert()
+        image = pygame.image.load(resource_path("src\\game\\assets\\images\\assassin.png")).convert()
         image = pygame.transform.scale(image, (100, 100))
         health = randint(7, 12)
         weapon = weapon_dictionary["Iron Knife"]
@@ -445,7 +445,7 @@ class Knight(Hero):
         Args:
             name: The knight's name
         """
-        image = pygame.image.load(resource_path("images/knight.png")).convert()
+        image = pygame.image.load(resource_path("src\\game\\assets\\images\\knight.png")).convert()
         image = pygame.transform.scale(image, (100, 100))
         health = randint(10, 15)
         weapon = weapon_dictionary["Rusty Sword"]
