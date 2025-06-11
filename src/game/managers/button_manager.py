@@ -16,10 +16,10 @@ class ButtonManager:
     def __init__(self, font: pygame.font.Font):
         self.font = font
 
-        button_images: pygame.Surface = pygame.image.load(resource_path('images\\buttons\\button_sheet_0.png')).convert_alpha()
-        quest_button_images: pygame.Surface = pygame.image.load(resource_path('images\\buttons\\quest_sheet.png')).convert_alpha()
-        assassin_button_images: pygame.Surface = pygame.image.load(resource_path('images\\assassin_sheet.png')).convert_alpha()
-        knight_button_images: pygame.Surface = pygame.image.load(resource_path('images\\knight_sheet.png')).convert_alpha()
+        button_images: pygame.Surface = pygame.image.load(resource_path('src\\game\\assets\\images\\buttons\\button_sheet_0.png')).convert_alpha()
+        quest_button_images: pygame.Surface = pygame.image.load(resource_path('src\\game\\assets\\images\\buttons\\quest_sheet.png')).convert_alpha()
+        assassin_button_images: pygame.Surface = pygame.image.load(resource_path('src\\game\\assets\\images\\assassin_sheet.png')).convert_alpha()
+        knight_button_images: pygame.Surface = pygame.image.load(resource_path('src\\game\\assets\\images\\knight_sheet.png')).convert_alpha()
 
         # Split the 800x250 button sheet into 5 rows of 800x50
         self.button_sheet_gray      = SpriteSheet(button_images.subsurface((0, 0, 800, 50)))

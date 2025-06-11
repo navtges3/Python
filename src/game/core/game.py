@@ -37,7 +37,7 @@ class Game:
         # Initialize the mixer for music
         pygame.mixer.init()
         # Load and play background music
-        pygame.mixer.music.load(resource_path('music\\background_music.mp3'))
+        pygame.mixer.music.load(resource_path('src\\game\\assets\\music\\background_music.mp3'))
         pygame.mixer.music.set_volume(0.5)  # Set volume (0.0 to 1.0)
         pygame.mixer.music.play(-1)  # Play music in a loop
 
@@ -142,7 +142,7 @@ class Game:
         if save_data is not None:
             # Load hero data
             if "hero" in save_data:
-                self.hero = Hero(pygame.image.load(resource_path(f"images/{save_data['hero']['class_name'].lower()}.png")).convert())
+                self.hero = Hero(pygame.image.load(resource_path(f"src\\game\\assets\\images\\{save_data['hero']['class_name'].lower()}.png")).convert())
                 self.hero.from_dict(save_data["hero"])
                 self.hero.image = pygame.transform.scale(self.hero.image, (100, 100))
             else:

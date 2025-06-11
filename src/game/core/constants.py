@@ -72,9 +72,6 @@ class GameConstants:
     BUTTON_WIDTH: Final[int] = 200
     BUTTON_HEIGHT: Final[int] = 50
 
-    BUTTON_IMAGE_PATH: Final[str] = "images\\buttons\\button.png"
-    HOVER_IMAGE_PATH: Final[str] = "images\\buttons\\button_hover.png"
-
     # New Game Constants
     NEW_GAME_SPACING: Final[int] = SCREEN_HEIGHT // 30
 
