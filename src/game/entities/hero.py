@@ -329,9 +329,9 @@ class Hero(Combatant):
         self.energy = data.get("energy", 10)
         self.max_energy = data.get("max_energy", 10)
         if self.class_name == "Knight":
-            self.image = pygame.image.load(resource_path("images/knight.png")).convert()
+            self.image = pygame.image.load(resource_path("src\\game\\assets\\images\\knight.png")).convert()
         else:
-            self.image = pygame.image.load(resource_path("images/assassin.png")).convert()
+            self.image = pygame.image.load(resource_path("src\\game\\assets\\images\\assassin.png")).convert()
         self.image = pygame.transform.scale(self.image, (100, 100))
 
         self.add_ability("Strike")

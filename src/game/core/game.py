@@ -142,7 +142,7 @@ class Game:
         if save_data is not None:
             # Load hero data
             if "hero" in save_data:
-                self.hero = Hero(pygame.image.load(resource_path(f"images/{save_data['hero']['class_name'].lower()}.png")).convert())
+                self.hero = Hero(pygame.image.load(resource_path(f"src\\game\\assets\\images\\{save_data['hero']['class_name'].lower()}.png")).convert())
                 self.hero.from_dict(save_data["hero"])
                 self.hero.image = pygame.transform.scale(self.hero.image, (100, 100))
             else:
