@@ -22,7 +22,7 @@ command = ["pyinstaller"] + options + [main_script]
 
 # Run the command
 print("Running PyInstaller...")
-subprocess.run(command)
+subprocess.run(command, check=True)
 
 # Clean up build files
 print("Cleaning up temporary files...")
