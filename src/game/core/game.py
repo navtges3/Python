@@ -379,6 +379,9 @@ class Game:
         """Display and handle the home screen."""
         self.running = True
         home_buttons = self.button_manager.get_buttons(GameState.HOME)
+        load_button = self.button_manager.get_button(GameState.HOME, 'Load Game')
+
+        load_button.unlock() if save_file_exists() else load_button.lock()
 
         while self.running:
             # Handle events
