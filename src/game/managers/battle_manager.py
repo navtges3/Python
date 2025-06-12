@@ -228,14 +228,17 @@ class BattleManager:
         # If ability name is provided, use that ability
         if ability_name:
             self.use_ability(ability_name)
+            self.button_manager.get_button(GameState.BATTLE, 'Ability').deselect()
             return
             
         # Toggle between showing and hiding ability buttons
         if self.state == BattleState.USE_ABILITY:
             self.state = BattleState.HOME
+            self.button_manager.get_button(GameState.BATTLE, 'Ability').deselect()
             self._toggle_ability_buttons(self.button_manager, False)
         else:
             self.state = BattleState.USE_ABILITY
+            self.button_manager.get_button(GameState.BATTLE, 'Ability').select()
             self._toggle_ability_buttons(self.button_manager, True)
             # Update button states based on ability cooldowns and energy costs
             self._update_ability_button_states(self.button_manager)

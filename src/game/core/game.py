@@ -964,33 +964,33 @@ class Game:
                         if self.battle_manager.state == BattleState.USE_ABILITY:
                             clicked_ability = self.button_manager.hero_ability_buttons.handle_click(mouse_pos)
                             if clicked_ability:
-                                self.battle_manager.use_ability(clicked_ability)
+                                self.battle_manager.handle_ability(clicked_ability)
                                 self.event_manager.reset_button_delay()
                                 continue
                         
                         # Handle other battle buttons
                         for button_name, button in battle_buttons.items():
                             if self.event_manager.handle_button_click(event, button):
-                                if button_name == "Continue" and self.battle_manager.state == BattleState.MONSTER_DEFEATED:
-                                    # Get next monster
-                                    new_monster = self.current_quest.get_monster()
-                                    success = self._setup_new_monster(new_monster)
-                                    if success:
-                                        self.battle_manager.state = BattleState.HOME
-                                        self.battle_manager.turn = TurnState.HERO_TURN
-                                        self._switch_battle_layout(False)
-                                    else:
-                                        self.game_state = GameState.QUEST
-                                        self.running = False
-                                    break
+                                if self.battle_manager.state == BattleState.MONSTER_DEFEATED:
+                                    if button_name == "Continue":
+                                        # Get next monster
+                                        new_monster = self.current_quest.get_monster()
+                                        success = self._setup_new_monster(new_monster)
+                                        if success:
+                                            self.battle_manager.state = BattleState.HOME
+                                            self.battle_manager.turn = TurnState.HERO_TURN
+                                            self._switch_battle_layout(False)
+                                        else:
+                                            self.game_state = GameState.QUEST
+                                            self.running = False
+                                    # Handle retreat button
+                                    elif button_name == "Retreat":
+                                        self.battle_log.append(f"{self.hero.name} retreats to regroup!")
+                                        self._handle_quest_failure()
 
                                 # Handle combat actions during hero's turn
                                 if self.battle_manager.turn == TurnState.HERO_TURN:
                                     if button_name == "Ability":
-                                        if button.is_selected():
-                                            button.deselect()
-                                        else:
-                                            button.select()
                                         self.battle_manager.handle_ability()
                                         self.event_manager.reset_button_delay()
                                     elif button_name == "Potion":
@@ -1009,13 +1009,8 @@ class Game:
                                             self._handle_quest_failure()
                                     elif button_name in ["Health Potion", "Damage Potion", "Block Potion"]:
                                         self.battle_manager.use_potion(button_name)
+                                        potion_button.deselect()
                                         self.event_manager.reset_button_delay()
-
-                                # Handle retreat button
-                                if button_name == "Retreat":
-                                    self.battle_log.append(f"{self.hero.name} retreats to regroup!")
-                                    self._handle_quest_failure()
-                                break
 
             # Draw the battle screen first
             self.screen.fill(Colors.WHITE)
